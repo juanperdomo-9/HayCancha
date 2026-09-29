@@ -48,6 +48,7 @@ class ComplejoDetalle(BaseModel):
     nombre: str
     barrio: str | None
     direccion: str | None
+    referencia: str | None
     servicios: list[str]
     logo_url: str | None
     portada_url: str | None

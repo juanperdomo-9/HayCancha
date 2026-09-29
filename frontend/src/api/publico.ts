@@ -32,6 +32,7 @@ export type ComplejoDetalle = {
   nombre: string
   barrio: string | null
   direccion: string | null
+  referencia: string | null
   servicios: string[]
   logo_url: string | null
   portada_url: string | null

@@ -155,6 +155,22 @@ def test_cambiar_colores_y_sena(escenario) -> None:
     )
 
 
+def test_la_referencia_se_ve_en_la_pagina(escenario) -> None:
+    entrar(escenario["dueno_a"]).patch(
+        f"/panel/{escenario['a']}/configuracion",
+        json={
+            "direccion": "Calle 32 entre 7 y 8",
+            "barrio": "La Plata",
+            "referencia": "Al lado de la YPF",
+        },
+    )
+    publico = TestClient(app).get(f"/publico/complejos/{escenario['a']}").json()
+    assert (publico["direccion"], publico["referencia"]) == (
+        "Calle 32 entre 7 y 8",
+        "Al lado de la YPF",
+    )
+
+
 @pytest.mark.parametrize(
     "cambios",
     [

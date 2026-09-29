@@ -55,6 +55,7 @@ class Configuracion(BaseModel):
     nombre: str
     direccion: str | None
     barrio: str | None
+    referencia: str | None
     servicios: list[str]
     logo_url: str | None
     portada_url: str | None
@@ -70,6 +71,7 @@ class CambiosDeConfiguracion(BaseModel):
     nombre: Texto | None = None
     direccion: TextoOpcional | None = None
     barrio: TextoOpcional | None = None
+    referencia: TextoOpcional | None = None
     servicios: list[Texto] | None = None
     color_primario: Color | None = None
     color_secundario: Color | None = None
@@ -185,6 +187,7 @@ class AltaDeComplejo(BaseModel):
     slug: Annotated[str, StringConstraints(strip_whitespace=True, to_lower=True, max_length=60)]
     direccion: TextoOpcional | None = None
     barrio: TextoOpcional | None = None
+    referencia: TextoOpcional | None = None
     servicios: list[Texto] = []
     dueno_email: EmailStr
     sena_tipo: Literal["fija", "porcentaje"] = "porcentaje"

@@ -27,6 +27,7 @@ export default function NuevoComplejo() {
     slug: '',
     direccion: '',
     barrio: '',
+    referencia: '',
     servicios: [] as string[],
     dueno_email: '',
     sena_tipo: 'porcentaje' as AltaDeComplejo['sena_tipo'],
@@ -42,6 +43,7 @@ export default function NuevoComplejo() {
       ...datos,
       direccion: datos.direccion || undefined,
       barrio: datos.barrio || undefined,
+      referencia: datos.referencia || undefined,
       sena_valor: datos.sena_valor || '0',
       horas_cancelacion: Number(datos.horas_cancelacion),
       minutos_para_pagar: Number(datos.minutos_para_pagar),
@@ -104,7 +106,14 @@ export default function NuevoComplejo() {
             ayuda="Minúsculas, números y guiones. Por ejemplo, el-potrero."
           />
           <Campo etiqueta="Dirección" value={datos.direccion} onChange={(e) => setDatos({ ...datos, direccion: e.target.value })} />
-          <Campo etiqueta="Barrio" value={datos.barrio} onChange={(e) => setDatos({ ...datos, barrio: e.target.value })} />
+          <Campo etiqueta="Barrio o ciudad" value={datos.barrio} onChange={(e) => setDatos({ ...datos, barrio: e.target.value })} />
+          <Campo
+            etiqueta="Referencia para llegar"
+            placeholder="Al lado de la YPF"
+            className="sm:col-span-2"
+            value={datos.referencia}
+            onChange={(e) => setDatos({ ...datos, referencia: e.target.value })}
+          />
         </div>
         <fieldset className="mt-4">
           <legend className="mb-2 text-[13px] font-semibold">Servicios</legend>

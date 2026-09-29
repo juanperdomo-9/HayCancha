@@ -26,6 +26,7 @@ function FormularioMarca({ slug, c }: { slug: string; c: Configuracion }) {
     nombre: c.nombre,
     direccion: c.direccion ?? '',
     barrio: c.barrio ?? '',
+    referencia: c.referencia ?? '',
     color_primario: c.color_primario,
     servicios: c.servicios,
   })
@@ -41,7 +42,7 @@ function FormularioMarca({ slug, c }: { slug: string; c: Configuracion }) {
     e.preventDefault()
     setOk(false)
     guardar.mutate(
-      { nombre: datos.nombre, direccion: datos.direccion || null, barrio: datos.barrio || null, color_primario: datos.color_primario.toUpperCase(), servicios: datos.servicios },
+      { nombre: datos.nombre, direccion: datos.direccion || null, barrio: datos.barrio || null, referencia: datos.referencia || null, color_primario: datos.color_primario.toUpperCase(), servicios: datos.servicios },
       { onSuccess: () => setOk(true) },
     )
   }
@@ -68,7 +69,15 @@ function FormularioMarca({ slug, c }: { slug: string; c: Configuracion }) {
             <div className="grid gap-4 sm:grid-cols-2">
               <Campo etiqueta="Nombre" required value={datos.nombre} onChange={(e) => setDatos({ ...datos, nombre: e.target.value })} className="sm:col-span-2" />
               <Campo etiqueta="Dirección" placeholder="Av. Triunvirato 4820" value={datos.direccion} onChange={(e) => setDatos({ ...datos, direccion: e.target.value })} />
-              <Campo etiqueta="Barrio" placeholder="Villa Urquiza" value={datos.barrio} onChange={(e) => setDatos({ ...datos, barrio: e.target.value })} />
+              <Campo etiqueta="Barrio o ciudad" placeholder="Villa Urquiza" value={datos.barrio} onChange={(e) => setDatos({ ...datos, barrio: e.target.value })} />
+              <Campo
+                etiqueta="Referencia para llegar"
+                placeholder="Al lado de la YPF"
+                className="sm:col-span-2"
+                value={datos.referencia}
+                onChange={(e) => setDatos({ ...datos, referencia: e.target.value })}
+                ayuda="Se muestra debajo de la dirección. No se usa para buscar en el mapa."
+              />
             </div>
           </Tarjeta>
           <Tarjeta titulo="Servicios" descripcion="Tocá los que tiene tu complejo.">

@@ -38,6 +38,8 @@ class Negocio(Base):
     )
     direccion: Mapped[str | None] = mapped_column(String)
     barrio: Mapped[str | None] = mapped_column(String)
+    # Cómo llegar: "al lado de la YPF". Se muestra, pero no se busca en el mapa.
+    referencia: Mapped[str | None] = mapped_column(String)
     servicios: Mapped[list[str]] = mapped_column(
         ARRAY(String), server_default=text("'{}'::varchar[]")
     )

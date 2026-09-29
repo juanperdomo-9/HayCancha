@@ -194,7 +194,7 @@ function PaginaComplejo({ complejo }: { complejo: ComplejoDetalle }) {
           <h3 className="numeros mb-3 text-[23px] font-bold" style={{ fontStretch: '80%' }}>
             Dónde queda
           </h3>
-          <MapaComplejo nombre={complejo.nombre} direccion={complejo.direccion} barrio={complejo.barrio} />
+          <MapaComplejo nombre={complejo.nombre} direccion={complejo.direccion} barrio={complejo.barrio} referencia={complejo.referencia} />
         </div>
         {complejo.servicios.length > 0 && (
           <div>

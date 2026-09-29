@@ -6,12 +6,13 @@ type Props = {
   nombre: string
   direccion: string | null
   barrio: string | null
+  referencia?: string | null
 }
 
 const CLAVE_MAPS = import.meta.env.VITE_GOOGLE_MAPS_KEY
 
 /** Dónde queda el complejo: mapa de Google (si hay clave) y botón para ir con Maps. */
-export function MapaComplejo({ nombre, direccion, barrio }: Props) {
+export function MapaComplejo({ nombre, direccion, barrio, referencia }: Props) {
   const consulta = consultaMaps({ direccion, barrio })
   if (!consulta) {
     return <p className="text-tenue">Dirección a confirmar.</p>
@@ -45,6 +46,7 @@ export function MapaComplejo({ nombre, direccion, barrio }: Props) {
         <p className="text-tenue">
           {direccion}
           {barrio && ` · ${barrio}`}
+          {referencia && <span className="block text-sm">{referencia.charAt(0).toUpperCase() + referencia.slice(1)}</span>}
         </p>
         <a
           href={urlComoLlegar(consulta)}

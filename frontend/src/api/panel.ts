@@ -26,6 +26,7 @@ export type Configuracion = {
   nombre: string
   direccion: string | null
   barrio: string | null
+  referencia: string | null
   servicios: string[]
   logo_url: string | null
   portada_url: string | null
@@ -78,6 +79,7 @@ export type AltaDeComplejo = {
   slug: string
   direccion?: string
   barrio?: string
+  referencia?: string
   servicios: string[]
   dueno_email: string
   sena_tipo: 'fija' | 'porcentaje'
