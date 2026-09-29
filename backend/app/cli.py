@@ -4,8 +4,9 @@ preparar-base   Habilita el login de app_user con la contraseña de DATABASE_URL
                 Correrlo después de las migraciones, en cada base nueva.
 cargar-ejemplo  Carga el complejo de ejemplo (El Potrero) y sus usuarios de prueba.
                 --reemplazar lo borra y lo vuelve a crear. Solo para desarrollo.
-crear-superadmin --email ...
-                Crea (o cambia la contraseña de) un superadmin de HayCancha. Pide la
+crear-superadmin --usuario ...
+                Crea (o cambia la contraseña de) un superadmin de HayCancha. El usuario
+                puede ser un email o un nombre (por ejemplo, haycancha). Pide la
                 contraseña sin mostrarla.
 """
 
@@ -48,8 +49,8 @@ def preparar_base() -> None:
     print("app_user listo para conectarse.")
 
 
-def crear_superadmin(email: str) -> None:
-    email = email.strip().lower()
+def crear_superadmin(usuario: str) -> None:
+    email = usuario.strip().lower()
     clave = getpass.getpass("Contraseña (mínimo 8 caracteres): ")
     if getpass.getpass("Repetila: ") != clave:
         raise SystemExit("Las contraseñas no coinciden.")
@@ -62,7 +63,7 @@ def crear_superadmin(email: str) -> None:
         if usuario is None:
             session.add(Usuario(email=email, rol="superadmin", password_hash=hash_))
         elif usuario.rol != "superadmin":
-            raise SystemExit("Ese email ya es de un dueño o empleado de un complejo.")
+            raise SystemExit("Ese usuario ya es de un dueño o empleado de un complejo.")
         else:
             usuario.password_hash = hash_
             usuario.activo = True
@@ -76,7 +77,7 @@ def main(argv: list[str] | None = None) -> None:
     ejemplo = comandos.add_parser("cargar-ejemplo", help="carga El Potrero")
     ejemplo.add_argument("--reemplazar", action="store_true")
     superadmin = comandos.add_parser("crear-superadmin", help="crea un superadmin")
-    superadmin.add_argument("--email", required=True)
+    superadmin.add_argument("--usuario", "--email", dest="usuario", required=True)
     args = parser.parse_args(argv)
 
     if args.comando == "preparar-base":
@@ -87,7 +88,7 @@ def main(argv: list[str] | None = None) -> None:
         print(f"Complejo de ejemplo: {negocio.nombre} ({negocio.slug}).")
         print("Usuarios de prueba: ver USUARIOS_DE_EJEMPLO en app/ejemplo.py.")
     elif args.comando == "crear-superadmin":
-        crear_superadmin(args.email)
+        crear_superadmin(args.usuario)
 
 
 if __name__ == "__main__":

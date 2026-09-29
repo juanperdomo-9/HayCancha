@@ -31,7 +31,16 @@ export default function Ingresar() {
   return (
     <PantallaDeAcceso titulo="Ingresá a tu panel" bajada="Para dueños y equipos de los complejos. Para reservar una cancha no hace falta cuenta.">
       <form onSubmit={enviar} className="grid gap-4">
-        <Campo etiqueta="Email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+        <Campo
+          etiqueta="Email o usuario"
+          type="text"
+          autoComplete="username"
+          autoCapitalize="none"
+          spellCheck={false}
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
         <Campo
           etiqueta="Contraseña"
           type="password"

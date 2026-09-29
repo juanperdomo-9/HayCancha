@@ -66,6 +66,13 @@ def test_ingresar_y_saber_quien_soy(escenario) -> None:
     assert (yo["rol"], yo["negocio"]["slug"]) == ("dueno", escenario["a"])
 
 
+def test_un_superadmin_puede_entrar_con_nombre_de_usuario(admin: Session) -> None:
+    usuario = f"equipo-{uuid.uuid4().hex[:6]}"
+    admin.add(Usuario(email=usuario, rol="superadmin", password_hash=hashear_clave(CLAVE)))
+    admin.commit()
+    assert entrar(usuario.upper()).get("/auth/yo").json()["rol"] == "superadmin"
+
+
 def test_la_cookie_es_httponly(escenario) -> None:
     respuesta = TestClient(app).post(
         "/auth/ingresar", json={"email": escenario["dueno_a"], "clave": CLAVE}

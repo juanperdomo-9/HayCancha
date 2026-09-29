@@ -17,7 +17,10 @@ Rol = Literal["superadmin", "dueno", "empleado"]
 
 
 class Ingreso(BaseModel):
-    email: EmailStr
+    # Email (dueños y empleados) o nombre de usuario (superadmins de HayCancha).
+    email: Annotated[
+        str, StringConstraints(strip_whitespace=True, to_lower=True, min_length=1, max_length=254)
+    ]
     clave: str
 
 
