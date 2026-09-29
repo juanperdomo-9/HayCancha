@@ -83,6 +83,21 @@ La interfaz es en español de Argentina, con voseo ("Reservá", "Elegí un horar
         └── theme/
 ```
 
+## Comandos
+
+```
+docker compose up -d --wait                              # Postgres local (raíz del repo)
+cd backend && uv run alembic upgrade head                # migraciones (DATABASE_URL_ADMIN)
+cd backend && uv run python -m app.cli preparar-base     # login de app_user, en cada base nueva
+cd backend && uv run python -m app.cli cargar-ejemplo    # El Potrero (--reemplazar para rehacerlo)
+cd backend && uv run uvicorn app.main:app --reload       # API en :8000
+cd backend && uv run pytest && uv run ruff check . && uv run ruff format --check .
+cd frontend && npm run dev                               # web en :5173
+cd frontend && npm test && npm run lint && npm run build
+```
+
+En los tests, la conexión de la app hace `SET ROLE app_user` (ver `tests/conftest.py`), así RLS se prueba de verdad.
+
 ## Variables de entorno
 
 Nunca subir secretos al repo. Mantener actualizados `backend/.env.example` y `frontend/.env.example` (cada herramienta lee el `.env` de su carpeta).
@@ -113,11 +128,15 @@ Nunca subir secretos al repo. Mantener actualizados `backend/.env.example` y `fr
 ```sql
 ALTER TABLE reservas ENABLE ROW LEVEL SECURITY;
 CREATE POLICY aislamiento_negocio ON reservas
-  USING (negocio_id = current_setting('app.negocio_id', true)::uuid)
-  WITH CHECK (negocio_id = current_setting('app.negocio_id', true)::uuid);
+  USING (negocio_id = NULLIF(current_setting('app.negocio_id', true), '')::uuid)
+  WITH CHECK (negocio_id = NULLIF(current_setting('app.negocio_id', true), '')::uuid);
 ```
 
-- La tabla `negocios` no lleva RLS, pero las rutas públicas solo devuelven campos públicos (nombre, logo, colores, horarios). **Los tokens de Mercado Pago nunca salen del backend.**
+  - El `NULLIF` es obligatorio: después de una transacción que usó `set_config(..., true)`, la conexión (reutilizada por el pooler) devuelve `''` en vez de `NULL`, y `''::uuid` da error.
+  - La sesión de SQLAlchemy vuelve a fijar `app.negocio_id` al empezar cada transacción (evento `after_begin` en `app/db.py`), así un `commit()` en el medio no la deja sin negocio.
+  - Las tablas hijas referencian al padre con claves compuestas (`(negocio_id, recurso_id)` → `recursos(negocio_id, id)`), así una reserva no puede apuntar a una cancha de otro negocio ni siquiera con la conexión de administrador.
+- La tabla `negocios` se lee libremente (rutas públicas, que solo devuelven campos públicos: nombre, logo, colores, horarios), pero tiene RLS para escribir: `app_user` solo puede modificar el negocio de `app.negocio_id` y no puede crear ni borrar negocios (eso es del alta, con la conexión de administrador). **Los tokens de Mercado Pago nunca salen del backend.**
+- Los usuarios tienen RLS como el resto. Para el login (que busca por email antes de saber el negocio) hay funciones `SECURITY DEFINER` acotadas, en vez de usar la conexión de administrador.
 - El panel de superadmin usa `DATABASE_URL_ADMIN`. Esa conexión nunca se usa en rutas públicas ni del panel de dueños.
 
 ## Modelo de datos
@@ -126,11 +145,11 @@ Claves primarias `uuid` con `gen_random_uuid()`. Fechas con hora en `timestamptz
 
 | Tabla | Campos principales |
 | --- | --- |
-| `negocios` | `id`, `slug` (único), `nombre`, `rubro` (`deportes` por ahora), `logo_url`, `portada_url`, `color_primario`, `color_secundario`, `zona_horaria` (por defecto `America/Argentina/Buenos_Aires`), `sena_tipo` (`fija` o `porcentaje`), `sena_valor`, `minutos_para_pagar` (por defecto 10), `horas_cancelacion` (por defecto 24), `plan`, `estado_cuenta` (`al_dia`, `atrasado`, `suspendido`), `mp_user_id`, `mp_access_token_enc`, `mp_refresh_token_enc`, `mp_token_vence_a`, `activo`, `creado_a` |
+| `negocios` | `id`, `slug` (único), `nombre`, `rubro` (`deportes` por ahora), `logo_url`, `portada_url`, `color_primario`, `color_secundario`, `zona_horaria` (por defecto `America/Argentina/Buenos_Aires`), `direccion`, `barrio`, `servicios` (lista de textos: "Vestuarios", "Estacionamiento"…), `sena_tipo` (`fija` o `porcentaje`, por defecto `porcentaje`), `sena_valor` (por defecto 20: lo habitual es 20%, pero lo decide cada complejo), `minutos_para_pagar` (por defecto 10), `horas_cancelacion` (**sin valor por defecto**: se acuerda con cada complejo y es obligatorio en el alta), `plan`, `estado_cuenta` (`al_dia`, `atrasado`, `suspendido`), `mp_user_id`, `mp_access_token_enc`, `mp_refresh_token_enc`, `mp_token_vence_a`, `activo`, `creado_a` |
 | `usuarios` | `id`, `negocio_id` (null solo para superadmin), `email` (único), `password_hash`, `rol` (`superadmin`, `dueno`, `empleado`) |
 | `deportes` | `id`, `codigo` (único: `futbol5`, `futbol7`, `futbol11`, `padel`, `tenis`, `basquet`, `voley`…), `nombre`, `duracion_sugerida_min`. Tabla global, sin `negocio_id`: se amplía agregando filas, sin cambiar código |
 | `recursos` | `id`, `negocio_id`, `deporte_id`, `nombre` ("Cancha 1", "Pádel 2"), `caracteristicas` (texto libre: "techada", "sintético", "blindex"), `activo` |
-| `horarios` | `id`, `negocio_id`, `recurso_id`, `dia_semana` (0 a 6), `desde`, `hasta`, `duracion_turno_min` (por defecto, la sugerida del deporte), `precio` |
+| `horarios` | `id`, `negocio_id`, `recurso_id`, `dia_semana` (0 = lunes … 6 = domingo, como `weekday()` de Python), `desde`, `hasta` (hora local del negocio; si `hasta` <= `desde`, la franja termina al día siguiente: 18:00 a 02:00, o 09:00 a 00:00 para cerrar a medianoche), `duracion_turno_min` (por defecto, la sugerida del deporte), `precio`. Una cancha puede tener varias franjas por día con precios distintos (por ejemplo, más cara de noche) |
 | `clientes` | `id`, `negocio_id`, `nombre`, `telefono`, `email`; único (`negocio_id`, `telefono`) |
 | `recursos_combinados` | `negocio_id`, `recurso_id` (la cancha grande), `parte_id` (cada cancha que la forma). Solo para complejos que unen canchas |
 | `reservas` | `id`, `negocio_id`, `recurso_id`, `cliente_id` (null en un bloqueo), `reserva_origen_id` (solo en las reservas espejo de canchas combinadas), `inicio`, `fin`, `estado`, `precio`, `sena`, `sena_en_efectivo` (bool), `saldo_cobrado` (bool), `asistencia` (null, `vino`, `no_vino`), `motivo_bloqueo`, `vence_a`, `mp_preference_id`, `origen` (`web`, `panel`, `bot`), `creado_por` (usuario del panel, si la cargó a mano), `creado_a` |
@@ -236,8 +255,9 @@ Estados: `pendiente_pago`, `confirmada`, `vencida`, `cancelada`, `bloqueada`. Un
 - Conocimiento del asistente y preguntas sin responder (fase 3)
 
 **Superadmin** (`/admin`, el fundador y quien hace las altas): alta de complejos, suspender o reactivar, estado de cobro de cada uno.
-- El alta crea el complejo (nombre y slug) y el usuario del dueño, y le manda un email para que elija su contraseña.
-- Por ahora los dueños no se registran solos: todo complejo entra por el alta.
+- **Cómo entra un complejo:** el dueño dice que sí y completa un formulario con todo lo necesario (datos del complejo, canchas, horarios, precios, seña, política de cancelación, marca, empleados). El equipo de HayCancha carga todo; el dueño no tiene que configurar nada para empezar. La pantalla de alta sigue el mismo orden que el formulario, para cargarlo rápido.
+- El alta crea el complejo y el usuario del dueño, y genera un link para que elija su contraseña (en la fase 1 se lo pasa el equipo; desde la fase 2 le llega por email).
+- Los dueños no se registran solos: todo complejo entra por el alta.
 - El superadmin también puede configurar cualquier complejo (canchas, horarios, precios, seña, marca), para dejárselo listo al dueño. Desde `/admin`, un botón "Configurar" abre `/panel/:slug` de ese complejo con las mismas pantallas del dueño: no se duplica la interfaz. El backend permite al rol `superadmin` cualquier slug y usa la conexión normal (`app_user`) con `set_config('app.negocio_id', ...)` de ese negocio, así RLS sigue aplicando. `DATABASE_URL_ADMIN` queda solo para lo que es de todos los negocios (alta, suspensión, cobros).
 
 **Tema por complejo:** el backend devuelve los colores del negocio y el frontend los aplica con `<TemaComplejo>` (`frontend/src/theme/`), que define las variables CSS `--complejo`, `--complejo-sobre`, `--complejo-texto`, `--complejo-suave`, etc. En Tailwind se usan como `bg-complejo`, `text-complejo-texto`, etc. La estructura de las páginas es la misma para todos.
@@ -289,10 +309,10 @@ Hasta la puesta en línea, todo se desarrolla en local: la base es el Postgres d
 - [x] Sistema de diseño en el frontend: marca HayCancha, tipografías, motor de tema por complejo y animaciones base
 - [x] Repo en GitHub con el primer commit (`github.com/juanperdomo-9/HayCancha`)
 
-**Fase 1: una sola web para todos los complejos**
-- [ ] Tabla global `deportes` con sus datos iniciales
-- [ ] Tablas `negocios`, `usuarios`, `recursos`, `horarios`, `clientes`, `reservas` con `negocio_id`
-- [ ] Rol `app_user`, RLS y `set_config` por transacción
+**Fase 1: una sola web para todos los complejos** (en 4 bloques: 1A datos y seguridad, 1B disponibilidad y páginas públicas, 1C login, configuración y superadmin, 1D agenda)
+- [x] Tabla global `deportes` con sus datos iniciales
+- [x] Tablas `negocios`, `usuarios`, `recursos`, `horarios`, `clientes`, `reservas` con `negocio_id`
+- [x] Rol `app_user`, RLS y `set_config` por transacción
 - [ ] Rutas públicas por slug y cálculo de disponibilidad
 - [ ] Página principal de HayCancha con el listado de complejos
 - [ ] Login y panel del dueño: canchas, horarios, precios, marca
@@ -323,8 +343,6 @@ Hasta la puesta en línea, todo se desarrolla en local: la base es el Postgres d
 ## Decisiones abiertas
 
 Preguntá antes de asumir cualquiera de estas:
-- Monto de la seña por defecto: fijo o porcentaje
-- Política de cancelación por defecto
 - Proveedor de email
 - Modelo de IA y su costo por complejo
 
