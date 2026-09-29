@@ -1,7 +1,9 @@
-# Postgres local descartable para los tests. Nunca se usa contra Supabase.
-# Misma versión mayor que Supabase y con pgvector incluido (btree_gist viene con Postgres).
+# Postgres local para desarrollo: haycancha_dev (la app) y haycancha_test (los tests).
+# Nunca se usa contra Supabase. Misma versión mayor que Supabase y con pgvector incluido
+# (btree_gist viene con Postgres). Los datos quedan en el volumen postgres-datos;
+# para empezar de cero: docker compose down -v
 services:
-  postgres-tests:
+  postgres:
     image: pgvector/pgvector:pg17
     environment:
       POSTGRES_USER: postgres
@@ -10,6 +12,13 @@ services:
     ports:
       - "5433:5432"
     volumes:
+      - postgres-datos:/var/lib/postgresql/data
       - ./docker/postgres-init:/docker-entrypoint-initdb.d:ro
-    tmpfs:
-      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  postgres-datos:

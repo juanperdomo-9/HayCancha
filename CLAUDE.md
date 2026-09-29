@@ -285,7 +285,7 @@ Hasta la puesta en línea, todo se desarrolla en local: la base es el Postgres d
 **Fase 0: base del proyecto**
 - [x] Estructura de carpetas, uv, Vite, ruff, pytest, `.env.example`
 - [x] Alembic con la migración de las extensiones `btree_gist` y `vector`
-- [ ] Postgres local con Docker andando y la migración aplicada (bloqueado: Docker Desktop no arranca)
+- [x] Postgres local con Docker andando y la migración aplicada
 - [x] Sistema de diseño en el frontend: marca HayCancha, tipografías, motor de tema por complejo y animaciones base
 - [x] Repo en GitHub con el primer commit (`github.com/juanperdomo-9/HayCancha`)
 
