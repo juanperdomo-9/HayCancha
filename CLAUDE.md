@@ -320,7 +320,7 @@ Hasta la puesta en línea, todo se desarrolla en local: la base es el Postgres d
 - [x] Rutas públicas por slug y cálculo de disponibilidad (el botón final dice "Pago online: muy pronto" hasta la fase 2)
 - [x] Página principal de HayCancha con el listado de complejos
 - [x] Login y panel del dueño: canchas, horarios, precios, marca, equipo
-- [ ] Agenda del día y de la semana, detalle de reserva, reservas cargadas a mano y bloqueos
+- [x] Agenda del día y de la semana, detalle de reserva, reservas cargadas a mano y bloqueos
 - [x] Panel de superadmin: alta de negocios, cobro y suspensión, y "Configurar" cada complejo
 - [x] Cargar un complejo de prueba como primer negocio, con varias canchas de fútbol 7, una de fútbol 5 y una de pádel (`app.cli cargar-ejemplo`, con usuarios de prueba solo locales en `app/ejemplo.py`)
 

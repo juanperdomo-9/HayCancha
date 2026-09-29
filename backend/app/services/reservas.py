@@ -133,7 +133,7 @@ def reservar(
             fin=turno.fin,
             estado=estado,
             precio=turno.precio,
-            sena=calcular_sena(negocio, turno.precio) if cobrar_sena else Decimal("0"),
+            sena=calcular_sena(negocio, turno.precio) if cobrar_sena else Decimal("0.00"),
             sena_en_efectivo=sena_en_efectivo,
             vence_a=vence_a,
             origen=origen,

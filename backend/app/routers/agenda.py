@@ -1,0 +1,339 @@
+"""Agenda del panel (/panel/{slug}/agenda y /reservas). La manejan el dueño y los empleados.
+
+Todo corre con la sesión del negocio (RLS) y filtra por negocio_id. Las reglas de que
+dos reservas no se pisen las pone la base: acá solo se traducen los errores.
+"""
+
+import uuid
+from datetime import date, timedelta
+
+from fastapi import APIRouter, HTTPException, status
+from sqlalchemy import select, update
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
+
+from app.db import sesion_de_negocio
+from app.dependencias import PanelActual
+from app.models import Cliente, Deporte, Negocio, Recurso, Reserva
+from app.schemas import agenda as esquemas
+from app.services.agenda import agenda_del_dia, minutos_para_pagar, resumen, saldo
+from app.services.disponibilidad import ahora, hoy_en_el_negocio, zona_del_negocio
+from app.services.reservas import (
+    EXCLUSION_VIOLATION,
+    DatosCliente,
+    TurnoInvalido,
+    TurnoNoDisponible,
+    reservar,
+    turno_de_la_cancha,
+)
+from app.services.sena import calcular_sena
+
+router = APIRouter(prefix="/panel/{slug}", tags=["agenda"])
+
+# Hasta dónde se puede mirar la agenda (para atrás, para ver lo que pasó).
+DIAS_PARA_ATRAS = 60
+DIAS_PARA_ADELANTE = 90
+
+
+def _validar_fecha(negocio: Negocio, fecha: date | None) -> date:
+    hoy = hoy_en_el_negocio(negocio)
+    fecha = fecha or hoy
+    if (
+        not hoy - timedelta(days=DIAS_PARA_ATRAS)
+        <= fecha
+        <= hoy + timedelta(days=DIAS_PARA_ADELANTE)
+    ):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Esa fecha está fuera de la agenda.")
+    return fecha
+
+
+def _hora(momento, negocio: Negocio) -> str:
+    return momento.astimezone(zona_del_negocio(negocio)).strftime("%H:%M")
+
+
+@router.get("/agenda")
+def ver_agenda(panel: PanelActual, fecha: date | None = None) -> esquemas.Agenda:
+    negocio = panel.negocio
+    fecha = _validar_fecha(negocio, fecha)
+    momento = ahora()
+    with sesion_de_negocio(negocio.id) as s:
+        canchas = agenda_del_dia(s, negocio, fecha)
+        total = resumen(canchas)
+        return esquemas.Agenda(
+            fecha=fecha,
+            hoy=hoy_en_el_negocio(negocio),
+            resumen=esquemas.Resumen(**vars(total)),
+            canchas=[
+                esquemas.CanchaEnAgenda(
+                    id=c.recurso.id,
+                    nombre=c.recurso.nombre,
+                    deporte=c.deporte.codigo,
+                    deporte_nombre=c.deporte.nombre,
+                    caracteristicas=c.recurso.caracteristicas,
+                    turnos=[
+                        esquemas.TurnoEnAgenda(
+                            inicio=t.turno.inicio,
+                            fin=t.turno.fin,
+                            hora=_hora(t.turno.inicio, negocio),
+                            hora_fin=_hora(t.turno.fin, negocio),
+                            precio=t.turno.precio,
+                            sena=calcular_sena(negocio, t.turno.precio),
+                            pasado=t.turno.fin <= momento,
+                            reserva=esquemas.ReservaEnAgenda(
+                                id=t.reserva.id,
+                                estado=t.reserva.estado,
+                                cliente=t.cliente.nombre if t.cliente else None,
+                                precio=t.reserva.precio,
+                                sena=t.reserva.sena,
+                                sena_en_efectivo=t.reserva.sena_en_efectivo,
+                                saldo=saldo(t.reserva),
+                                saldo_cobrado=t.reserva.saldo_cobrado,
+                                origen=t.reserva.origen,
+                                asistencia=t.reserva.asistencia,
+                                motivo_bloqueo=t.reserva.motivo_bloqueo,
+                                minutos_para_pagar=minutos_para_pagar(t.reserva),
+                            )
+                            if t.reserva
+                            else None,
+                        )
+                        for t in c.turnos
+                    ],
+                )
+                for c in canchas
+            ],
+        )
+
+
+@router.get("/semana")
+def ver_semana(panel: PanelActual, desde: date | None = None) -> list[esquemas.DiaDeLaSemana]:
+    negocio = panel.negocio
+    desde = _validar_fecha(negocio, desde)
+    dias = []
+    with sesion_de_negocio(negocio.id) as s:
+        for i in range(7):
+            fecha = desde + timedelta(days=i)
+            total = resumen(agenda_del_dia(s, negocio, fecha))
+            dias.append(
+                esquemas.DiaDeLaSemana(
+                    fecha=fecha,
+                    ocupados=total.ocupados,
+                    libres=total.libres,
+                    bloqueados=total.bloqueados,
+                )
+            )
+    return dias
+
+
+# --- Reservas ---
+
+
+def _buscar_reserva(s: Session, panel, reserva_id: uuid.UUID) -> Reserva:
+    reserva = s.scalar(
+        select(Reserva).where(Reserva.id == reserva_id, Reserva.negocio_id == panel.negocio_id)
+    )
+    if reserva is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "No encontramos esa reserva.")
+    return reserva
+
+
+def _detalle(s: Session, negocio: Negocio, reserva: Reserva) -> esquemas.ReservaDetalle:
+    recurso, deporte = s.execute(
+        select(Recurso, Deporte)
+        .join(Deporte, Deporte.id == Recurso.deporte_id)
+        .where(Recurso.id == reserva.recurso_id, Recurso.negocio_id == negocio.id)
+    ).one()
+    cliente = s.get(Cliente, reserva.cliente_id) if reserva.cliente_id else None
+    zona = zona_del_negocio(negocio)
+    return esquemas.ReservaDetalle(
+        id=reserva.id,
+        estado=reserva.estado,
+        cancha_id=recurso.id,
+        cancha=recurso.nombre,
+        deporte=deporte.codigo,
+        deporte_nombre=deporte.nombre,
+        fecha=reserva.inicio.astimezone(zona).date(),
+        inicio=reserva.inicio,
+        fin=reserva.fin,
+        hora=_hora(reserva.inicio, negocio),
+        hora_fin=_hora(reserva.fin, negocio),
+        precio=reserva.precio,
+        sena=reserva.sena,
+        sena_en_efectivo=reserva.sena_en_efectivo,
+        saldo=saldo(reserva),
+        saldo_cobrado=reserva.saldo_cobrado,
+        asistencia=reserva.asistencia,
+        origen=reserva.origen,
+        motivo_bloqueo=reserva.motivo_bloqueo,
+        minutos_para_pagar=minutos_para_pagar(reserva),
+        cliente=esquemas.Cliente(
+            nombre=cliente.nombre, telefono=cliente.telefono, email=cliente.email
+        )
+        if cliente
+        else None,
+        creado_a=reserva.creado_a,
+    )
+
+
+def _cancha(s: Session, panel, recurso_id: uuid.UUID) -> tuple[Recurso, Deporte]:
+    fila = s.execute(
+        select(Recurso, Deporte)
+        .join(Deporte, Deporte.id == Recurso.deporte_id)
+        .where(Recurso.id == recurso_id, Recurso.negocio_id == panel.negocio_id)
+    ).first()
+    if fila is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "No encontramos esa cancha.")
+    return fila
+
+
+@router.post("/reservas", status_code=status.HTTP_201_CREATED)
+def cargar_reserva(datos: esquemas.ReservaManual, panel: PanelActual) -> esquemas.ReservaDetalle:
+    """Reserva de alguien que llamó o vino. Nace confirmada y ocupa el turno para la web."""
+    with sesion_de_negocio(panel.negocio_id) as s:
+        _, deporte = _cancha(s, panel, datos.recurso_id)
+        try:
+            reserva = reservar(
+                s,
+                panel.negocio,
+                deporte_codigo=deporte.codigo,
+                recurso_id=datos.recurso_id,
+                inicio=datos.inicio,
+                cliente=DatosCliente(datos.nombre, datos.telefono, datos.email),
+                origen="panel",
+                estado="confirmada",
+                cobrar_sena=datos.sena_en_efectivo,
+                sena_en_efectivo=datos.sena_en_efectivo,
+                creado_por=panel.usuario.id,
+            )
+        except TurnoNoDisponible as error:
+            raise HTTPException(status.HTTP_409_CONFLICT, "Ese turno ya está ocupado.") from error
+        except (TurnoInvalido, ValueError) as error:
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(error)) from error
+        s.commit()
+        return _detalle(s, panel.negocio, reserva)
+
+
+@router.get("/reservas/{reserva_id}")
+def ver_reserva(reserva_id: uuid.UUID, panel: PanelActual) -> esquemas.ReservaDetalle:
+    with sesion_de_negocio(panel.negocio_id) as s:
+        return _detalle(s, panel.negocio, _buscar_reserva(s, panel, reserva_id))
+
+
+@router.patch("/reservas/{reserva_id}")
+def cambiar_reserva(
+    reserva_id: uuid.UUID, cambios: esquemas.CambiosDeReserva, panel: PanelActual
+) -> esquemas.ReservaDetalle:
+    """Marcar si vino o no vino, y si el saldo se cobró en la cancha."""
+    with sesion_de_negocio(panel.negocio_id) as s:
+        reserva = _buscar_reserva(s, panel, reserva_id)
+        if reserva.estado != "confirmada":
+            raise HTTPException(
+                status.HTTP_422_UNPROCESSABLE_CONTENT, "Solo se marcan las reservas confirmadas."
+            )
+        for campo, valor in cambios.model_dump(exclude_unset=True).items():
+            setattr(reserva, campo, valor)
+        s.commit()
+        return _detalle(s, panel.negocio, reserva)
+
+
+@router.post("/reservas/{reserva_id}/cancelar")
+def cancelar_reserva(reserva_id: uuid.UUID, panel: PanelActual) -> esquemas.ReservaDetalle:
+    """Cancela una reserva o levanta un bloqueo, con sus espejos de canchas combinadas.
+    La devolución de la seña pagada online llega con Mercado Pago (fase 2)."""
+    with sesion_de_negocio(panel.negocio_id) as s:
+        reserva = _buscar_reserva(s, panel, reserva_id)
+        if reserva.estado not in ("pendiente_pago", "confirmada", "bloqueada"):
+            raise HTTPException(
+                status.HTTP_422_UNPROCESSABLE_CONTENT, "Esa reserva ya no está activa."
+            )
+        reserva.estado = "cancelada"
+        s.execute(
+            update(Reserva)
+            .where(Reserva.negocio_id == panel.negocio_id, Reserva.reserva_origen_id == reserva.id)
+            .values(estado="cancelada")
+        )
+        s.commit()
+        return _detalle(s, panel.negocio, reserva)
+
+
+@router.post("/reservas/{reserva_id}/mover")
+def mover_reserva(
+    reserva_id: uuid.UUID, destino: esquemas.Movimiento, panel: PanelActual
+) -> esquemas.ReservaDetalle:
+    """A otra cancha del mismo deporte y/o a otro horario libre."""
+    with sesion_de_negocio(panel.negocio_id) as s:
+        reserva = _buscar_reserva(s, panel, reserva_id)
+        if reserva.estado not in ("pendiente_pago", "confirmada"):
+            raise HTTPException(
+                status.HTTP_422_UNPROCESSABLE_CONTENT, "Solo se mueven reservas activas."
+            )
+        _, deporte_actual = _cancha(s, panel, reserva.recurso_id)
+        cancha, deporte = _cancha(s, panel, destino.recurso_id)
+        if deporte.id != deporte_actual.id:
+            raise HTTPException(
+                status.HTTP_422_UNPROCESSABLE_CONTENT,
+                "Solo se puede mover a una cancha del mismo deporte.",
+            )
+        turno = turno_de_la_cancha(s, panel.negocio, cancha, destino.inicio)
+        if turno is None:
+            raise HTTPException(
+                status.HTTP_422_UNPROCESSABLE_CONTENT, "Ese horario no es un turno de esa cancha."
+            )
+        reserva.recurso_id, reserva.inicio, reserva.fin = cancha.id, turno.inicio, turno.fin
+        reserva.precio = turno.precio
+        try:
+            s.commit()
+        except IntegrityError as error:
+            if getattr(error.orig, "sqlstate", None) == EXCLUSION_VIOLATION:
+                raise HTTPException(
+                    status.HTTP_409_CONFLICT, "Ese turno ya está ocupado."
+                ) from error
+            raise
+        return _detalle(s, panel.negocio, reserva)
+
+
+# --- Bloqueos ---
+
+
+@router.post("/bloqueos")
+def bloquear(datos: esquemas.Bloqueo, panel: PanelActual) -> esquemas.ResultadoDeBloqueo:
+    """Cierra uno o varios turnos (torneo, lluvia, mantenimiento). Los que ya están
+    ocupados se saltean: se informan como omitidos."""
+    bloqueados = omitidos = 0
+    with sesion_de_negocio(panel.negocio_id) as s:
+        canchas = {
+            r.id: r
+            for r in s.scalars(
+                select(Recurso).where(
+                    Recurso.negocio_id == panel.negocio_id,
+                    Recurso.id.in_({t.recurso_id for t in datos.turnos}),
+                )
+            )
+        }
+        for pedido in datos.turnos:
+            cancha = canchas.get(pedido.recurso_id)
+            turno = turno_de_la_cancha(s, panel.negocio, cancha, pedido.inicio) if cancha else None
+            if turno is None:
+                omitidos += 1
+                continue
+            try:
+                with s.begin_nested():
+                    s.add(
+                        Reserva(
+                            negocio_id=panel.negocio_id,
+                            recurso_id=cancha.id,
+                            inicio=turno.inicio,
+                            fin=turno.fin,
+                            estado="bloqueada",
+                            motivo_bloqueo=datos.motivo,
+                            origen="panel",
+                            creado_por=panel.usuario.id,
+                        )
+                    )
+                    s.flush()
+                bloqueados += 1
+            except IntegrityError as error:
+                if getattr(error.orig, "sqlstate", None) != EXCLUSION_VIOLATION:
+                    raise
+                omitidos += 1
+        s.commit()
+    return esquemas.ResultadoDeBloqueo(bloqueados=bloqueados, omitidos=omitidos)
