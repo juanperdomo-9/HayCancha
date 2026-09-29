@@ -23,7 +23,7 @@ export function GrillaAgenda({ titulo, canchas, modoBloqueo, seleccionados, onEl
   const turnoDe = (cancha: CanchaEnAgenda, inicio: string) => cancha.turnos.find((t) => t.inicio === inicio)
 
   return (
-    <section className="grid gap-2.5">
+    <section className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-2.5">
       <h2 className="text-lg font-bold">{titulo}</h2>
       {filas.length === 0 ? (
         <p className="rounded-xl bg-cal px-4 py-3 text-sm text-gris ring-1 ring-linea">Este día no hay horarios cargados para estas canchas.</p>

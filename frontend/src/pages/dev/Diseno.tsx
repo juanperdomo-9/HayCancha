@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Link } from 'react-router'
 
 import { DibujoCancha } from '../../components/cancha/DibujoCancha'
+import { EstadoServidor } from '../../components/EstadoServidor'
 import { LogoHayCancha } from '../../components/marca/LogoHayCancha'
 import { FONDO_BASE, contraste, temaComplejo } from '../../theme/paleta'
 import { TemaComplejo } from '../../theme/TemaComplejo'
@@ -44,7 +45,10 @@ export default function Diseno() {
         <Link to="/" aria-label="HayCancha, inicio">
           <LogoHayCancha className="text-[27px]" />
         </Link>
-        <span className="text-sm text-gris">Sistema de diseño · solo en desarrollo</span>
+        <span className="flex items-center gap-3 text-sm text-gris">
+          Sistema de diseño · solo en desarrollo
+          <EstadoServidor />
+        </span>
       </header>
 
       <main className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)] gap-16 px-4 pt-6 pb-24 sm:px-8">

@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router'
+import { useParams } from 'react-router'
 
 import { ErrorApi } from '../../api/client'
 import { type ComplejoDetalle, useComplejo, useDisponibilidad } from '../../api/publico'
@@ -11,6 +11,7 @@ import { MapaComplejo } from '../../components/complejo/MapaComplejo'
 import { PortadaComplejo } from '../../components/complejo/PortadaComplejo'
 import { ReservaEnCurso } from '../../components/complejo/ReservaEnCurso'
 import { TiraDeFechas } from '../../components/complejo/TiraDeFechas'
+import { PieComplejo } from '../../components/PieDePagina'
 import { TemaComplejo } from '../../theme/TemaComplejo'
 import { DIAS_CORTOS, desdeIso, plata } from '../../utils/formato'
 import NoEncontrado from './NoEncontrado'
@@ -215,7 +216,7 @@ function PaginaComplejo({ complejo }: { complejo: ComplejoDetalle }) {
             Seña y cancelación
           </h3>
           <p className="mb-2 max-w-[46ch] text-tenue">
-            Para reservar pagás una seña de {textoSena(complejo)} con Mercado Pago. El resto lo pagás en la cancha.
+            Para reservar pagás una seña {complejo.sena_tipo === 'fija' ? `de ${plata(complejo.sena_valor)}` : `del ${Number(complejo.sena_valor)}% del turno`} con Mercado Pago. El resto lo pagás en la cancha.
           </p>
           <p className="max-w-[46ch] text-tenue">
             Si cancelás con más de {complejo.horas_cancelacion} horas de anticipación, te devolvemos la seña. Con menos, se pierde.
@@ -223,14 +224,7 @@ function PaginaComplejo({ complejo }: { complejo: ComplejoDetalle }) {
         </div>
       </section>
 
-      <footer className="bg-oscuro py-5.5 text-sm text-white/75">
-        <div className="mx-auto max-w-6xl px-4 sm:px-8">
-          Reservas online con{' '}
-          <Link to="/" className="font-bold text-white underline underline-offset-3">
-            HayCancha
-          </Link>
-        </div>
-      </footer>
+      <PieComplejo nombre={complejo.nombre} direccion={complejo.direccion} barrio={complejo.barrio} referencia={complejo.referencia} />
 
       {/* En el celular, la reserva sube como una hoja desde abajo. */}
       <AnimatePresence>

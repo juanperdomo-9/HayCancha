@@ -68,6 +68,17 @@
       scroll-behavior: smooth;
     }
   }
+  /* Quien pidió "reducir movimiento" en su sistema ve todo en su lugar, sin animaciones
+     (las de motion ya lo respetan con <MotionConfig reducedMotion="user">). */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
   body {
     @apply bg-crema text-noche antialiased;
   }

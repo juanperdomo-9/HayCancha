@@ -4,8 +4,8 @@ import { Link } from 'react-router'
 
 import { DibujoCancha } from '../../components/cancha/DibujoCancha'
 import { DirectorioComplejos } from '../../components/complejo/DirectorioComplejos'
-import { EstadoServidor } from '../../components/EstadoServidor'
 import { LogoHayCancha } from '../../components/marca/LogoHayCancha'
+import { PieHayCancha } from '../../components/PieDePagina'
 import { TemaComplejo } from '../../theme/TemaComplejo'
 
 const ENTRADA = [0.2, 0.8, 0.2, 1] as const
@@ -133,11 +133,7 @@ export default function Inicio() {
         </section>
       </main>
 
-      <footer className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-7 text-sm text-gris sm:px-8">
-        <LogoHayCancha className="text-xl" />
-        <span>haycancha.com.ar · Hecho en Buenos Aires</span>
-        {import.meta.env.DEV && <EstadoServidor />}
-      </footer>
+      <PieHayCancha />
     </div>
   )
 }

@@ -94,7 +94,7 @@ export default function Agenda() {
   const esHoy = datos && fecha === datos.hoy
 
   return (
-    <div className={`grid gap-5 ${modoBloqueo ? 'pb-40' : ''}`}>
+    <div className={`grid grid-cols-[minmax(0,1fr)] gap-5 ${modoBloqueo ? 'pb-40' : ''}`}>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="font-titulo text-[clamp(40px,6vw,60px)] leading-[.9] font-extrabold uppercase">Agenda</h1>
@@ -215,7 +215,7 @@ export default function Agenda() {
             <Aviso tipo="info">Tocá los turnos libres que querés cerrar (o "Todo el día" en una cancha) y poné el motivo abajo.</Aviso>
           )}
 
-          <div className={`grid gap-7 transition-opacity ${agenda.isPlaceholderData ? 'opacity-60' : ''}`}>
+          <div className={`grid grid-cols-[minmax(0,1fr)] gap-7 transition-opacity ${agenda.isPlaceholderData ? 'opacity-60' : ''}`}>
             {grupos.map((g) => (
               <GrillaAgenda
                 key={g.codigo}
