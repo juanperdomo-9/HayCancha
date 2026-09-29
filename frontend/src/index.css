@@ -1,0 +1,86 @@
+@import 'tailwindcss';
+
+/* Marca HayCancha: "Cal y césped". */
+@theme {
+  --color-crema: #f1e9d8;
+  --color-crema-oscuro: #e6dac2;
+  --color-cesped: #1e7a3e;
+  --color-cesped-claro: #57c986;
+  --color-noche: #14231a;
+  --color-cal: #f6f1e6;
+  --color-gris: #5a6157;
+  --color-linea: #d8ccb3;
+
+  /* Plantilla de los complejos: base neutra, el color del complejo es solo acento. */
+  --color-base: #f6f4ef;
+  --color-superficie: #ffffff;
+  --color-tinta: #16171a;
+  --color-tenue: #65686e;
+  --color-borde: #e3dfd6;
+  --color-oscuro: #121316;
+  --color-tiza: #f4f1ea;
+
+  --font-sans: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-titulo: 'Big Shoulders Display', 'Big Shoulders', 'Arial Narrow', Impact, sans-serif;
+  --font-numeros: 'Archivo', 'Arial Narrow', system-ui, sans-serif;
+
+  --animate-deriva: deriva 26s ease-in-out infinite alternate;
+
+  @keyframes deriva {
+    from {
+      transform: perspective(700px) rotateX(46deg) translateX(-2.5%);
+    }
+    to {
+      transform: perspective(700px) rotateX(46deg) translateX(2.5%);
+    }
+  }
+}
+
+/* Colores de cada complejo: los define <TemaComplejo> en tiempo de ejecución. */
+@theme inline {
+  --color-complejo: var(--complejo, #1e7a3e);
+  --color-complejo-sobre: var(--complejo-sobre, #ffffff);
+  --color-complejo-texto: var(--complejo-texto, #1e7a3e);
+  --color-complejo-suave: var(--complejo-suave, #e2efe6);
+  --color-complejo-linea: var(--complejo-linea, #9cc8ac);
+  --color-complejo-profundo: var(--complejo-profundo, #154a2d);
+  --color-complejo-franja: var(--complejo-franja, #185634);
+  --color-complejo-secundario: var(--complejo-secundario, #1e7a3e);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+  body {
+    @apply bg-crema text-noche antialiased;
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-cesped);
+    outline-offset: 2px;
+  }
+  .tema-complejo :focus-visible {
+    outline-color: var(--color-complejo-texto);
+  }
+  [id] {
+    scroll-margin-top: 24px;
+  }
+}
+
+@layer utilities {
+  /* Dibujo de cancha visto en perspectiva desde arriba. */
+  .perspectiva-cancha {
+    transform: perspective(700px) rotateX(46deg);
+    transform-origin: 50% 75%;
+  }
+  .numeros {
+    font-family: var(--font-numeros);
+    font-stretch: 78%;
+    font-variant-numeric: tabular-nums;
+  }
+}

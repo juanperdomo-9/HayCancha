@@ -1,0 +1,15 @@
+# Postgres local descartable para los tests. Nunca se usa contra Supabase.
+# Misma versión mayor que Supabase y con pgvector incluido (btree_gist viene con Postgres).
+services:
+  postgres-tests:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: haycancha_test
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./docker/postgres-init:/docker-entrypoint-initdb.d:ro
+    tmpfs:
+      - /var/lib/postgresql/data

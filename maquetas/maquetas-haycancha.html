@@ -1,0 +1,1133 @@
+<!doctype html>
+<html lang="es-AR">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Maquetas HayCancha</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400..700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500..900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anybody:ital,wdth,wght@0,50..150,100..900;1,50..150,100..900&display=swap">
+<style>
+/* Maqueta en un solo look claro: barra oscura de maqueta arriba y, debajo, la vista activa
+   (marca, página principal de HayCancha o página de un complejo con su propio tema). */
+:root{
+  color-scheme: light;
+  /* Maqueta (no es producto) */
+  --m-bg:#1B1915; --m-fg:#F2ECDF; --m-muted:#A39C8E; --m-line:#35312A;
+  --m-paper:#E8E3D9; --m-paper-ink:#1E1C18; --m-paper-muted:#6A655B;
+  /* Tipografías */
+  --f-archivo:"Archivo","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Instrument Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-shoulders:"Big Shoulders Display","Big Shoulders","Arial Narrow",Impact,sans-serif;
+  --f-anybody:"Anybody","Arial Narrow",system-ui,sans-serif;
+  /* Marca HayCancha (la reemplaza cada [data-marca]) */
+  --hc-bg:#F1E9D8; --hc-bg-2:#E6DAC2; --hc-ink:#14231A; --hc-muted:#5A6157; --hc-line:#D8CCB3;
+  --hc-accent:#1E7A3E; --hc-accent-ink:#FFFFFF; --hc-accent-text:#1E7A3E; --hc-accent-night:#57C986;
+  --hc-night:#14231A; --hc-chalk:#F6F1E6;
+  --hc-display:var(--f-shoulders); --hc-display-wght:800; --hc-display-stretch:100%;
+  --hc-display-case:uppercase; --hc-display-style:normal; --hc-display-track:.005em;
+  /* Plantilla de complejo: base neutra; el color del complejo es solo acento */
+  --t-bg:#F6F4EF; --t-surface:#FFFFFF; --t-ink:#16171A; --t-muted:#65686E; --t-line:#E3DFD6;
+  --t-night:#121316; --t-on-night:#FFFFFF; --t-on-night-muted:#C9CACD; --t-chalk:#F4F1EA;
+  --t-error:#B3261E; --t-warn:#C27803;
+  /* Color del complejo (lo calcula el script) */
+  --c:#1F8A4C; --c-ink:#FFFFFF; --c-text:#1F8A4C; --c-soft:#E2EFE6; --c-line:#9CC8AC; --c-deep:#154A2D; --c-stripe:#185634;
+}
+[data-marca="potrero"]{
+  --hc-bg:#F1E9D8; --hc-bg-2:#E6DAC2; --hc-ink:#14231A; --hc-muted:#5A6157; --hc-line:#D8CCB3;
+  --hc-accent:#1E7A3E; --hc-accent-ink:#FFFFFF; --hc-accent-text:#1E7A3E; --hc-accent-night:#57C986;
+  --hc-night:#14231A; --hc-chalk:#F6F1E6;
+  --hc-display:var(--f-shoulders); --hc-display-wght:800; --hc-display-stretch:100%;
+  --hc-display-case:uppercase; --hc-display-style:normal; --hc-display-track:.005em;
+}
+[data-marca="marcador"]{
+  --hc-bg:#EEE7D8; --hc-bg-2:#E1D7C2; --hc-ink:#111317; --hc-muted:#5D5E5B; --hc-line:#D5CAB3;
+  --hc-accent:#F2C014; --hc-accent-ink:#111317; --hc-accent-text:#7D6000; --hc-accent-night:#F2C014;
+  --hc-night:#111317; --hc-chalk:#F5F0E4;
+  --hc-display:var(--f-archivo); --hc-display-wght:850; --hc-display-stretch:62%;
+  --hc-display-case:none; --hc-display-style:normal; --hc-display-track:-.01em;
+}
+[data-marca="pique"]{
+  --hc-bg:#F2EBDE; --hc-bg-2:#E7DCC9; --hc-ink:#1A1936; --hc-muted:#5E5B70; --hc-line:#D6CBB8;
+  --hc-accent:#2E54F2; --hc-accent-ink:#FFFFFF; --hc-accent-text:#2E54F2; --hc-accent-night:#8EA2FF;
+  --hc-night:#1A1936; --hc-chalk:#F5F0E6;
+  --hc-display:var(--f-anybody); --hc-display-wght:850; --hc-display-stretch:78%;
+  --hc-display-case:none; --hc-display-style:italic; --hc-display-track:-.02em;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--m-paper);color:var(--m-paper-ink);font:16px/1.5 var(--f-body);-webkit-font-smoothing:antialiased}
+body[data-vista="inicio"]{background:var(--hc-bg)}
+body[data-vista="complejo"]{background:var(--t-bg)}
+button{font:inherit;color:inherit;cursor:pointer}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--m-bg);outline-offset:2px}
+.hc :focus-visible{outline-color:var(--hc-accent-text)}
+.tpl :focus-visible{outline-color:var(--c-text)}
+[id]{scroll-margin-top:110px}
+.wrap{width:100%;max-width:1200px;margin-inline:auto;padding-inline:clamp(16px,4vw,40px)}
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+
+/* ---------- Barra de maqueta ---------- */
+.meta{position:sticky;top:env(safe-area-inset-top,0px);z-index:60;background:var(--m-bg);color:var(--m-fg);font-size:13px;line-height:1.2}
+.meta-fila{display:flex;align-items:center;gap:14px;padding:8px clamp(16px,4vw,40px);overflow-x:auto;scrollbar-width:none}
+.meta-fila::-webkit-scrollbar{display:none}
+.meta-sub{border-top:1px solid var(--m-line);gap:8px}
+.meta-marca{font-weight:700;white-space:nowrap}
+.meta-marca span{color:var(--m-muted);font-weight:500}
+.meta-tabs{display:flex;gap:4px}
+.meta-tabs button{background:none;border:0;border-radius:999px;padding:7px 12px;color:var(--m-muted);white-space:nowrap}
+.meta-tabs button:hover{color:var(--m-fg)}
+.meta-tabs button[aria-current="page"]{background:var(--m-fg);color:var(--m-bg);font-weight:600}
+.meta-nota{margin-left:auto;color:var(--m-muted);white-space:nowrap}
+.meta-lbl{color:var(--m-muted);white-space:nowrap}
+.meta-chip{display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid var(--m-line);border-radius:999px;padding:5px 10px;color:var(--m-fg);white-space:nowrap}
+.meta-chip i{width:10px;height:10px;border-radius:50%;background:var(--chip)}
+.meta-chip[aria-pressed="true"]{border-color:var(--m-fg);background:var(--m-line)}
+.meta-color{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;color:var(--m-fg);border:1px dashed var(--m-muted);border-radius:999px;padding:3px 10px 3px 4px}
+.meta-color input{width:24px;height:24px;border:0;padding:0;background:none;cursor:pointer}
+.meta-quitar{background:none;border:0;color:var(--m-muted);text-decoration:underline;white-space:nowrap;padding:4px}
+
+/* ---------- Vista: marca ---------- */
+.marca-intro{padding-block:44px 28px;max-width:760px}
+.eyebrow{text-transform:uppercase;letter-spacing:.12em;font-size:12px;font-weight:600;margin:0;color:var(--m-paper-muted)}
+.marca-intro h1{font-family:var(--f-archivo);font-stretch:78%;font-weight:800;font-size:clamp(38px,6vw,64px);line-height:.95;margin:10px 0 14px;text-wrap:balance}
+.marca-intro p{margin:0;color:var(--m-paper-muted);max-width:60ch}
+.marca-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));gap:20px;padding-bottom:64px}
+.marca-card{background:var(--hc-bg);color:var(--hc-ink);border-radius:20px;overflow:hidden;display:flex;flex-direction:column;outline:3px solid transparent;outline-offset:4px;transition:outline-color .2s}
+.marca-card.elegida{outline-color:var(--m-paper-ink)}
+.mc-hero{display:grid;place-items:center;min-height:170px;padding:32px 20px;border-bottom:1px solid var(--hc-line)}
+.mc-hero .hc-logo-in svg{height:46px}
+.mc-hero .wm{font-size:clamp(38px,4.4vw,48px)}
+.mc-body{padding:22px 22px 24px;display:grid;gap:18px;flex:1}
+.mc-nombre{font-size:21px;font-weight:700;margin:0;display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.mc-nombre small{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--hc-accent-text)}
+.mc-desc{margin:-8px 0 0;color:var(--hc-muted);font-size:15px}
+.mc-sw{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.mc-sw div{display:grid;gap:3px;font-size:11.5px;min-width:0}
+.mc-sw i{display:block;aspect-ratio:1.25;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.mc-sw code{font-size:10.5px;color:var(--hc-muted);font-family:ui-monospace,Consolas,monospace}
+.mc-spec{background:var(--hc-night);color:var(--hc-chalk);border-radius:14px;padding:18px 18px 16px;display:grid;gap:8px}
+.mc-spec .hc-display{font-size:46px}
+.mc-spec p{margin:0;font-size:14px;opacity:.85}
+.mc-ticket{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1.5px dashed var(--hc-line);border-radius:12px;padding:10px 10px 10px 14px}
+.mc-ticket b{display:block;font-variant-numeric:tabular-nums}
+.mc-ticket span{font-size:13px;color:var(--hc-muted)}
+.mc-elegir{margin-top:auto;background:var(--hc-ink);color:var(--hc-bg);border:0;border-radius:999px;padding:13px 18px;font-weight:600}
+.marca-card.elegida .mc-elegir{background:transparent;color:var(--hc-ink);box-shadow:inset 0 0 0 1.5px var(--hc-ink)}
+
+/* ---------- Marca HayCancha: piezas comunes ---------- */
+.hc-display{font-family:var(--hc-display);font-weight:var(--hc-display-wght);font-stretch:var(--hc-display-stretch);text-transform:var(--hc-display-case);font-style:var(--hc-display-style);letter-spacing:var(--hc-display-track);line-height:.9}
+.hc-logo-in{display:inline-flex;align-items:center;gap:10px}
+.hc-logo-in svg{height:30px;width:auto;flex:none}
+.wm{font-family:var(--hc-display);font-weight:var(--hc-display-wght);font-stretch:var(--hc-display-stretch);text-transform:var(--hc-display-case);font-style:var(--hc-display-style);letter-spacing:var(--hc-display-track);font-size:27px;line-height:1;white-space:nowrap}
+.wm-a{color:var(--hc-accent-text)}
+.wm-punto{display:inline-block;width:.26em;height:.26em;background:var(--hc-accent);margin-left:.07em;border-radius:1px}
+.mk-f{fill:var(--hc-accent)} .mk-l{fill:none;stroke:var(--hc-chalk);stroke-width:2} .mk-i{fill:none;stroke:var(--hc-ink);stroke-width:3.2}
+.hc-night .mk-i{stroke:var(--hc-night)}
+.hc-night .wm{color:var(--hc-chalk)} .hc-night .wm-a{color:var(--hc-accent-night)}
+
+/* ---------- Vista: página principal ---------- */
+.hc{background:var(--hc-bg);color:var(--hc-ink)}
+.hc-top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:18px}
+.hc-home{background:none;border:0;padding:0;color:inherit}
+.hc-nav{display:flex;align-items:center;gap:4px}
+.hc-lnk{background:none;border:0;padding:8px 12px;font-weight:500;border-radius:999px}
+.hc-lnk:hover{background:var(--hc-bg-2)}
+@media (max-width:680px){.hc-lnk{display:none}}
+.hc-btn{display:inline-flex;align-items:center;gap:8px;background:var(--hc-ink);color:var(--hc-bg);border:0;border-radius:999px;padding:12px 20px;font-weight:600;text-decoration:none;transition:transform .15s}
+.hc-btn:hover{transform:translateY(-1px)}
+.hc-btn-acc{background:var(--hc-accent);color:var(--hc-accent-ink)}
+.hc-btn-line{background:transparent;color:var(--hc-ink);box-shadow:inset 0 0 0 1.5px var(--hc-ink)}
+.hc-btn-sm{padding:9px 16px;font-size:14px}
+.hc-hero{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:clamp(28px,5vw,64px);align-items:center;padding-block:clamp(20px,5vw,56px) clamp(48px,7vw,96px)}
+@media (max-width:920px){.hc-hero{grid-template-columns:minmax(0,1fr)}}
+.hc-hero-txt{min-width:0}
+.hc-eyebrow{text-transform:uppercase;letter-spacing:.12em;font-size:12px;font-weight:600;color:var(--hc-muted);margin:0 0 16px}
+.hc-h1{font-size:clamp(68px,12.5vw,176px);margin:0;text-wrap:balance}
+.hc-h1 .q{color:var(--hc-accent-text)}
+.hc-lead{font-size:clamp(17px,1.7vw,20px);margin:22px 0 28px;max-width:44ch;color:var(--hc-muted)}
+.hc-lead b{color:var(--hc-ink);font-weight:600}
+.hc-ctas{display:flex;flex-wrap:wrap;gap:10px}
+
+/* Tablero tipo cartel de estación */
+.hc-tablero{--celda:min(19px,calc((100vw - 32px - 36px - 48px) / 25));background:var(--hc-night);color:var(--hc-chalk);border-radius:16px;padding:18px;box-shadow:0 34px 70px -34px rgba(20,18,10,.55);min-width:0;justify-self:center;max-width:100%}
+.tb-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;font-size:12px;text-transform:uppercase;letter-spacing:.12em}
+.tb-head span:first-child{color:color-mix(in srgb,var(--hc-chalk) 70%,transparent)}
+.tb-vivo{display:inline-flex;align-items:center;gap:6px;color:var(--hc-accent-night);font-weight:600}
+.tb-vivo::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--hc-accent-night);animation:late 1.4s ease-in-out infinite}
+@keyframes late{50%{opacity:.25}}
+.tb-cols{display:flex;gap:2px;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb,var(--hc-chalk) 50%,transparent);margin-bottom:6px}
+.tb-cols span{flex:none}
+.tb-fila{display:flex;gap:2px;padding-block:4px}
+.cel{position:relative;flex:none;width:var(--celda);height:calc(var(--celda) * 1.45);display:inline-grid;place-items:center;background:color-mix(in srgb,var(--hc-chalk) 8%,transparent);border-radius:2px;font-family:var(--f-archivo);font-weight:700;font-stretch:80%;font-size:calc(var(--celda) * .92);line-height:1;text-transform:uppercase;transform-origin:50% 50%}
+.cel::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:color-mix(in srgb,var(--hc-night) 75%,transparent)}
+.cel.hueco{background:transparent}
+.cel.hueco::after{display:none}
+.cel.acc{color:var(--hc-accent-night)}
+.cel.flip{animation:flap .28s ease-in-out}
+@keyframes flap{0%{transform:rotateX(0)}50%{transform:rotateX(-90deg)}100%{transform:rotateX(0)}}
+.tb-pie{margin:12px 0 0;font-size:12px;color:color-mix(in srgb,var(--hc-chalk) 55%,transparent)}
+
+/* Directorio */
+.hc-dir{padding-block:clamp(40px,6vw,80px) clamp(56px,8vw,104px)}
+.hc-dir-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:18px;margin-bottom:26px}
+.hc-h2{font-size:clamp(42px,6.4vw,80px);margin:0;text-wrap:balance}
+.hc-filtros{display:flex;flex-wrap:wrap;gap:8px}
+.hc-chip{border:1.5px solid var(--hc-line);background:transparent;border-radius:999px;padding:7px 14px;font-size:14px;font-weight:500;color:var(--hc-ink)}
+.hc-chip:hover{border-color:var(--hc-ink)}
+.hc-chip[aria-pressed="true"]{background:var(--hc-ink);color:var(--hc-bg);border-color:var(--hc-ink)}
+.hc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:20px}
+.hc-card{display:flex;flex-direction:column;text-align:left;background:color-mix(in srgb,var(--hc-bg),#FFFFFF 55%);border:0;border-radius:18px;overflow:hidden;padding:0;color:var(--hc-ink);transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s;animation:sube .4s both;animation-delay:calc(var(--i,0) * 50ms)}
+.hc-card:hover{transform:translateY(-4px);box-shadow:0 22px 44px -26px rgba(30,25,10,.45)}
+.hc-card:hover .portada svg{transform:perspective(700px) rotateX(46deg) scale(1.06)}
+.hc-card .portada{aspect-ratio:16/8;max-width:100%}
+.hc-card-body{padding:0 18px 18px;display:grid;gap:6px}
+.hc-card-logo{width:62px;margin-top:-34px;position:relative;z-index:1}
+.hc-card-logo svg{width:62px;height:auto;display:block;filter:drop-shadow(0 6px 12px rgba(0,0,0,.25))}
+.hc-card-nombre{font-family:var(--f-archivo);font-weight:800;font-stretch:78%;font-size:26px;line-height:1.02;margin:4px 0 0}
+.hc-card-barrio{color:var(--hc-muted);font-size:14px}
+.hc-card-dep{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.hc-card-dep span{font-size:12.5px;border-radius:6px;padding:3px 8px;background:var(--hc-bg-2)}
+.hc-card-prox{margin-top:10px;padding-top:12px;border-top:1px solid var(--hc-line);display:flex;justify-content:space-between;gap:10px;font-size:14px;color:var(--hc-muted)}
+.hc-card-prox b{color:var(--hc-ink);font-variant-numeric:tabular-nums}
+.hc-vacio{grid-column:1/-1;color:var(--hc-muted);padding:24px 0}
+
+/* Para dueños */
+.hc-duenos{background:var(--hc-night);color:var(--hc-chalk);padding-block:clamp(56px,8vw,112px)}
+.hc-duenos-in{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:clamp(32px,5vw,72px);align-items:center}
+@media (max-width:920px){.hc-duenos-in{grid-template-columns:minmax(0,1fr)}}
+.hc-duenos .hc-eyebrow{color:color-mix(in srgb,var(--hc-chalk) 60%,transparent)}
+.hc-duenos .hc-h2{color:var(--hc-chalk)}
+.hc-feat{display:grid;gap:22px;margin:30px 0 34px;padding:0;list-style:none}
+.hc-feat li{display:grid;gap:4px}
+.hc-feat-k{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--hc-accent-night);font-weight:600}
+.hc-feat p{margin:0;color:color-mix(in srgb,var(--hc-chalk) 78%,transparent);max-width:46ch}
+.hc-feat b{color:var(--hc-chalk);font-size:18px;font-weight:600}
+.hc-duenos .hc-btn{background:var(--hc-accent);color:var(--hc-accent-ink)}
+.hc-agenda{background:var(--hc-bg);color:var(--hc-ink);border-radius:18px;padding:18px;min-width:0;box-shadow:0 30px 60px -30px rgba(0,0,0,.6)}
+.ag-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.ag-head b{font-size:17px}
+.ag-head span{font-size:13px;color:var(--hc-muted)}
+.ag-res-dia{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--hc-muted);margin-bottom:14px;font-variant-numeric:tabular-nums}
+.ag-res-dia b{color:var(--hc-ink)}
+.ag-scroll{overflow-x:auto}
+.ag-grid{display:grid;grid-template-columns:44px repeat(4,minmax(98px,1fr));gap:6px;min-width:460px}
+.ag-col{font-size:12px;font-weight:600;color:var(--hc-muted);padding-bottom:2px}
+.ag-h{font-variant-numeric:tabular-nums;font-size:13px;color:var(--hc-muted);padding-top:8px}
+.ag-c{border-radius:9px;padding:7px 8px;font-size:12px;line-height:1.25;min-height:56px;display:grid;align-content:start;gap:2px}
+.ag-c b{font-size:12.5px}
+.ag-c small{font-size:11px;opacity:.78}
+.ag-libre{box-shadow:inset 0 0 0 1.5px var(--hc-line);color:var(--hc-muted);place-content:center;text-align:center}
+.ag-res{background:var(--hc-ink);color:var(--hc-bg)}
+.ag-pend{background:color-mix(in srgb,var(--hc-accent) 20%,var(--hc-bg));box-shadow:inset 0 0 0 1.5px var(--hc-accent)}
+.ag-bloq{background:repeating-linear-gradient(135deg,var(--hc-bg-2) 0 6px,transparent 6px 12px);color:var(--hc-muted);box-shadow:inset 0 0 0 1px var(--hc-line)}
+.ag-ley{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;font-size:12px;color:var(--hc-muted)}
+.ag-ley i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.hc-foot{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;padding-block:28px;color:var(--hc-muted);font-size:14px}
+
+/* ---------- Portadas y logos de complejos ---------- */
+.portada{position:relative;overflow:hidden;background:var(--c-deep)}
+.portada svg{position:absolute;left:-10%;top:-28%;width:120%;height:150%;transform:perspective(700px) rotateX(46deg);transform-origin:50% 75%;transition:transform .6s cubic-bezier(.2,.8,.2,1)}
+.pf-a{fill:var(--c-deep)} .pf-b{fill:var(--c-stripe)}
+.pl{fill:none;stroke:var(--t-chalk);stroke-width:5;opacity:.85}
+.pl .red{stroke-width:3;stroke-dasharray:10 9}
+.pl .vidrio{stroke-width:2;opacity:.5}
+.pl .pto{fill:var(--t-chalk)}
+.lg-f{fill:var(--c);stroke:var(--t-chalk);stroke-width:3}
+.lg-l{fill:none;stroke:var(--c-ink);stroke-width:2;opacity:.35}
+.lg-t{fill:var(--c-ink);font-family:var(--f-archivo);font-weight:800;font-stretch:75%}
+
+/* ---------- Vista: página de un complejo ---------- */
+.tpl{background:var(--t-bg);color:var(--t-ink)}
+.t-top{background:var(--t-surface);border-bottom:1px solid var(--t-line)}
+.t-top-in{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:10px}
+.t-top-logo{display:flex;align-items:center;gap:10px;font-weight:700;min-width:0}
+.t-top-logo svg{width:32px;height:auto;flex:none}
+.t-top-logo span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t-link{background:none;border:0;padding:6px 0;font-size:14px;font-weight:600;color:var(--c-text);white-space:nowrap}
+.t-hero{position:relative;background:var(--t-night);color:var(--t-on-night);overflow:hidden;isolation:isolate}
+.t-hero .portada{position:absolute;inset:0;z-index:-1}
+.t-hero .portada svg{animation:deriva 26s ease-in-out infinite alternate}
+@keyframes deriva{from{transform:perspective(700px) rotateX(46deg) translateX(-2.5%)}to{transform:perspective(700px) rotateX(46deg) translateX(2.5%)}}
+.t-hero .portada::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,var(--t-night) 2%,color-mix(in srgb,var(--t-night) 60%,transparent) 50%,color-mix(in srgb,var(--t-night) 10%,transparent))}
+.t-hero-in{display:flex;align-items:flex-end;gap:clamp(16px,3vw,28px);flex-wrap:wrap;padding-block:clamp(120px,20vw,210px) clamp(24px,4vw,40px)}
+.t-hero-logo svg{width:clamp(76px,10vw,108px);height:auto;display:block;filter:drop-shadow(0 10px 24px rgba(0,0,0,.4));animation:entra .6s .1s both cubic-bezier(.2,.8,.2,1)}
+.t-hero-txt{min-width:0;flex:1 1 280px;animation:entra .6s .2s both cubic-bezier(.2,.8,.2,1)}
+@keyframes entra{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.t-nombre{font-family:var(--f-archivo);font-weight:800;font-stretch:70%;font-size:clamp(50px,8.4vw,108px);line-height:.86;margin:0;letter-spacing:-.01em;text-wrap:balance}
+.t-meta{margin:12px 0 0;color:var(--t-on-night-muted)}
+.t-dep{list-style:none;display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 0;padding:0}
+.t-dep li{font-size:13px;border:1px solid color-mix(in srgb,var(--t-on-night) 28%,transparent);border-radius:999px;padding:5px 12px;background:color-mix(in srgb,var(--t-on-night) 7%,transparent)}
+.t-dep li b{font-weight:600}
+.t-main{display:grid;grid-template-columns:minmax(0,1fr) 370px;gap:36px;padding-block:34px 56px;align-items:start}
+@media (max-width:920px){.t-main{grid-template-columns:minmax(0,1fr)}}
+.t-reservar{min-width:0}
+.t-sec-head h2{font-family:var(--f-archivo);font-stretch:76%;font-weight:800;font-size:clamp(32px,4vw,42px);line-height:1;margin:0}
+.t-sec-head p{margin:6px 0 0;color:var(--t-muted)}
+.t-tabs{display:flex;gap:8px;margin-top:22px;overflow-x:auto;scrollbar-width:none;padding:2px}
+.t-tab{flex:none;display:grid;text-align:left;gap:1px;border:1.5px solid var(--t-line);background:var(--t-surface);border-radius:12px;padding:10px 16px;min-width:136px;transition:border-color .2s,background .2s}
+.t-tab b{font-size:15.5px}
+.t-tab span{font-size:12.5px;color:var(--t-muted);font-variant-numeric:tabular-nums}
+.t-tab:hover{border-color:var(--c-line)}
+.t-tab[aria-pressed="true"]{border-color:var(--c);box-shadow:inset 0 0 0 1px var(--c);background:var(--c-soft)}
+.t-fechas{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x proximity;margin-top:14px;padding:2px 2px 6px;scrollbar-width:none}
+.t-fechas::-webkit-scrollbar,.t-tabs::-webkit-scrollbar{display:none}
+.t-fecha{flex:none;scroll-snap-align:start;width:60px;display:grid;justify-items:center;padding:8px 0 9px;border-radius:12px;border:1.5px solid var(--t-line);background:var(--t-surface);transition:background .2s,color .2s,border-color .2s}
+.t-fecha small{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--t-muted);font-weight:600}
+.t-fecha b{font-family:var(--f-archivo);font-stretch:80%;font-size:26px;font-weight:750;line-height:1.1;font-variant-numeric:tabular-nums}
+.t-fecha:hover{border-color:var(--t-ink)}
+.t-fecha[aria-pressed="true"]{background:var(--t-ink);color:var(--t-surface);border-color:var(--t-ink)}
+.t-fecha[aria-pressed="true"] small{color:inherit;opacity:.7}
+.t-leyenda{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;margin:20px 0 12px;font-size:13px;color:var(--t-muted)}
+.t-leyenda i{display:inline-block;width:16px;height:5px;border-radius:3px;margin-right:6px;vertical-align:2px}
+.t-turnos{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:10px}
+.t-turno{display:grid;gap:7px;text-align:left;padding:12px 12px 10px;border-radius:12px;border:1.5px solid var(--t-line);background:var(--t-surface);transition:transform .15s,border-color .15s,background .2s,color .2s;animation:sube .35s both;animation-delay:calc(var(--i) * 16ms)}
+@keyframes sube{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.t-turno:hover:not(:disabled){border-color:var(--c-line);transform:translateY(-2px)}
+.t-turno:active:not(:disabled){transform:scale(.96)}
+.tt-hora{font-family:var(--f-archivo);font-weight:750;font-stretch:80%;font-size:27px;line-height:1;font-variant-numeric:tabular-nums}
+.tt-pips{display:flex;gap:3px}
+.tt-pips i{flex:1;height:5px;border-radius:3px;background:var(--c)}
+.tt-pips i.x{background:var(--t-line)}
+.tt-libres{font-size:12.5px;color:var(--t-muted);font-weight:500}
+.t-turno.ultima .tt-libres{color:var(--c-text);font-weight:700}
+.t-turno:disabled{background:transparent;cursor:not-allowed;border-style:dashed}
+.t-turno:disabled .tt-hora{color:var(--t-muted);opacity:.55}
+.t-turno:disabled .tt-pips i{background:var(--t-line)}
+.t-turno[aria-pressed="true"]{background:var(--c);border-color:var(--c);color:var(--c-ink);transform:translateY(-2px);box-shadow:0 12px 24px -14px var(--c)}
+.t-turno[aria-pressed="true"] .tt-libres{color:var(--c-ink);opacity:.85}
+.t-turno[aria-pressed="true"] .tt-pips i{background:var(--c-ink)}
+.t-turno[aria-pressed="true"] .tt-pips i.x{background:color-mix(in srgb,var(--c-ink) 28%,transparent)}
+.t-sin{grid-column:1/-1;color:var(--t-muted);padding:18px;border:1.5px dashed var(--t-line);border-radius:12px;text-align:center}
+.t-canchas{margin-top:26px;animation:sube .35s both}
+.t-canchas h3{font-size:16px;margin:0 0 4px}
+.t-canchas p{margin:0 0 12px;font-size:14px;color:var(--t-muted)}
+.t-canchas-lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,190px),1fr));gap:8px}
+.t-cancha{text-align:left;border:1.5px solid var(--t-line);background:var(--t-surface);border-radius:11px;padding:10px 12px;display:grid;gap:1px;transition:border-color .2s,background .2s}
+.t-cancha span{font-size:12.5px;color:var(--t-muted)}
+.t-cancha:hover:not(:disabled){border-color:var(--c-line)}
+.t-cancha[aria-pressed="true"]{border-color:var(--c);background:var(--c-soft);box-shadow:inset 0 0 0 1px var(--c)}
+.t-cancha:disabled{opacity:.45;cursor:not-allowed}
+
+/* Resumen: columna fija en escritorio, hoja inferior en el celular */
+.t-resumen{position:sticky;top:calc(env(safe-area-inset-top,0px) + 120px);background:var(--t-surface);border:1px solid var(--t-line);border-radius:18px;padding:22px;box-shadow:0 24px 50px -32px rgba(20,20,25,.3)}
+.r-vacio b{display:block;font-size:17px;margin-bottom:4px}
+.r-vacio p{margin:0;color:var(--t-muted);font-size:15px}
+.r-vacio .r-reglas{margin-top:16px;padding-top:14px;border-top:1px solid var(--t-line);font-size:13.5px}
+.r-barra{display:none}
+.r-cab{display:flex;justify-content:space-between;align-items:center}
+.r-kicker{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--t-muted);font-weight:600;margin:0}
+.r-cerrar{display:none;background:var(--t-bg);border:0;border-radius:50%;width:34px;height:34px;font-size:20px;line-height:1}
+.r-hora{font-family:var(--f-archivo);font-stretch:74%;font-weight:800;font-size:48px;line-height:.95;margin:8px 0 2px;font-variant-numeric:tabular-nums}
+.r-cuando{margin:0;font-weight:600}
+.r-que{color:var(--t-muted);margin:2px 0 16px;font-size:14.5px}
+.r-plata{display:grid;gap:8px;padding:14px 0;border-block:1px solid var(--t-line);margin-bottom:16px;font-variant-numeric:tabular-nums}
+.r-plata div{display:flex;justify-content:space-between;gap:12px;font-size:15px}
+.r-plata span:first-child{color:var(--t-muted)}
+.r-plata .r-sena{font-weight:700;font-size:17px}
+.r-plata .r-sena span:first-child{color:var(--t-ink)}
+.r-plata .r-sena span:last-child{color:var(--c-text)}
+.r-form{display:grid;gap:12px}
+.campo{display:grid;gap:5px}
+.campo label{font-size:13px;font-weight:600}
+.campo input{font:inherit;font-size:16px;padding:11px 12px;border:1.5px solid var(--t-line);border-radius:10px;background:var(--t-bg);color:var(--t-ink);width:100%;transition:border-color .15s,box-shadow .15s}
+.campo input:focus{outline:none;border-color:var(--c);box-shadow:0 0 0 3px var(--c-soft)}
+.campo .err{color:var(--t-error);font-size:12.5px;margin:0}
+.campo.mal input{border-color:var(--t-error)}
+.r-pagar{margin-top:4px;background:var(--c);color:var(--c-ink);border:0;border-radius:12px;padding:15px 18px;font-weight:700;font-size:16px;transition:transform .15s,filter .15s}
+.r-pagar:hover{filter:brightness(1.06)}
+.r-pagar:active{transform:scale(.98)}
+.r-letra{font-size:12.5px;color:var(--t-muted);margin:0;text-align:center}
+.t-backdrop{position:fixed;inset:0;background:rgba(10,10,12,.5);z-index:44;animation:aparece .25s}
+@keyframes aparece{from{opacity:0}}
+@media (max-width:920px){
+  .t-resumen{position:fixed;left:0;right:0;bottom:0;top:auto;z-index:45;border-radius:20px 20px 0 0;border:0;padding:0;box-shadow:0 -14px 40px -18px rgba(0,0,0,.35);max-height:88vh;display:flex;flex-direction:column;transform:translateY(115%);transition:transform .38s cubic-bezier(.2,.8,.2,1)}
+  .t-resumen.visible{transform:none}
+  .r-vacio{display:none}
+  .r-barra{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px))}
+  .r-barra div{min-width:0}
+  .r-barra b{display:block;font-variant-numeric:tabular-nums}
+  .r-barra span{font-size:13px;color:var(--t-muted)}
+  .r-barra .r-pagar{margin:0;padding:12px 18px;flex:none}
+  .r-cuerpo{display:none;overflow-y:auto;padding:16px 16px calc(22px + env(safe-area-inset-bottom,0px))}
+  .t-resumen.abierta .r-cuerpo{display:block;animation:sube .3s both}
+  .t-resumen.abierta .r-barra{display:none}
+  .r-cerrar{display:block}
+  .tpl.con-barra .t-main{padding-bottom:120px}
+}
+.t-info{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:30px;padding-block:40px 60px;border-top:1px solid var(--t-line)}
+.t-info h3{font-family:var(--f-archivo);font-stretch:80%;font-weight:750;font-size:23px;margin:0 0 8px}
+.t-info p{margin:0 0 8px;color:var(--t-muted);max-width:46ch}
+.t-servicios{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:6px}
+.t-servicios li{background:var(--t-surface);border:1px solid var(--t-line);border-radius:999px;padding:5px 12px;font-size:13.5px}
+.t-foot{background:var(--t-night);color:var(--t-on-night-muted);font-size:14px;padding-block:22px}
+.t-foot button{background:none;border:0;padding:0;color:var(--t-on-night);font-weight:700;text-decoration:underline;text-underline-offset:3px}
+
+/* Estado de la reserva */
+.tpl.en-estado .t-hero,.tpl.en-estado .t-main,.tpl.en-estado .t-info{display:none}
+.t-estado{padding-block:clamp(28px,6vw,72px)}
+.e-card{max-width:560px;margin-inline:auto;background:var(--t-surface);border:1px solid var(--t-line);border-radius:22px;padding:clamp(22px,4vw,38px);text-align:center;box-shadow:0 30px 60px -40px rgba(20,20,25,.35)}
+.e-svg{width:128px;height:128px;margin:0 auto 10px;display:block;overflow:visible}
+.e-ring{fill:none;stroke:var(--c);stroke-width:2;opacity:0;transform-origin:60px 60px}
+.e-disco{fill:var(--c-soft);transform-origin:60px 60px;transition:fill .35s,transform .55s cubic-bezier(.3,1.7,.5,1)}
+.e-spin{fill:none;stroke:var(--c);stroke-width:4;stroke-linecap:round;stroke-dasharray:46 200;transform-origin:60px 60px;animation:gira 1s linear infinite}
+.e-check{fill:none;stroke:var(--c-ink);stroke-width:6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:60;stroke-dashoffset:60}
+.e-rayos line{stroke:var(--c);stroke-width:3;stroke-linecap:round;opacity:0}
+@keyframes gira{to{transform:rotate(360deg)}}
+.e-card[data-fase="confirmada"] .e-spin{display:none}
+.e-card[data-fase="confirmada"] .e-disco{fill:var(--c);transform:scale(1.3)}
+.e-card[data-fase="confirmada"] .e-check{animation:traza .45s .25s forwards}
+.e-card[data-fase="confirmada"] .e-r1{animation:onda 1.1s .1s ease-out}
+.e-card[data-fase="confirmada"] .e-r2{animation:onda 1.4s .28s ease-out}
+.e-card[data-fase="confirmada"] .e-rayos line{animation:rayo .75s .2s ease-out}
+@keyframes traza{to{stroke-dashoffset:0}}
+@keyframes onda{0%{opacity:.8;transform:scale(.7)}100%{opacity:0;transform:scale(1.6)}}
+@keyframes rayo{0%{opacity:1;transform:translate(0,0)}100%{opacity:0;transform:translate(var(--dx),var(--dy))}}
+.e-pill{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:6px 13px;font-size:13px;font-weight:600;background:var(--t-bg);border:1px solid var(--t-line);margin:0}
+.e-dot{width:8px;height:8px;border-radius:50%;background:var(--t-warn);animation:late 1.2s infinite}
+.e-card[data-fase="confirmada"] .e-dot{background:var(--c);animation:none}
+.e-titulo{font-family:var(--f-archivo);font-stretch:74%;font-weight:800;font-size:clamp(34px,5vw,46px);line-height:.98;margin:14px 0 10px;text-wrap:balance}
+.e-sub{color:var(--t-muted);margin:0 auto 22px;max-width:42ch}
+.e-sub b{color:var(--t-ink);font-variant-numeric:tabular-nums}
+.e-detalle{display:grid;grid-template-columns:auto minmax(0,1fr);gap:9px 16px;text-align:left;border-block:1px solid var(--t-line);padding:16px 0;margin:0 0 16px}
+.e-detalle dt{color:var(--t-muted);font-size:14px}
+.e-detalle dd{margin:0;font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+.e-nota{font-size:14px;color:var(--t-muted);margin:0 0 18px}
+.e-acciones{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.e-btn{background:var(--t-ink);color:var(--t-surface);border:0;border-radius:12px;padding:13px 18px;font-weight:600}
+.e-btn-line{background:transparent;color:var(--t-ink);border:1.5px solid var(--t-line);border-radius:12px;padding:12px 18px;font-weight:600}
+.e-sim{font-size:12px;color:var(--t-muted);margin:18px 0 0}
+
+/* Aviso de maqueta */
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:80;background:var(--m-bg);color:var(--m-fg);padding:12px 18px;border-radius:12px;font-size:14px;max-width:calc(100% - 32px);box-shadow:0 12px 30px -10px rgba(0,0,0,.5);animation:sube .25s both}
+</style>
+
+<nav class="meta" aria-label="Maquetas">
+  <div class="meta-fila">
+    <span class="meta-marca">HayCancha <span>· maquetas</span></span>
+    <div class="meta-tabs">
+      <button type="button" data-vista="marca">Marca</button>
+      <button type="button" data-vista="inicio">Página principal</button>
+      <button type="button" data-vista="complejo">Página de un complejo</button>
+    </div>
+    <span class="meta-nota">Datos de ejemplo</span>
+  </div>
+  <div class="meta-fila meta-sub" id="meta-complejo" hidden>
+    <span class="meta-lbl">Probá con:</span>
+    <div id="meta-complejos" style="display:flex;gap:6px"></div>
+    <label class="meta-color" for="color-libre"><input type="color" id="color-libre" value="#1F8A4C"> Cualquier color</label>
+    <button type="button" class="meta-quitar" id="color-quitar" hidden>Volver al color original</button>
+  </div>
+</nav>
+
+<!-- Vista 1: propuestas de marca -->
+<section id="vista-marca" class="vista">
+  <div class="wrap">
+    <header class="marca-intro">
+      <p class="eyebrow">Marca HayCancha</p>
+      <h1>Tres caminos para la marca, los tres sobre crema</h1>
+      <p>Elegí uno y mirá cómo queda la página principal. Esto es solo la marca de HayCancha: la página de cada complejo usa su propio logo y sus colores.</p>
+    </header>
+    <div class="marca-grid" id="marca-grid"></div>
+  </div>
+</section>
+
+<!-- Vista 2: página principal -->
+<section id="vista-inicio" class="vista hc" data-marca="potrero" hidden>
+  <header class="wrap hc-top">
+    <button type="button" class="hc-home" data-scroll="vista-inicio" aria-label="HayCancha, inicio" id="hc-logo-top"></button>
+    <nav class="hc-nav" aria-label="Principal">
+      <button type="button" class="hc-lnk" data-scroll="complejos">Complejos</button>
+      <button type="button" class="hc-lnk" data-scroll="duenos">Para dueños</button>
+      <button type="button" class="hc-btn hc-btn-line hc-btn-sm" data-toast="En la versión real, acá entra cada dueño a su panel.">Ingresar</button>
+    </nav>
+  </header>
+  <div class="wrap hc-hero">
+    <div class="hc-hero-txt">
+      <p class="hc-eyebrow">Canchas en Buenos Aires</p>
+      <h1 class="hc-display hc-h1"><span class="q">¿</span>Hay cancha<span class="q">?</span></h1>
+      <p class="hc-lead">Mirá qué canchas están libres de verdad, <b>pagá la seña con Mercado Pago</b> y el turno queda tuyo. Sin esperar que alguien te conteste un mensaje.</p>
+      <div class="hc-ctas">
+        <button type="button" class="hc-btn hc-btn-acc" data-scroll="complejos">Buscar cancha</button>
+        <button type="button" class="hc-btn hc-btn-line" data-scroll="duenos">Tengo un complejo</button>
+      </div>
+    </div>
+    <div class="hc-tablero" role="img" aria-label="Tablero con turnos libres en distintos complejos (ejemplo)">
+      <div class="tb-head"><span>Turnos libres</span><span class="tb-vivo">Ahora</span></div>
+      <div class="tb-cols" id="tb-cols"></div>
+      <div id="tb-filas"></div>
+      <p class="tb-pie">L = canchas libres a esa hora</p>
+    </div>
+  </div>
+  <section id="complejos" class="wrap hc-dir" aria-labelledby="complejos-h">
+    <div class="hc-dir-head">
+      <h2 class="hc-display hc-h2" id="complejos-h">Complejos</h2>
+      <div class="hc-filtros" id="hc-filtros" aria-label="Filtrar por deporte"></div>
+    </div>
+    <div class="hc-grid" id="hc-grid"></div>
+  </section>
+  <section id="duenos" class="hc-duenos" aria-labelledby="duenos-h">
+    <div class="wrap hc-duenos-in">
+      <div>
+        <p class="hc-eyebrow">Para dueños de complejos</p>
+        <h2 class="hc-display hc-h2" id="duenos-h">Tu agenda se llena sola</h2>
+        <ul class="hc-feat">
+          <li><span class="hc-feat-k">haycancha.com.ar/tu-complejo</span><b>Tu página, con tu logo y tus colores</b><p>Tus jugadores ven los horarios libres y reservan desde el celular, a cualquier hora.</p></li>
+          <li><span class="hc-feat-k">Seña con Mercado Pago</span><b>La plata entra directo a tu cuenta</b><p>El turno se confirma solo cuando el pago se acredita. Si no pagan en 10 minutos, el horario se libera.</p></li>
+          <li><span class="hc-feat-k">Agenda en el celular</span><b>Web, teléfono y bloqueos en la misma grilla</b><p>Cargás a mano las reservas que te piden por teléfono y nunca se pisan con las de la web.</p></li>
+        </ul>
+        <button type="button" class="hc-btn" data-toast="En la versión real, acá va el formulario para sumar tu complejo.">Sumar mi complejo</button>
+      </div>
+      <div class="hc-agenda" id="hc-agenda"></div>
+    </div>
+  </section>
+  <footer class="wrap hc-foot">
+    <span id="hc-logo-pie"></span>
+    <span>haycancha.com.ar · Hecho en Buenos Aires</span>
+  </footer>
+</section>
+
+<!-- Vista 3: página de un complejo -->
+<section id="vista-complejo" class="vista" hidden>
+  <div class="tpl" id="tpl"></div>
+</section>
+
+<script>
+(() => {
+'use strict';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const reducir = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const ARS = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 });
+const plata = n => ARS.format(n);
+const DIAS = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
+const DIAS_LARGO = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+const leer = k => { try { return localStorage.getItem(k); } catch { return null; } };
+const guardar = (k, v) => { try { localStorage.setItem(k, v); } catch { /* sin almacenamiento */ } };
+const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+
+/* ---------- Datos de ejemplo ---------- */
+const K = (n, c) => ({ n, c });
+const COMPLEJOS = [
+  { slug: 'el-potrero', nombre: 'El Potrero', corto: 'POTRERO', barrio: 'Villa Urquiza', direccion: 'Av. Triunvirato 4820', color: '#1F8A4C', iniciales: 'EP', forma: 'escudo',
+    horario: 'Todos los días de 9 a 24 h', servicios: ['Vestuarios con duchas', 'Estacionamiento', 'Bufé', 'Parrilla', 'Pecheras'],
+    sena: { tipo: 'porcentaje', valor: 30 }, cancelacion: 24, minutos: 10,
+    deportes: [
+      { codigo: 'futbol7', nombre: 'Fútbol 7', corto: 'F7', dur: 60, precio: 78000, desde: 9, hasta: 24, canchas: [K('Cancha 1', 'Sintético'), K('Cancha 2', 'Sintético'), K('Cancha 3', 'Sintético, techada'), K('Cancha 4', 'Sintético, techada')] },
+      { codigo: 'futbol5', nombre: 'Fútbol 5', corto: 'F5', dur: 60, precio: 52000, desde: 9, hasta: 24, canchas: [K('Cancha 5', 'Sintético')] },
+      { codigo: 'padel', nombre: 'Pádel', corto: 'PÁD', dur: 90, precio: 36000, desde: 8, hasta: 24, canchas: [K('Pádel 1', 'Blindex, techada')] } ] },
+  { slug: 'padel-norte', nombre: 'Pádel Norte', corto: 'PÁDEL NORTE', barrio: 'Vicente López', direccion: 'Av. Maipú 2150', color: '#2447D8', iniciales: 'PN', forma: 'circulo',
+    horario: 'Todos los días de 8 a 24 h', servicios: ['Vestuarios', 'Alquiler de paletas', 'Venta de pelotas', 'Cafetería'],
+    sena: { tipo: 'fija', valor: 10000 }, cancelacion: 12, minutos: 10,
+    deportes: [
+      { codigo: 'padel', nombre: 'Pádel', corto: 'PÁD', dur: 90, precio: 38000, desde: 8, hasta: 24, canchas: [K('Pádel 1', 'Blindex, techada'), K('Pádel 2', 'Blindex, techada'), K('Pádel 3', 'Blindex, techada'), K('Pádel 4', 'Blindex'), K('Pádel 5', 'Muro')] } ] },
+  { slug: 'solar', nombre: 'Solar Fútbol & Pádel', corto: 'SOLAR', barrio: 'Caballito', direccion: 'Río de Janeiro 950', color: '#F2C200', iniciales: 'S', forma: 'cuadrado',
+    horario: 'Todos los días de 10 a 24 h', servicios: ['Vestuarios', 'Bufé', 'Wi-Fi', 'Bicicletero'],
+    sena: { tipo: 'fija', valor: 15000 }, cancelacion: 24, minutos: 10,
+    deportes: [
+      { codigo: 'futbol5', nombre: 'Fútbol 5', corto: 'F5', dur: 60, precio: 50000, desde: 10, hasta: 24, canchas: [K('Cancha A', 'Sintético'), K('Cancha B', 'Sintético'), K('Cancha C', 'Sintético, techada')] },
+      { codigo: 'padel', nombre: 'Pádel', corto: 'PÁD', dur: 90, precio: 34000, desde: 10, hasta: 24, canchas: [K('Pádel 1', 'Blindex'), K('Pádel 2', 'Blindex')] } ] },
+  { slug: 'tenis-del-parque', nombre: 'Tenis del Parque', corto: 'TENIS PARQUE', barrio: 'Palermo', direccion: 'Av. Figueroa Alcorta 3900', color: '#C4552B', iniciales: 'TP', forma: 'circulo',
+    horario: 'Todos los días de 7 a 23 h', servicios: ['Vestuarios', 'Profesores', 'Encordado', 'Cafetería'],
+    sena: { tipo: 'porcentaje', valor: 50 }, cancelacion: 24, minutos: 10,
+    deportes: [
+      { codigo: 'tenis', nombre: 'Tenis', corto: 'TEN', dur: 60, precio: 32000, desde: 7, hasta: 23, canchas: [K('Cancha 1', 'Polvo de ladrillo'), K('Cancha 2', 'Polvo de ladrillo'), K('Cancha 3', 'Polvo de ladrillo'), K('Cancha 4', 'Cemento')] } ] },
+  { slug: 'distrito-basquet', nombre: 'Distrito Básquet', corto: 'DISTRITO', barrio: 'Chacarita', direccion: 'Av. Dorrego 1100', color: '#7B3FE4', iniciales: 'DB', forma: 'cuadrado',
+    horario: 'Lunes a sábado de 10 a 23 h', servicios: ['Vestuarios', 'Pelotas incluidas', 'Tablero electrónico'],
+    sena: { tipo: 'fija', valor: 12000 }, cancelacion: 24, minutos: 10,
+    deportes: [
+      { codigo: 'basquet', nombre: 'Básquet', corto: 'BÁSQ', dur: 60, precio: 45000, desde: 10, hasta: 23, canchas: [K('Cancha 1', 'Parquet, techada'), K('Cancha 2', 'Parquet, techada')] },
+      { codigo: 'voley', nombre: 'Vóley', corto: 'VÓL', dur: 60, precio: 40000, desde: 10, hasta: 23, canchas: [K('Cancha de vóley', 'Techada')] } ] },
+  { slug: 'garage-futbol-5', nombre: 'Garage Fútbol 5', corto: 'GARAGE', barrio: 'Almagro', direccion: 'Bulnes 780', color: '#D42A3C', iniciales: 'G5', forma: 'escudo',
+    horario: 'Todos los días de 12 a 24 h', servicios: ['Vestuarios', 'Bufé', 'Pantalla para ver partidos'],
+    sena: { tipo: 'porcentaje', valor: 30 }, cancelacion: 24, minutos: 10,
+    deportes: [
+      { codigo: 'futbol5', nombre: 'Fútbol 5', corto: 'F5', dur: 60, precio: 50000, desde: 12, hasta: 24, canchas: [K('Cancha 1', 'Sintético, techada'), K('Cancha 2', 'Sintético, techada'), K('Cancha 3', 'Sintético')] } ] },
+];
+const POR_SLUG = Object.fromEntries(COMPLEJOS.map(c => [c.slug, c]));
+
+const MARCAS = [
+  { id: 'potrero', nombre: 'Cal y césped', desc: 'Verde de cancha y líneas de cal, con letras de cartel de estadio. La más futbolera: de barrio, pero prolija.',
+    colores: [['Crema', '#F1E9D8'], ['Césped', '#1E7A3E'], ['Noche', '#14231A'], ['Cal', '#F6F1E6']] },
+  { id: 'marcador', nombre: 'Tablero', desc: 'Amarillo de tarjeta y negro de marcador electrónico. Letras altas y apretadas. La más directa y la que más se ve de lejos.',
+    colores: [['Crema', '#EEE7D8'], ['Tarjeta', '#F2C014'], ['Marcador', '#111317'], ['Tiza', '#F5F0E4']] },
+  { id: 'pique', nombre: 'Pique', desc: 'Azul eléctrico y letra inclinada, con movimiento. No es solo futbolera: le queda bien al pádel, al tenis y al básquet.',
+    colores: [['Crema', '#F2EBDE'], ['Eléctrico', '#2E54F2'], ['Tinta', '#1A1936'], ['Tiza', '#F5F0E6']] },
+];
+
+/* ---------- Estado ---------- */
+const estado = {
+  vista: 'marca',
+  marca: leer('hc-marca') || 'potrero',
+  complejo: 'el-potrero',
+  colorLibre: null,
+  deporte: 0, fecha: 0, turno: null, cancha: null,
+  form: { nombre: '', telefono: '', email: '' },
+  errores: {},
+  hechas: [],
+  filtro: 'todos',
+};
+if (!MARCAS.some(m => m.id === estado.marca)) estado.marca = 'potrero';
+
+/* ---------- Colores: tema de cada complejo ---------- */
+const hexRgb = h => { h = h.replace('#', ''); return [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16)); };
+const rgbHex = a => '#' + a.map(v => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0')).join('');
+const lum = h => hexRgb(h).map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; })
+  .reduce((a, v, i) => a + v * [0.2126, 0.7152, 0.0722][i], 0);
+const contraste = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+const mezclar = (a, b, t) => { const A = hexRgb(a), B = hexRgb(b); return rgbHex(A.map((v, i) => v + (B[i] - v) * t)); };
+
+// Con cualquier color que elija el complejo: texto encima legible, versión oscura para textos
+// sobre fondo claro y tonos suaves para fondos.
+function tema(color) {
+  const fondo = '#F6F4EF';
+  const ink = contraste(color, '#FFFFFF') >= contraste(color, '#15161A') ? '#FFFFFF' : '#15161A';
+  let texto = color, t = 0;
+  while (contraste(texto, fondo) < 4.5 && t < 0.9) { t += 0.05; texto = mezclar(color, '#000000', t); }
+  return {
+    '--c': color, '--c-ink': ink, '--c-text': texto,
+    '--c-soft': mezclar(color, fondo, 0.86), '--c-line': mezclar(color, fondo, 0.55),
+    '--c-deep': mezclar(color, '#0B0C0E', 0.52), '--c-stripe': mezclar(color, '#0B0C0E', 0.4),
+  };
+}
+const estiloTema = color => Object.entries(tema(color)).map(([k, v]) => `${k}:${v}`).join(';');
+const aplicarTema = (el, color) => { for (const [k, v] of Object.entries(tema(color))) el.style.setProperty(k, v); };
+
+/* ---------- Dibujos ---------- */
+const LINEAS = {
+  futbol: '<rect x="90" y="60" width="1020" height="480"/><line x1="600" y1="60" x2="600" y2="540"/><circle cx="600" cy="300" r="78"/><circle class="pto" cx="600" cy="300" r="6"/><rect x="90" y="160" width="170" height="280"/><rect x="90" y="230" width="60" height="140"/><rect x="940" y="160" width="170" height="280"/><rect x="1050" y="230" width="60" height="140"/><path d="M260 245 A 70 70 0 0 1 260 355"/><path d="M940 245 A 70 70 0 0 0 940 355"/>',
+  padel: '<rect class="vidrio" x="120" y="60" width="960" height="480"/><rect x="160" y="100" width="880" height="400"/><line class="red" x1="600" y1="80" x2="600" y2="520"/><line x1="294" y1="100" x2="294" y2="500"/><line x1="906" y1="100" x2="906" y2="500"/><line x1="294" y1="300" x2="906" y2="300"/>',
+  tenis: '<rect x="160" y="97" width="880" height="406"/><line x1="160" y1="148" x2="1040" y2="148"/><line x1="160" y1="452" x2="1040" y2="452"/><line x1="363" y1="148" x2="363" y2="452"/><line x1="837" y1="148" x2="837" y2="452"/><line x1="363" y1="300" x2="837" y2="300"/><line class="red" x1="600" y1="80" x2="600" y2="520"/>',
+  basquet: '<rect x="120" y="70" width="960" height="460"/><line x1="600" y1="70" x2="600" y2="530"/><circle cx="600" cy="300" r="70"/><rect x="120" y="230" width="220" height="140"/><circle cx="340" cy="300" r="70"/><rect x="860" y="230" width="220" height="140"/><circle cx="860" cy="300" r="70"/><path d="M120 110 L200 110 A 250 250 0 0 1 200 490 L120 490"/><path d="M1080 110 L1000 110 A 250 250 0 0 0 1000 490 L1080 490"/>',
+  voley: '<rect x="240" y="120" width="720" height="360"/><line class="red" x1="600" y1="90" x2="600" y2="510"/><line x1="480" y1="120" x2="480" y2="480"/><line x1="720" y1="120" x2="720" y2="480"/>',
+};
+const grupo = codigo => codigo.startsWith('futbol') ? 'futbol' : codigo;
+function portada(codigo) {
+  let franjas = '';
+  for (let i = 0; i < 14; i++) franjas += `<rect class="${i % 2 ? 'pf-a' : 'pf-b'}" x="${i * 100 - 100}" y="-60" width="100" height="720"/>`;
+  return `<svg viewBox="0 0 1200 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">${franjas}<g class="pl">${LINEAS[grupo(codigo)] || LINEAS.futbol}</g></svg>`;
+}
+function logoComplejo(c) {
+  const forma = {
+    escudo: '<path class="lg-f" d="M40 3 L74 13 V40 C74 60 60 72 40 79 C20 72 6 60 6 40 V13 Z"/><path class="lg-l" d="M14 20 H66"/>',
+    circulo: '<circle class="lg-f" cx="40" cy="41" r="37"/><circle class="lg-l" cx="40" cy="41" r="30"/>',
+    cuadrado: '<rect class="lg-f" x="4" y="5" width="72" height="72" rx="20"/><path class="lg-l" d="M4 41 H76"/>',
+  }[c.forma];
+  const tam = c.iniciales.length > 1 ? 31 : 42;
+  const y = c.forma === 'escudo' ? 52 : 41 + tam * 0.36;
+  return `<svg viewBox="0 0 80 82" role="img" aria-label="Logo de ${esc(c.nombre)}">${forma}<text class="lg-t" x="40" y="${y}" text-anchor="middle" style="font-size:${tam}px">${esc(c.iniciales)}</text></svg>`;
+}
+function marcaSVG(id) {
+  if (id === 'potrero') return '<svg viewBox="0 0 48 32" aria-hidden="true"><rect class="mk-f" x="1" y="1" width="46" height="30" rx="6"/><g class="mk-l"><rect x="6" y="6" width="36" height="20" rx="1"/><line x1="24" y1="6" x2="24" y2="26"/><circle cx="24" cy="16" r="4.5"/></g></svg>';
+  if (id === 'marcador') return '<svg viewBox="0 0 26 34" aria-hidden="true"><rect class="mk-f" x="1" y="1" width="24" height="32" rx="3" transform="rotate(-8 13 17)"/><g class="mk-i" transform="rotate(-8 13 17)"><line x1="8" y1="9" x2="8" y2="25"/><line x1="18" y1="9" x2="18" y2="25"/><line x1="8" y1="17" x2="18" y2="17"/></g></svg>';
+  return '<svg viewBox="0 0 40 32" aria-hidden="true"><g class="mk-f"><rect x="0" y="9" width="8" height="3" rx="1.5" opacity=".45"/><rect x="2" y="15" width="10" height="3" rx="1.5" opacity=".7"/><rect x="0" y="21" width="8" height="3" rx="1.5" opacity=".45"/><circle cx="25" cy="16" r="15"/></g><g class="mk-l"><path d="M25 1 V31"/><circle cx="25" cy="16" r="5.5"/></g></svg>';
+}
+function wordmark(id) {
+  if (id === 'potrero') return '<span class="wm"><span class="wm-a">Hay</span>cancha</span>';
+  if (id === 'marcador') return '<span class="wm">haycancha<span class="wm-punto"></span></span>';
+  return '<span class="wm">hay<span class="wm-a">cancha</span></span>';
+}
+const logoHC = id => `<span class="hc-logo-in">${marcaSVG(id)}${wordmark(id)}</span>`;
+
+/* ---------- Turnos de ejemplo (siempre los mismos para el mismo día) ---------- */
+function hash(s) { let h = 2166136261; for (const ch of s) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+function rng(seed) { let s = seed || 1; return () => { s ^= s << 13; s >>>= 0; s ^= s >>> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; }; }
+const hoy = (() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; })();
+const dia = i => { const d = new Date(hoy); d.setDate(d.getDate() + i); return d; };
+const hhmm = m => `${String(Math.floor(m / 60) % 24).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+const claveDia = d => `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+
+function turnos(c, d, fecha) {
+  const r = rng(hash(c.slug + d.codigo + claveDia(fecha)));
+  const finde = [0, 5, 6].includes(fecha.getDay());
+  const ahora = new Date();
+  const out = [];
+  for (let m = d.desde * 60; m + d.dur <= d.hasta * 60; m += d.dur) {
+    const h = m / 60;
+    let pico = h >= 19 && h < 23 ? 0.7 : h >= 17 ? 0.42 : 0.16;
+    if (finde) pico = Math.min(0.9, pico + 0.12);
+    const ocupadas = [];
+    d.canchas.forEach((_, i) => { if (r() < pico) ocupadas.push(i); });
+    for (const x of estado.hechas) {
+      if (x.slug === c.slug && x.codigo === d.codigo && x.dia === claveDia(fecha) && x.m === m && !ocupadas.includes(x.cancha)) ocupadas.push(x.cancha);
+    }
+    const inicio = new Date(fecha); inicio.setMinutes(m);
+    out.push({ m, ocupadas, libres: d.canchas.length - ocupadas.length, pasado: inicio <= ahora });
+  }
+  return out;
+}
+const montoSena = (c, d) => c.sena.tipo === 'fija' ? Math.min(c.sena.valor, d.precio) : Math.round(d.precio * c.sena.valor / 100 / 100) * 100;
+const textoSena = c => c.sena.tipo === 'fija' ? plata(c.sena.valor) : `el ${c.sena.valor}% del turno`;
+function proximoLibre(c) {
+  for (let f = 0; f < 4; f++) {
+    let mejor = null;
+    for (const d of c.deportes) {
+      const t = turnos(c, d, dia(f)).find(t => !t.pasado && t.libres > 0);
+      if (t && (!mejor || t.m < mejor.m)) mejor = { ...t, d };
+    }
+    if (mejor) return { f, ...mejor };
+  }
+  return null;
+}
+const nombreDia = f => f === 0 ? 'hoy' : f === 1 ? 'mañana' : DIAS_LARGO[dia(f).getDay()];
+
+/* ---------- Aviso ---------- */
+let timerToast;
+function toast(texto) {
+  $('.toast')?.remove();
+  const el = document.createElement('div');
+  el.className = 'toast'; el.setAttribute('role', 'status'); el.textContent = texto;
+  document.body.append(el);
+  clearTimeout(timerToast);
+  timerToast = setTimeout(() => el.remove(), 3200);
+}
+
+/* ---------- Vistas ---------- */
+const VISTAS = ['marca', 'inicio', 'complejo'];
+function mostrarVista(v, { arriba = true } = {}) {
+  estado.vista = v;
+  for (const id of VISTAS) $('#vista-' + id).hidden = id !== v;
+  $$('.meta-tabs button').forEach(b => { if (b.dataset.vista === v) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+  $('#meta-complejo').hidden = v !== 'complejo';
+  document.body.dataset.vista = v;
+  if (location.hash.slice(1) !== v) { try { history.replaceState(null, '', '#' + v); } catch { /* ignorar */ } }
+  if (arriba) window.scrollTo({ top: 0, behavior: 'auto' });
+}
+
+/* ---------- Vista: marca ---------- */
+function renderMarcas() {
+  $('#marca-grid').innerHTML = MARCAS.map(m => `
+    <article class="marca-card${m.id === estado.marca ? ' elegida' : ''}" data-marca="${m.id}">
+      <div class="mc-hero">${logoHC(m.id)}</div>
+      <div class="mc-body">
+        <h2 class="mc-nombre">${m.nombre}<small>${m.id === estado.marca ? 'Elegida' : ''}</small></h2>
+        <p class="mc-desc">${m.desc}</p>
+        <div class="mc-sw">${m.colores.map(([n, h]) => `<div><i style="background:${h}"></i><b>${n}</b><code>${h}</code></div>`).join('')}</div>
+        <div class="mc-spec"><span class="hc-display">¿Hay cancha?</span><p>Sí: sábado a las 21, Cancha 3. Quedan 2.</p></div>
+        <div class="mc-ticket"><div><b>Sáb 21:00 · Fútbol 7</b><span>El Potrero · seña ${plata(23400)}</span></div><span class="hc-btn hc-btn-acc hc-btn-sm" aria-hidden="true">Reservá</span></div>
+        <button type="button" class="mc-elegir" data-elegir="${m.id}">${m.id === estado.marca ? 'Ver la página principal' : 'Usar esta marca'}</button>
+      </div>
+    </article>`).join('');
+}
+
+/* ---------- Vista: página principal ---------- */
+function renderMarcaInicio() {
+  $('#vista-inicio').dataset.marca = estado.marca;
+  $('#hc-logo-top').innerHTML = logoHC(estado.marca);
+  $('#hc-logo-pie').innerHTML = logoHC(estado.marca);
+}
+const DEPORTES_FILTRO = [['todos', 'Todos'], ['futbol5', 'Fútbol 5'], ['futbol7', 'Fútbol 7'], ['padel', 'Pádel'], ['tenis', 'Tenis'], ['basquet', 'Básquet'], ['voley', 'Vóley']];
+function renderFiltros() {
+  $('#hc-filtros').innerHTML = DEPORTES_FILTRO.map(([k, n]) => `<button type="button" class="hc-chip" data-filtro="${k}" aria-pressed="${estado.filtro === k}">${n}</button>`).join('');
+}
+function renderDirectorio() {
+  const lista = COMPLEJOS.filter(c => estado.filtro === 'todos' || c.deportes.some(d => d.codigo === estado.filtro));
+  $('#hc-grid').innerHTML = lista.length ? lista.map((c, i) => {
+    const p = proximoLibre(c);
+    return `<button type="button" class="hc-card" data-ir-complejo="${c.slug}" style="${estiloTema(c.color)};--i:${i}">
+      <div class="portada">${portada(c.deportes[0].codigo)}</div>
+      <div class="hc-card-body">
+        <div class="hc-card-logo">${logoComplejo(c)}</div>
+        <span class="hc-card-nombre">${esc(c.nombre)}</span>
+        <span class="hc-card-barrio">${esc(c.barrio)}</span>
+        <span class="hc-card-dep">${c.deportes.map(d => `<span>${d.nombre}</span>`).join('')}</span>
+        <span class="hc-card-prox"><span>Próximo turno libre</span><b>${p ? `${nombreDia(p.f)} ${hhmm(p.m)}` : 'sin turnos'}</b></span>
+      </div></button>`;
+  }).join('') : '<p class="hc-vacio">Todavía no hay complejos con ese deporte.</p>';
+}
+
+// Tablero: 12 + 1 + 4 + 1 + 5 + 1 + 1 = 25 celdas por fila
+const ANCHOS = [12, 4, 5, 1];
+function entradaTablero() {
+  const c = COMPLEJOS[Math.floor(Math.random() * COMPLEJOS.length)];
+  const d = c.deportes[Math.floor(Math.random() * c.deportes.length)];
+  const posibles = turnos(c, d, hoy).filter(t => t.m >= 17 * 60 && t.libres > 0);
+  const t = posibles.length ? posibles[Math.floor(Math.random() * posibles.length)] : { m: 21 * 60, libres: 1 };
+  return [c.corto, d.corto, hhmm(t.m), String(Math.min(9, t.libres))];
+}
+const textoFila = e => e.map((v, i) => v.padEnd(ANCHOS[i]).slice(0, ANCHOS[i])).join(' ');
+const FILAS = 6;
+function renderTablero() {
+  const cols = [['Complejo', 12], ['Dep.', 4], ['Hora', 5], ['L', 1]];
+  $('#tb-cols').innerHTML = cols.map(([n, w]) => `<span style="width:calc(var(--celda) * ${w} + ${(w - 1) * 2}px)">${n}</span>`).join('<span style="width:calc(var(--celda))"></span>');
+  const filas = $('#tb-filas'); filas.innerHTML = '';
+  for (let f = 0; f < FILAS; f++) {
+    const fila = document.createElement('div'); fila.className = 'tb-fila';
+    const txt = textoFila(entradaTablero());
+    [...txt].forEach((ch, i) => {
+      const s = document.createElement('span');
+      s.className = 'cel' + (ch === ' ' && [12, 17, 23].includes(i) ? ' hueco' : '') + (i === 24 ? ' acc' : '');
+      s.textContent = ch;
+      fila.append(s);
+    });
+    filas.append(fila);
+  }
+}
+function girarFila() {
+  if (estado.vista !== 'inicio' || document.hidden) return;
+  const filas = $$('.tb-fila');
+  const fila = filas[Math.floor(Math.random() * filas.length)];
+  const txt = textoFila(entradaTablero());
+  [...fila.children].forEach((s, i) => {
+    const nuevo = txt[i];
+    if (s.textContent === nuevo) return;
+    if (reducir) { s.textContent = nuevo; return; }
+    setTimeout(() => {
+      s.classList.remove('flip'); void s.offsetWidth; s.classList.add('flip');
+      setTimeout(() => { s.textContent = nuevo; }, 140);
+    }, i * 28);
+  });
+}
+
+function renderAgenda() {
+  const L = t => ({ k: 'libre', t });
+  const R = (n, s) => ({ k: 'res', n, s });
+  const P = (n, s) => ({ k: 'pend', n, s });
+  const B = n => ({ k: 'bloq', n });
+  const filas = [
+    ['19:00', [R('Martín G.', 'Web · falta ' + plata(54600)), L('Libre'), R('Lucas P.', 'Teléfono · seña en efectivo'), B('Mantenimiento')]],
+    ['20:00', [R('Sofía R.', 'Web · falta ' + plata(54600)), R('Los Pibes FC', 'Web · pagó todo'), P('Diego F.', 'Pagando · quedan 7 min'), R('Nico B.', 'Teléfono')]],
+    ['21:00', [R('Juli M.', 'Web · falta ' + plata(54600)), R('Tomás A.', 'Web · falta ' + plata(54600)), R('Fede S.', 'Teléfono'), L('Libre')]],
+    ['22:00', [P('Agus L.', 'Pagando · quedan 3 min'), L('Libre'), R('Oficina Palermo', 'Web · falta ' + plata(54600)), B('Torneo')]],
+  ];
+  const celda = c => c.k === 'libre' ? `<div class="ag-c ag-libre">+ Cargar</div>`
+    : c.k === 'bloq' ? `<div class="ag-c ag-bloq"><b>Bloqueado</b><small>${c.n}</small></div>`
+    : `<div class="ag-c ag-${c.k}"><b>${c.n}</b><small>${c.s}</small></div>`;
+  $('#hc-agenda').innerHTML = `
+    <div class="ag-head"><b>Agenda de hoy · El Potrero</b><span>Fútbol 7</span></div>
+    <div class="ag-res-dia"><span><b>11</b> ocupados</span><span><b>3</b> libres</span><span>Señas cobradas <b>${plata(163800)}</b></span><span>Falta cobrar en la cancha <b>${plata(382200)}</b></span></div>
+    <div class="ag-scroll"><div class="ag-grid">
+      <span></span>${['Cancha 1', 'Cancha 2', 'Cancha 3', 'Cancha 4'].map(n => `<span class="ag-col">${n}</span>`).join('')}
+      ${filas.map(([h, cs]) => `<span class="ag-h">${h}</span>${cs.map(celda).join('')}`).join('')}
+    </div></div>
+    <div class="ag-ley"><span><i style="background:var(--hc-ink)"></i>Reservado</span><span><i style="background:var(--hc-accent)"></i>Pendiente de pago</span><span><i style="box-shadow:inset 0 0 0 1.5px var(--hc-line)"></i>Libre</span><span><i style="background:var(--hc-bg-2)"></i>Bloqueado</span></div>`;
+}
+
+/* ---------- Vista: página de un complejo ---------- */
+const tpl = $('#tpl');
+const complejo = () => POR_SLUG[estado.complejo];
+const deporte = () => complejo().deportes[estado.deporte];
+const colorActual = () => estado.colorLibre || complejo().color;
+
+function renderMetaComplejos() {
+  $('#meta-complejos').innerHTML = COMPLEJOS.map(c => `<button type="button" class="meta-chip" data-meta-complejo="${c.slug}" aria-pressed="${c.slug === estado.complejo}" style="--chip:${c.color}"><i></i>${esc(c.nombre)}</button>`).join('');
+  $('#color-libre').value = colorActual();
+  $('#color-quitar').hidden = !estado.colorLibre;
+}
+
+function renderComplejo() {
+  const c = complejo();
+  aplicarTema(tpl, colorActual());
+  tpl.classList.remove('en-estado', 'con-barra');
+  tpl.innerHTML = `
+    <header class="t-top"><div class="wrap t-top-in">
+      <span class="t-top-logo">${logoComplejo(c)}<span>${esc(c.nombre)}</span></span>
+      <button type="button" class="t-link" data-scroll="t-info">Cómo llegar</button>
+    </div></header>
+    <section class="t-hero">
+      <div class="portada">${portada(c.deportes[0].codigo)}</div>
+      <div class="wrap t-hero-in">
+        <div class="t-hero-logo">${logoComplejo(c)}</div>
+        <div class="t-hero-txt">
+          <h1 class="t-nombre">${esc(c.nombre)}</h1>
+          <p class="t-meta">${esc(c.barrio)} · ${esc(c.horario)}</p>
+          <ul class="t-dep">${c.deportes.map(d => `<li><b>${d.nombre}</b> · ${d.canchas.length} ${d.canchas.length === 1 ? 'cancha' : 'canchas'} · turnos de ${d.dur} min</li>`).join('')}</ul>
+        </div>
+      </div>
+    </section>
+    <main class="wrap t-main">
+      <section class="t-reservar" aria-labelledby="t-reservar-h">
+        <div class="t-sec-head"><h2 id="t-reservar-h">Reservá tu turno</h2><p>Elegí ${c.deportes.length > 1 ? 'el deporte, ' : ''}el día y el horario.</p></div>
+        ${c.deportes.length > 1 ? '<div class="t-tabs" id="t-deportes" aria-label="Deporte"></div>' : ''}
+        <div class="t-fechas" id="t-fechas" aria-label="Día"></div>
+        <div class="t-leyenda" aria-hidden="true"><span><i style="background:var(--c)"></i>cancha libre</span><span><i style="background:var(--t-line)"></i>cancha ocupada</span></div>
+        <div class="t-turnos" id="t-turnos" aria-live="polite"></div>
+        <div id="t-canchas"></div>
+      </section>
+      <aside class="t-resumen" id="t-resumen" aria-label="Tu reserva"></aside>
+    </main>
+    <section class="wrap t-info" id="t-info">
+      <div><h3>Dónde queda</h3><p>${esc(c.direccion)}<br>${esc(c.barrio)}</p><p>${esc(c.horario)}</p></div>
+      <div><h3>Servicios</h3><ul class="t-servicios">${c.servicios.map(s => `<li>${esc(s)}</li>`).join('')}</ul></div>
+      <div><h3>Seña y cancelación</h3><p>Para reservar pagás una seña de ${textoSena(c)} con Mercado Pago. El resto lo pagás en la cancha.</p><p>Si cancelás con más de ${c.cancelacion} horas de anticipación, te devolvemos la seña. Con menos, se pierde.</p></div>
+    </section>
+    <section class="t-estado" id="t-estado" hidden></section>
+    <footer class="t-foot"><div class="wrap">Reservas online con <button type="button" data-ir="inicio">HayCancha</button></div></footer>`;
+  renderDeportes(); renderFechas(); renderTurnos(); renderCanchas(); renderResumen();
+}
+
+function renderDeportes() {
+  const cont = $('#t-deportes', tpl); if (!cont) return;
+  const c = complejo();
+  cont.innerHTML = c.deportes.map((d, i) => `<button type="button" class="t-tab" data-deporte="${i}" aria-pressed="${i === estado.deporte}"><b>${d.nombre}</b><span>${d.dur} min · ${plata(d.precio)}</span></button>`).join('');
+}
+function renderFechas() {
+  $('#t-fechas', tpl).innerHTML = Array.from({ length: 14 }, (_, i) => {
+    const d = dia(i);
+    const chico = i === 0 ? 'Hoy' : DIAS[d.getDay()];
+    return `<button type="button" class="t-fecha" data-fecha="${i}" aria-pressed="${i === estado.fecha}" aria-label="${DIAS_LARGO[d.getDay()]} ${d.getDate()} de ${MESES[d.getMonth()]}"><small>${chico}</small><b>${d.getDate()}</b></button>`;
+  }).join('');
+}
+function renderTurnos() {
+  const c = complejo(), d = deporte();
+  const lista = turnos(c, d, dia(estado.fecha));
+  const visibles = lista.filter(t => !t.pasado);
+  const n = d.canchas.length;
+  $('#t-turnos', tpl).innerHTML = visibles.length ? visibles.map((t, i) => {
+    const pips = d.canchas.map((_, k) => `<i class="${t.ocupadas.includes(k) ? 'x' : ''}"></i>`).join('');
+    const lleno = t.libres === 0;
+    const texto = lleno ? 'completo' : n === 1 ? 'libre' : t.libres === 1 ? 'queda 1' : `quedan ${t.libres}`;
+    return `<button type="button" class="t-turno${!lleno && t.libres === 1 && n > 1 ? ' ultima' : ''}" style="--i:${i}" data-turno="${t.m}" aria-pressed="${t.m === estado.turno}" ${lleno ? 'disabled' : ''} aria-label="${hhmm(t.m)}, ${texto}">
+      <span class="tt-hora">${hhmm(t.m)}</span><span class="tt-pips">${pips}</span><span class="tt-libres">${texto}</span></button>`;
+  }).join('') : '<p class="t-sin">Por hoy no quedan turnos. Probá con mañana.</p>';
+}
+function turnoActual() {
+  if (estado.turno == null) return null;
+  return turnos(complejo(), deporte(), dia(estado.fecha)).find(t => t.m === estado.turno) || null;
+}
+function renderCanchas() {
+  const cont = $('#t-canchas', tpl);
+  const d = deporte(), t = turnoActual();
+  if (!t || d.canchas.length < 2) { cont.innerHTML = ''; return; }
+  cont.innerHTML = `<div class="t-canchas"><h3>¿Querés una cancha en particular?</h3><p>Si no elegís, te damos la primera libre.</p>
+    <div class="t-canchas-lista">
+      <button type="button" class="t-cancha" data-cancha="" aria-pressed="${estado.cancha == null}"><b>Cualquiera</b><span>La primera libre</span></button>
+      ${d.canchas.map((k, i) => { const ocup = t.ocupadas.includes(i); return `<button type="button" class="t-cancha" data-cancha="${i}" aria-pressed="${estado.cancha === i}" ${ocup ? 'disabled' : ''}><b>${esc(k.n)}</b><span>${ocup ? 'Ocupada' : esc(k.c)}</span></button>`; }).join('')}
+    </div></div>`;
+}
+function datosTurno() {
+  const c = complejo(), d = deporte(), t = turnoActual();
+  if (!t) return null;
+  const fecha = dia(estado.fecha);
+  const cancha = estado.cancha ?? d.canchas.findIndex((_, i) => !t.ocupadas.includes(i));
+  const sena = montoSena(c, d);
+  return { c, d, t, fecha, cancha, sena, saldo: d.precio - sena };
+}
+function renderResumen() {
+  const aside = $('#t-resumen', tpl);
+  const x = datosTurno();
+  if (!x) {
+    const c = complejo();
+    aside.classList.remove('visible', 'abierta');
+    tpl.classList.remove('con-barra');
+    aside.innerHTML = `<div class="r-vacio"><b>Elegí un horario</b><p>Vas a ver el precio, la seña y a qué cancha vas.</p><p class="r-reglas">Seña: ${textoSena(c)}. Tenés ${c.minutos} minutos para pagarla con Mercado Pago; si no, el turno se libera.</p></div>`;
+    return;
+  }
+  const { c, d, t, fecha, sena, saldo } = x;
+  const f = estado.form, e = estado.errores;
+  const cuando = `${DIAS_LARGO[fecha.getDay()]} ${fecha.getDate()} de ${MESES[fecha.getMonth()]}`;
+  const canchaTxt = d.canchas.length === 1 ? d.canchas[0].n : estado.cancha == null ? 'te asignamos la primera libre' : `${d.canchas[estado.cancha].n} (${d.canchas[estado.cancha].c.toLowerCase()})`;
+  const abierta = aside.classList.contains('abierta');
+  aside.innerHTML = `
+    <div class="r-barra"><div><b>${DIAS[fecha.getDay()]} ${fecha.getDate()}/${fecha.getMonth() + 1} · ${hhmm(t.m)}</b><span>${d.nombre} · seña ${plata(sena)}</span></div><button type="button" class="r-pagar" data-abrir>Continuar</button></div>
+    <div class="r-cuerpo">
+      <div class="r-cab"><p class="r-kicker">Tu turno</p><button type="button" class="r-cerrar" data-cerrar aria-label="Cerrar">×</button></div>
+      <p class="r-hora">${hhmm(t.m)} a ${hhmm(t.m + d.dur)}</p>
+      <p class="r-cuando">${cuando.charAt(0).toUpperCase() + cuando.slice(1)}</p>
+      <p class="r-que">${d.nombre} · ${canchaTxt}</p>
+      <div class="r-plata">
+        <div><span>Turno de ${d.dur} min</span><span>${plata(d.precio)}</span></div>
+        <div class="r-sena"><span>Seña ahora</span><span>${plata(sena)}</span></div>
+        <div><span>En la cancha pagás</span><span>${plata(saldo)}</span></div>
+      </div>
+      <form class="r-form" id="r-form" novalidate>
+        ${campo('nombre', 'Nombre y apellido', 'text', 'name', f.nombre, e.nombre)}
+        ${campo('telefono', 'Teléfono', 'tel', 'tel', f.telefono, e.telefono)}
+        ${campo('email', 'Email', 'email', 'email', f.email, e.email)}
+        <button type="submit" class="r-pagar">Pagar seña de ${plata(sena)}</button>
+        <p class="r-letra">Te llevamos a Mercado Pago. Tenés ${c.minutos} minutos para pagar.</p>
+      </form>
+    </div>`;
+  if (abierta) aside.classList.add('abierta');
+  requestAnimationFrame(() => aside.classList.add('visible'));
+  tpl.classList.add('con-barra');
+}
+function campo(id, label, tipo, auto, valor, error) {
+  return `<div class="campo${error ? ' mal' : ''}"><label for="f-${id}">${label}</label><input id="f-${id}" name="${id}" type="${tipo}" autocomplete="${auto}" value="${esc(valor)}" ${error ? `aria-invalid="true" aria-describedby="f-${id}-err"` : ''}>${error ? `<p class="err" id="f-${id}-err">${error}</p>` : ''}</div>`;
+}
+function abrirHoja() {
+  const aside = $('#t-resumen', tpl);
+  aside.classList.add('abierta');
+  if (matchMedia('(max-width: 920px)').matches && !$('#t-backdrop')) {
+    const b = document.createElement('div'); b.className = 't-backdrop'; b.id = 't-backdrop';
+    b.addEventListener('click', cerrarHoja);
+    document.body.append(b);
+    document.body.style.overflow = 'hidden';
+  }
+  setTimeout(() => $('#f-nombre', tpl)?.focus({ preventScroll: true }), 320);
+}
+function cerrarHoja() {
+  $('#t-resumen', tpl)?.classList.remove('abierta');
+  $('#t-backdrop')?.remove();
+  document.body.style.overflow = '';
+}
+function validar() {
+  const f = estado.form, e = {};
+  if (f.nombre.trim().length < 2) e.nombre = 'Escribí tu nombre.';
+  if (f.telefono.replace(/\D/g, '').length < 8) e.telefono = 'Revisá el teléfono: tiene que tener al menos 8 números.';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.trim())) e.email = 'Revisá el email: ahí te mandamos la confirmación.';
+  estado.errores = e;
+  return Object.keys(e).length === 0;
+}
+
+let timerReloj, timerPago;
+const mmss = s => `${Math.floor(s / 60)}:${String(Math.max(0, s % 60)).padStart(2, '0')}`;
+function pagar() {
+  const x = datosTurno(); if (!x) return;
+  const { c, d, t, fecha, cancha, sena, saldo } = x;
+  const codigo = 'HC-' + Math.random().toString(36).slice(2, 7).toUpperCase();
+  const inicio = new Date(fecha); inicio.setMinutes(t.m);
+  const limite = new Date(inicio.getTime() - c.cancelacion * 3600e3);
+  const fechaCorta = dt => `${DIAS[dt.getDay()]} ${dt.getDate()}/${dt.getMonth() + 1} a las ${hhmm(dt.getHours() * 60 + dt.getMinutes())}`;
+  cerrarHoja();
+  tpl.classList.add('en-estado');
+  tpl.classList.remove('con-barra');
+  const box = $('#t-estado', tpl); box.hidden = false;
+  const rayos = Array.from({ length: 12 }, (_, i) => {
+    const a = i / 12 * Math.PI * 2, cx = 60 + Math.cos(a) * 60, cy = 60 + Math.sin(a) * 60;
+    return `<line x1="${cx.toFixed(1)}" y1="${cy.toFixed(1)}" x2="${(60 + Math.cos(a) * 68).toFixed(1)}" y2="${(60 + Math.sin(a) * 68).toFixed(1)}" style="--dx:${(Math.cos(a) * 14).toFixed(1)}px;--dy:${(Math.sin(a) * 14).toFixed(1)}px"/>`;
+  }).join('');
+  box.innerHTML = `<div class="wrap"><div class="e-card" data-fase="pendiente" aria-live="polite">
+    <svg class="e-svg" viewBox="0 0 120 120" aria-hidden="true">
+      <circle class="e-ring e-r2" cx="60" cy="60" r="54"/><circle class="e-ring e-r1" cx="60" cy="60" r="42"/>
+      <circle class="e-disco" cx="60" cy="60" r="32"/><circle class="e-spin" cx="60" cy="60" r="38"/>
+      <path class="e-check" d="M47 61 l9 9 l18 -21"/><g class="e-rayos">${rayos}</g>
+    </svg>
+    <p class="e-pill"><span class="e-dot"></span><span id="e-pill">Esperando el pago</span></p>
+    <h1 class="e-titulo" id="e-titulo">Estamos esperando tu pago</h1>
+    <p class="e-sub" id="e-sub">Te guardamos el turno <b id="e-reloj">${mmss(c.minutos * 60)}</b> minutos. Cuando Mercado Pago confirme el pago, esta página se actualiza sola.</p>
+    <dl class="e-detalle">
+      <dt>Complejo</dt><dd>${esc(c.nombre)}</dd>
+      <dt>Deporte</dt><dd>${d.nombre}</dd>
+      <dt>Cancha</dt><dd>${esc(d.canchas[cancha].n)}</dd>
+      <dt>Día</dt><dd>${DIAS_LARGO[fecha.getDay()]} ${fecha.getDate()}/${fecha.getMonth() + 1}</dd>
+      <dt>Horario</dt><dd>${hhmm(t.m)} a ${hhmm(t.m + d.dur)}</dd>
+      <dt>Seña</dt><dd>${plata(sena)}</dd>
+      <dt>En la cancha</dt><dd>${plata(saldo)}</dd>
+      <dt>Código</dt><dd>${codigo}</dd>
+    </dl>
+    <p class="e-nota" id="e-nota">Si no se acredita en ${c.minutos} minutos, el turno se libera y no se te cobra nada.</p>
+    <div class="e-acciones"><button type="button" class="e-btn-line" data-scroll-info>Cómo llegar</button><button type="button" class="e-btn" data-volver>Volver a ${esc(c.nombre)}</button></div>
+    <p class="e-sim">Maqueta: el pago se simula y se confirma solo en unos segundos.</p>
+  </div></div>`;
+  window.scrollTo({ top: 0, behavior: 'auto' });
+  let seg = c.minutos * 60;
+  clearInterval(timerReloj); clearTimeout(timerPago);
+  timerReloj = setInterval(() => { seg--; const r = $('#e-reloj', box); if (r) r.textContent = mmss(seg); }, 1000);
+  timerPago = setTimeout(() => {
+    clearInterval(timerReloj);
+    estado.hechas.push({ slug: c.slug, codigo: d.codigo, dia: claveDia(fecha), m: t.m, cancha });
+    const card = $('.e-card', box); if (!card) return;
+    card.dataset.fase = 'confirmada';
+    $('#e-pill', box).textContent = 'Confirmado';
+    $('#e-titulo', box).textContent = '¡Listo! El turno es tuyo';
+    $('#e-sub', box).innerHTML = `Te mandamos la confirmación a <b>${esc(estado.form.email.trim())}</b>. El resto, ${plata(saldo)}, lo pagás en la cancha.`;
+    $('#e-nota', box).textContent = `Si no podés ir, cancelá antes del ${fechaCorta(limite)} y te devolvemos la seña.`;
+  }, 4200);
+}
+function volverAlComplejo() {
+  clearInterval(timerReloj); clearTimeout(timerPago);
+  estado.turno = null; estado.cancha = null; estado.errores = {};
+  renderComplejo();
+  window.scrollTo({ top: 0, behavior: 'auto' });
+}
+function irComplejo(slug) {
+  clearInterval(timerReloj); clearTimeout(timerPago);
+  estado.complejo = slug; estado.colorLibre = null;
+  estado.deporte = 0; estado.fecha = 0; estado.turno = null; estado.cancha = null; estado.errores = {};
+  cerrarHoja();
+  renderMetaComplejos(); renderComplejo();
+  mostrarVista('complejo');
+}
+
+/* ---------- Eventos ---------- */
+document.addEventListener('click', ev => {
+  const el = ev.target.closest('button, [data-scroll]');
+  if (!el) return;
+  const ds = el.dataset;
+  if (ds.vista) { mostrarVista(ds.vista); return; }
+  if (ds.elegir) {
+    estado.marca = ds.elegir; guardar('hc-marca', ds.elegir);
+    renderMarcas(); renderMarcaInicio(); mostrarVista('inicio'); return;
+  }
+  if (ds.toast) { toast(ds.toast); return; }
+  if (ds.scroll) {
+    const destino = document.getElementById(ds.scroll);
+    if (destino) destino.scrollIntoView({ behavior: reducir ? 'auto' : 'smooth', block: 'start' });
+    return;
+  }
+  if (ds.filtro) { estado.filtro = ds.filtro; renderFiltros(); renderDirectorio(); return; }
+  if (ds.irComplejo) { irComplejo(ds.irComplejo); return; }
+  if (ds.metaComplejo) { irComplejo(ds.metaComplejo); return; }
+  if (ds.ir) { mostrarVista(ds.ir); return; }
+  if (el.id === 'color-quitar') { estado.colorLibre = null; aplicarTema(tpl, colorActual()); renderMetaComplejos(); return; }
+  if (!tpl.contains(el)) return;
+  if (ds.deporte != null) {
+    estado.deporte = +ds.deporte; estado.turno = null; estado.cancha = null;
+    renderDeportes(); renderTurnos(); renderCanchas(); renderResumen(); return;
+  }
+  if (ds.fecha != null) {
+    estado.fecha = +ds.fecha; estado.turno = null; estado.cancha = null;
+    renderFechas(); renderTurnos(); renderCanchas(); renderResumen(); return;
+  }
+  if (ds.turno != null) {
+    const m = +ds.turno;
+    estado.turno = estado.turno === m ? null : m; estado.cancha = null;
+    $$('.t-turno', tpl).forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.turno === estado.turno)));
+    renderCanchas(); renderResumen(); return;
+  }
+  if (ds.cancha != null) {
+    estado.cancha = ds.cancha === '' ? null : +ds.cancha;
+    $$('.t-cancha', tpl).forEach(b => b.setAttribute('aria-pressed', String(b.dataset.cancha === ds.cancha)));
+    renderResumen(); return;
+  }
+  if ('abrir' in ds) { abrirHoja(); return; }
+  if ('cerrar' in ds) { cerrarHoja(); return; }
+  if ('volver' in ds) { volverAlComplejo(); return; }
+  if ('scrollInfo' in ds) { volverAlComplejo(); setTimeout(() => $('#t-info', tpl)?.scrollIntoView({ behavior: 'auto' }), 30); }
+});
+document.addEventListener('input', ev => {
+  const t = ev.target;
+  if (t.id === 'color-libre') {
+    estado.colorLibre = t.value; aplicarTema(tpl, t.value);
+    $('#color-quitar').hidden = false; return;
+  }
+  if (t.form?.id === 'r-form' && t.name in estado.form) estado.form[t.name] = t.value;
+});
+document.addEventListener('submit', ev => {
+  if (ev.target.id !== 'r-form') return;
+  ev.preventDefault();
+  if (validar()) { pagar(); return; }
+  renderResumen();
+  const primero = ['nombre', 'telefono', 'email'].find(k => estado.errores[k]);
+  $('#f-' + primero, tpl)?.focus();
+});
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape') cerrarHoja(); });
+window.addEventListener('hashchange', () => {
+  const h = location.hash.slice(1);
+  if (VISTAS.includes(h) && h !== estado.vista) mostrarVista(h);
+});
+
+/* ---------- Arranque ---------- */
+renderMarcas();
+renderMarcaInicio();
+renderFiltros();
+renderDirectorio();
+renderTablero();
+renderAgenda();
+renderMetaComplejos();
+renderComplejo();
+const inicial = location.hash.slice(1);
+mostrarVista(VISTAS.includes(inicial) ? inicial : 'marca', { arriba: false });
+setInterval(girarFila, 2400);
+})();
+</script>

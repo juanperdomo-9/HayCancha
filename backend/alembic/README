@@ -1,0 +1,4 @@
+Migraciones de la base. Usan DATABASE_URL_ADMIN (ver app/config.py).
+
+    uv run alembic upgrade head
+    uv run alembic revision -m "descripcion" --rev-id 0002
