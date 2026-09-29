@@ -8,8 +8,10 @@ from sqlalchemy.orm import Session
 
 from app.config import get_settings
 from app.db import get_session
+from app.routers import publico
 
 app = FastAPI(title="HayCancha")
+app.include_router(publico.router)
 
 app.add_middleware(
     CORSMiddleware,

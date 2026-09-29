@@ -25,6 +25,14 @@
   --font-numeros: 'Archivo', 'Arial Narrow', system-ui, sans-serif;
 
   --animate-deriva: deriva 26s ease-in-out infinite alternate;
+  --animate-sube: sube 0.35s both;
+
+  @keyframes sube {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
 
   @keyframes deriva {
     from {

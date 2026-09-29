@@ -313,8 +313,8 @@ Hasta la puesta en línea, todo se desarrolla en local: la base es el Postgres d
 - [x] Tabla global `deportes` con sus datos iniciales
 - [x] Tablas `negocios`, `usuarios`, `recursos`, `horarios`, `clientes`, `reservas` con `negocio_id`
 - [x] Rol `app_user`, RLS y `set_config` por transacción
-- [ ] Rutas públicas por slug y cálculo de disponibilidad
-- [ ] Página principal de HayCancha con el listado de complejos
+- [x] Rutas públicas por slug y cálculo de disponibilidad (el botón final dice "Pago online: muy pronto" hasta la fase 2)
+- [x] Página principal de HayCancha con el listado de complejos
 - [ ] Login y panel del dueño: canchas, horarios, precios, marca
 - [ ] Agenda del día y de la semana, detalle de reserva, reservas cargadas a mano y bloqueos
 - [ ] Panel de superadmin: alta de negocios

@@ -3,6 +3,7 @@ import { motion } from 'motion/react'
 import { Link } from 'react-router'
 
 import { DibujoCancha } from '../../components/cancha/DibujoCancha'
+import { DirectorioComplejos } from '../../components/complejo/DirectorioComplejos'
 import { EstadoServidor } from '../../components/EstadoServidor'
 import { LogoHayCancha } from '../../components/marca/LogoHayCancha'
 import { TemaComplejo } from '../../theme/TemaComplejo'
@@ -108,10 +109,7 @@ export default function Inicio() {
 
         <section id="complejos" className="border-t border-linea">
           <div className="mx-auto max-w-6xl px-4 py-16 sm:px-8 sm:py-24">
-            <h2 className="font-titulo text-[clamp(42px,6.4vw,80px)] leading-[.9] font-extrabold uppercase">Complejos</h2>
-            <p className="mt-4 max-w-[48ch] text-lg text-gris">
-              Muy pronto vas a ver acá todos los complejos donde podés reservar, con sus horarios libres.
-            </p>
+            <DirectorioComplejos />
           </div>
         </section>
 
