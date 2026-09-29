@@ -33,7 +33,7 @@ export function ReservaEnCurso({ turno, fecha, deporte, cancha, canchaElegida, o
         autoComplete={autocompletar}
         value={datos[nombre]}
         onChange={(e) => setDatos({ ...datos, [nombre]: e.target.value })}
-        className="w-full rounded-[10px] border-[1.5px] border-borde bg-base px-3 py-2.5 text-base transition focus:border-complejo focus:shadow-[0_0_0_3px_var(--complejo-suave)] focus:outline-none"
+        className="w-full rounded-[10px] border-[1.5px] border-borde bg-lienzo px-3 py-2.5 text-[16px] text-tinta transition focus:border-complejo focus:shadow-[0_0_0_3px_var(--complejo-suave)] focus:outline-none"
       />
     </div>
   )
@@ -43,7 +43,7 @@ export function ReservaEnCurso({ turno, fecha, deporte, cancha, canchaElegida, o
       <div className="flex items-center justify-between">
         <p className="text-xs font-semibold tracking-[.1em] text-tenue uppercase">Tu turno</p>
         {onCerrar && (
-          <button type="button" onClick={onCerrar} aria-label="Cerrar" className="grid size-9 place-items-center rounded-full bg-base">
+          <button type="button" onClick={onCerrar} aria-label="Cerrar" className="grid size-9 place-items-center rounded-full bg-lienzo">
             <X className="size-5" aria-hidden="true" />
           </button>
         )}

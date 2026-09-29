@@ -101,7 +101,7 @@ export default function Diseno() {
             </label>
           </div>
 
-          <TemaComplejo color={color} className="overflow-hidden rounded-3xl bg-base text-tinta ring-1 ring-borde">
+          <TemaComplejo color={color} className="overflow-hidden rounded-3xl bg-lienzo text-tinta ring-1 ring-borde">
             <div className="relative bg-oscuro text-white">
               <DibujoCancha deporte="futbol7" animado className="absolute inset-0" />
               <div className="absolute inset-0 bg-linear-to-t from-oscuro via-oscuro/50 to-oscuro/10" />

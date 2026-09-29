@@ -7,6 +7,7 @@ import { type ComplejoDetalle, useComplejo, useDisponibilidad } from '../../api/
 import { ElegirCancha } from '../../components/complejo/ElegirCancha'
 import { GrillaTurnos } from '../../components/complejo/GrillaTurnos'
 import { LogoComplejo } from '../../components/complejo/LogoComplejo'
+import { MapaComplejo } from '../../components/complejo/MapaComplejo'
 import { PortadaComplejo } from '../../components/complejo/PortadaComplejo'
 import { ReservaEnCurso } from '../../components/complejo/ReservaEnCurso'
 import { TiraDeFechas } from '../../components/complejo/TiraDeFechas'
@@ -26,7 +27,7 @@ export default function Complejo() {
     return error instanceof ErrorApi && error.estado === 404 ? (
       <NoEncontrado />
     ) : (
-      <div className="grid min-h-dvh place-items-center bg-base p-6 text-center text-tenue">
+      <div className="grid min-h-dvh place-items-center bg-lienzo p-6 text-center text-tenue">
         No pudimos cargar el complejo. Revisá tu conexión y volvé a intentar.
       </div>
     )
@@ -59,7 +60,7 @@ function PaginaComplejo({ complejo }: { complejo: ComplejoDetalle }) {
   }
 
   return (
-    <TemaComplejo color={complejo.color_primario} secundario={complejo.color_secundario} className="min-h-dvh bg-base text-tinta">
+    <TemaComplejo color={complejo.color_primario} secundario={complejo.color_secundario} className="min-h-dvh bg-lienzo text-tinta">
       <header className="border-b border-borde bg-superficie">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-2.5 sm:px-8">
           <span className="flex min-w-0 items-center gap-2.5 font-semibold">
@@ -185,20 +186,15 @@ function PaginaComplejo({ complejo }: { complejo: ComplejoDetalle }) {
         </aside>
       </main>
 
-      <section id="info" className="mx-auto grid max-w-6xl gap-8 border-t border-borde px-4 pt-10 pb-16 sm:grid-cols-3 sm:px-8">
-        <div>
-          <h3 className="numeros mb-2 text-[23px] font-bold" style={{ fontStretch: '80%' }}>
+      <section
+        id="info"
+        className="mx-auto grid max-w-6xl gap-8 border-t border-borde px-4 pt-10 pb-16 sm:px-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]"
+      >
+        <div className="lg:row-span-2">
+          <h3 className="numeros mb-3 text-[23px] font-bold" style={{ fontStretch: '80%' }}>
             Dónde queda
           </h3>
-          <p className="text-tenue">
-            {complejo.direccion ?? 'Dirección a confirmar'}
-            {complejo.barrio && (
-              <>
-                <br />
-                {complejo.barrio}
-              </>
-            )}
-          </p>
+          <MapaComplejo nombre={complejo.nombre} direccion={complejo.direccion} barrio={complejo.barrio} />
         </div>
         {complejo.servicios.length > 0 && (
           <div>
@@ -314,7 +310,7 @@ function SinTurnoElegido({ complejo }: { complejo: ComplejoDetalle }) {
 
 function Cargando() {
   return (
-    <div className="min-h-dvh bg-base" aria-busy="true">
+    <div className="min-h-dvh bg-lienzo" aria-busy="true">
       <div className="h-[52px] border-b border-borde bg-superficie" />
       <div className="h-[300px] animate-pulse bg-oscuro/90 sm:h-[420px]" />
       <div className="mx-auto grid max-w-6xl gap-3 px-4 pt-8 sm:px-8">

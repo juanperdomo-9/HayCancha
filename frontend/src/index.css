@@ -12,7 +12,7 @@
   --color-linea: #d8ccb3;
 
   /* Plantilla de los complejos: base neutra, el color del complejo es solo acento. */
-  --color-base: #f6f4ef;
+  --color-lienzo: #f6f4ef;
   --color-superficie: #ffffff;
   --color-tinta: #16171a;
   --color-tenue: #65686e;
@@ -59,6 +59,9 @@
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
+    /* El diseño es claro: los controles nativos (campos, autocompletado, barras) también,
+       aunque el sistema esté en modo oscuro. */
+    color-scheme: light;
   }
   @media (prefers-reduced-motion: no-preference) {
     html {
