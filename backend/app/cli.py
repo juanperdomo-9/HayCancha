@@ -2,19 +2,26 @@
 
 preparar-base   Habilita el login de app_user con la contraseña de DATABASE_URL.
                 Correrlo después de las migraciones, en cada base nueva.
-cargar-ejemplo  Carga el complejo de ejemplo (El Potrero). --reemplazar lo borra y
-                lo vuelve a crear.
+cargar-ejemplo  Carga el complejo de ejemplo (El Potrero) y sus usuarios de prueba.
+                --reemplazar lo borra y lo vuelve a crear. Solo para desarrollo.
+crear-superadmin --email ...
+                Crea (o cambia la contraseña de) un superadmin de HayCancha. Pide la
+                contraseña sin mostrarla.
 """
 
 import argparse
+import getpass
 import sys
 
 from psycopg import sql
+from sqlalchemy import select
 from sqlalchemy.engine import make_url
 
 from app.config import get_settings
 from app.db import get_engine_admin, sesion_admin
 from app.ejemplo import cargar_ejemplo
+from app.models import Usuario
+from app.services.auth import hashear_clave
 
 
 def rol_de_la_app() -> tuple[str, str]:
@@ -41,12 +48,35 @@ def preparar_base() -> None:
     print("app_user listo para conectarse.")
 
 
+def crear_superadmin(email: str) -> None:
+    email = email.strip().lower()
+    clave = getpass.getpass("Contraseña (mínimo 8 caracteres): ")
+    if getpass.getpass("Repetila: ") != clave:
+        raise SystemExit("Las contraseñas no coinciden.")
+    try:
+        hash_ = hashear_clave(clave)
+    except ValueError as error:
+        raise SystemExit(str(error)) from error
+    with sesion_admin() as session, session.begin():
+        usuario = session.scalar(select(Usuario).where(Usuario.email == email))
+        if usuario is None:
+            session.add(Usuario(email=email, rol="superadmin", password_hash=hash_))
+        elif usuario.rol != "superadmin":
+            raise SystemExit("Ese email ya es de un dueño o empleado de un complejo.")
+        else:
+            usuario.password_hash = hash_
+            usuario.activo = True
+    print(f"Superadmin listo: {email}. Entrá en {get_settings().frontend_url}/ingresar")
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="python -m app.cli")
     comandos = parser.add_subparsers(dest="comando", required=True)
     comandos.add_parser("preparar-base", help="habilita el login de app_user")
     ejemplo = comandos.add_parser("cargar-ejemplo", help="carga El Potrero")
     ejemplo.add_argument("--reemplazar", action="store_true")
+    superadmin = comandos.add_parser("crear-superadmin", help="crea un superadmin")
+    superadmin.add_argument("--email", required=True)
     args = parser.parse_args(argv)
 
     if args.comando == "preparar-base":
@@ -55,6 +85,9 @@ def main(argv: list[str] | None = None) -> None:
         with sesion_admin() as session, session.begin():
             negocio = cargar_ejemplo(session, reemplazar=args.reemplazar)
         print(f"Complejo de ejemplo: {negocio.nombre} ({negocio.slug}).")
+        print("Usuarios de prueba: ver USUARIOS_DE_EJEMPLO en app/ejemplo.py.")
+    elif args.comando == "crear-superadmin":
+        crear_superadmin(args.email)
 
 
 if __name__ == "__main__":

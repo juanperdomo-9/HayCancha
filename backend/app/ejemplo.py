@@ -8,11 +8,20 @@ from decimal import Decimal
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
-from app.models import Cliente, Deporte, Horario, Negocio, Recurso, Reserva
+from app.models import Cliente, Deporte, Horario, Negocio, Recurso, Reserva, Usuario
+from app.services.auth import hashear_clave
 from app.services.disponibilidad import ahora, hoy_en_el_negocio, zona_del_negocio
 from app.services.sena import calcular_sena
 
 SLUG_EJEMPLO = "el-potrero"
+
+# Usuarios de prueba, SOLO para la base local de desarrollo: (email, clave, rol).
+# Nunca se cargan en Supabase; el superadmin real se crea con `app.cli crear-superadmin`.
+USUARIOS_DE_EJEMPLO = [
+    ("admin@haycancha.example", "admin-local-2026", "superadmin"),
+    ("dueno@elpotrero.example", "potrero-local-2026", "dueno"),
+    ("empleado@elpotrero.example", "empleado-local-2026", "empleado"),
+]
 
 
 @dataclass(frozen=True)
@@ -62,7 +71,7 @@ def cargar_ejemplo(session: Session, *, reemplazar: bool = False) -> Negocio:
     if existente is not None:
         if not reemplazar:
             return existente
-        for tabla in (Reserva, Cliente, Horario, Recurso):
+        for tabla in (Reserva, Cliente, Horario, Recurso, Usuario):
             session.execute(delete(tabla).where(tabla.negocio_id == existente.id))
         session.delete(existente)
         session.flush()
@@ -109,8 +118,25 @@ def cargar_ejemplo(session: Session, *, reemplazar: bool = False) -> Negocio:
                         )
                     )
     session.flush()
+    cargar_usuarios_de_ejemplo(session, negocio)
     cargar_reservas_de_ejemplo(session, negocio)
     return negocio
+
+
+def cargar_usuarios_de_ejemplo(session: Session, negocio: Negocio) -> None:
+    for email, clave, rol in USUARIOS_DE_EJEMPLO:
+        existente = session.scalar(select(Usuario).where(Usuario.email == email))
+        if existente is not None:
+            continue
+        session.add(
+            Usuario(
+                email=email,
+                rol=rol,
+                negocio_id=None if rol == "superadmin" else negocio.id,
+                password_hash=hashear_clave(clave),
+            )
+        )
+    session.flush()
 
 
 JUGADORES = [

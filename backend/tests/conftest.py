@@ -1,4 +1,5 @@
 import os
+import tempfile
 import uuid
 from collections.abc import Callable, Iterator
 from typing import Any
@@ -24,6 +25,8 @@ TEST_DATABASE_URL = _ConfigTests().test_database_url
 _url = normalizar_url_postgres(TEST_DATABASE_URL or "postgresql://tests@127.0.0.1:1/tests")
 os.environ["DATABASE_URL"] = _url
 os.environ["DATABASE_URL_ADMIN"] = _url
+os.environ["JWT_SECRET"] = "clave-de-tests-" + "x" * 32
+os.environ["CARPETA_ARCHIVOS"] = tempfile.mkdtemp(prefix="haycancha-archivos-")
 
 
 def _conectar_como_app_user(conexion_dbapi: Any, _registro: Any) -> None:

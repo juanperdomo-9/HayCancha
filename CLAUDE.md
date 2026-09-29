@@ -89,7 +89,8 @@ La interfaz es en español de Argentina, con voseo ("Reservá", "Elegí un horar
 docker compose up -d --wait                              # Postgres local (raíz del repo)
 cd backend && uv run alembic upgrade head                # migraciones (DATABASE_URL_ADMIN)
 cd backend && uv run python -m app.cli preparar-base     # login de app_user, en cada base nueva
-cd backend && uv run python -m app.cli cargar-ejemplo    # El Potrero (--reemplazar para rehacerlo)
+cd backend && uv run python -m app.cli cargar-ejemplo    # El Potrero y usuarios de prueba (--reemplazar para rehacerlo)
+cd backend && uv run python -m app.cli crear-superadmin --email ...  # superadmin real
 cd backend && uv run uvicorn app.main:app --reload       # API en :8000
 cd backend && uv run pytest && uv run ruff check . && uv run ruff format --check .
 cd frontend && npm run dev                               # web en :5173
@@ -106,7 +107,10 @@ Nunca subir secretos al repo. Mantener actualizados `backend/.env.example` y `fr
 | --- | --- |
 | `DATABASE_URL` | Conexión de la app con el rol `app_user` (sujeto a RLS) |
 | `DATABASE_URL_ADMIN` | Rol dueño de las tablas: migraciones y panel de superadmin |
-| `JWT_SECRET` | Firma de las sesiones |
+| `JWT_SECRET` | Firma de las sesiones y de los links de invitación (32+ caracteres al azar) |
+| `COOKIE_SEGURA` | `true` en producción: la cookie de sesión solo por https |
+| `CARPETA_ARCHIVOS` | Dónde se guardan logos y portadas (hasta la puesta en línea) |
+| `VITE_GOOGLE_MAPS_KEY` | (frontend) Maps Embed API para el mapa de cada complejo; restringida al dominio |
 | `TOKEN_ENCRYPTION_KEY` | Clave Fernet para encriptar tokens de Mercado Pago |
 | `MP_CLIENT_ID`, `MP_CLIENT_SECRET` | App de Mercado Pago (OAuth) |
 | `MP_WEBHOOK_SECRET` | Clave secreta de webhooks (se genera en "Tus integraciones") |
@@ -315,10 +319,10 @@ Hasta la puesta en línea, todo se desarrolla en local: la base es el Postgres d
 - [x] Rol `app_user`, RLS y `set_config` por transacción
 - [x] Rutas públicas por slug y cálculo de disponibilidad (el botón final dice "Pago online: muy pronto" hasta la fase 2)
 - [x] Página principal de HayCancha con el listado de complejos
-- [ ] Login y panel del dueño: canchas, horarios, precios, marca
+- [x] Login y panel del dueño: canchas, horarios, precios, marca, equipo
 - [ ] Agenda del día y de la semana, detalle de reserva, reservas cargadas a mano y bloqueos
-- [ ] Panel de superadmin: alta de negocios
-- [ ] Cargar un complejo de prueba como primer negocio, con varias canchas de fútbol 7, una de fútbol 5 y una de pádel
+- [x] Panel de superadmin: alta de negocios, cobro y suspensión, y "Configurar" cada complejo
+- [x] Cargar un complejo de prueba como primer negocio, con varias canchas de fútbol 7, una de fútbol 5 y una de pádel (`app.cli cargar-ejemplo`, con usuarios de prueba solo locales en `app/ejemplo.py`)
 
 **Fase 2: seña con Mercado Pago**
 - [ ] App en Mercado Pago Developers y OAuth por complejo

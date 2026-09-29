@@ -1,6 +1,7 @@
 from functools import lru_cache
+from pathlib import Path
 
-from pydantic import field_validator
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -21,8 +22,14 @@ class Settings(BaseSettings):
     database_url_admin: str
     # URL pública del backend.
     app_base_url: str = "http://localhost:8000"
-    # URL pública del frontend (CORS).
+    # URL pública del frontend (CORS y links de invitación).
     frontend_url: str = "http://localhost:5173"
+    # Firma de las sesiones y los links de invitación. Mínimo 32 caracteres al azar.
+    jwt_secret: str = Field(min_length=32)
+    # En producción (https) la cookie de sesión va con Secure.
+    cookie_segura: bool = False
+    # Dónde se guardan logos y portadas (en la puesta en línea, un almacenamiento de archivos).
+    carpeta_archivos: Path = Path("archivos")
 
     @field_validator("database_url", "database_url_admin")
     @classmethod

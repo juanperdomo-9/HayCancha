@@ -5,9 +5,13 @@ description = "Backend de HayCancha: reservas para canchas y complejos deportivo
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "alembic>=1.20.0",
+    "argon2-cffi>=25.1.0",
+    "email-validator>=2.3.0",
     "fastapi>=0.141.1",
     "psycopg[binary]>=3.3.6",
     "pydantic-settings>=2.15.0",
+    "pyjwt>=2.15.1",
+    "python-multipart>=0.0.32",
     "sqlalchemy>=2.1.1",
     "uvicorn>=0.54.0",
 ]

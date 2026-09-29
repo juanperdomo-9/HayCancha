@@ -77,3 +77,12 @@ def test_no_se_puede_pedir_fuera_de_rango(cliente: TestClient, admin: Session, d
         params={"deporte": "futbol7", "fecha": fecha.isoformat()},
     )
     assert respuesta.status_code == 400
+
+
+def test_un_complejo_sin_canchas_todavia_no_aparece(
+    cliente: TestClient, admin: Session, crear_negocio
+) -> None:
+    recien_dado_de_alta = admin.get(Negocio, crear_negocio()).slug
+    slugs = {c["slug"] for c in cliente.get("/publico/complejos").json()}
+    assert recien_dado_de_alta not in slugs
+    assert SLUG_EJEMPLO in slugs

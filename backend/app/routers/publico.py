@@ -94,7 +94,8 @@ def listar_complejos(
     for negocio in session.scalars(negocios_visibles().order_by(Negocio.nombre)):
         with sesion_de_negocio(negocio.id) as s:
             deportes = deportes_del_negocio(s, negocio.id)
-            if deporte and all(d.codigo != deporte for d in deportes):
+            # Un complejo recién dado de alta, sin canchas, todavía no se muestra.
+            if not deportes or (deporte and all(d.codigo != deporte for d in deportes)):
                 continue
             codigos = [deporte] if deporte else [d.codigo for d in deportes]
             proximo = proximo_turno_libre(s, negocio, codigos)
