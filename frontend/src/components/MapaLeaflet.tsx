@@ -9,7 +9,7 @@ import type { ComplejoResumen } from '../api/publico'
 // Mapas de OpenStreetMap (gratis, sin clave; piden la atribución).
 const CAPAS = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
 const ATRIBUCION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-const CENTRO_POR_DEFECTO: L.LatLngTuple = [-34.75, -58.2] // entre CABA y La Plata
+const CENTRO_POR_DEFECTO: L.LatLngTuple = [-34.9214, -57.9545] // La Plata
 
 const iniciales = (nombre: string) =>
   nombre
@@ -34,7 +34,7 @@ function useMapa(contenedor: React.RefObject<HTMLDivElement | null>) {
   const mapa = useRef<L.Map | null>(null)
   useEffect(() => {
     if (!contenedor.current || mapa.current) return
-    mapa.current = L.map(contenedor.current, { scrollWheelZoom: false }).setView(CENTRO_POR_DEFECTO, 10)
+    mapa.current = L.map(contenedor.current, { scrollWheelZoom: false }).setView(CENTRO_POR_DEFECTO, 13)
     L.tileLayer(CAPAS, { attribution: ATRIBUCION, maxZoom: 19 }).addTo(mapa.current)
     return () => {
       mapa.current?.remove()
