@@ -37,6 +37,8 @@ from app.services.cobros import (
     acreditar_pago,
     devolucion_de,
     devolver,
+    link_de_la_reserva,
+    nuevo_codigo,
     pago_aprobado_de,
     proveedor_para,
 )
@@ -146,6 +148,7 @@ def reservar_online(
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(error)) from error
 
         reserva.conexion = conexion
+        reserva.codigo = nuevo_codigo(negocio, reserva)
         cancha = s.get(Recurso, reserva.recurso_id).nombre
         try:
             reserva.url_pago = proveedor.crear_cobro(
@@ -159,14 +162,19 @@ def reservar_online(
                 "No pudimos preparar el pago con Mercado Pago. Probá de nuevo en un minuto.",
             ) from error
         s.commit()
-        return esquemas.ReservaCreada(id=reserva.id, url_pago=reserva.url_pago)
+        return esquemas.ReservaCreada(
+            id=reserva.id, url_pago=reserva.url_pago, link=link_de_la_reserva(negocio, reserva)
+        )
 
 
-def _buscar(s: Session, negocio: Negocio, reserva_id: uuid.UUID) -> Reserva:
+def _buscar(
+    s: Session, negocio: Negocio, reserva_id: uuid.UUID | None = None, codigo: str | None = None
+) -> Reserva:
+    clave = Reserva.id == reserva_id if codigo is None else Reserva.codigo == codigo.lower()
     reserva = s.scalar(
         select(Reserva)
         .where(
-            Reserva.id == reserva_id,
+            clave,
             Reserva.negocio_id == negocio.id,
             Reserva.origen == "web",
         )
@@ -207,6 +215,7 @@ def _publica(s: Session, negocio: Negocio, reserva: Reserva) -> esquemas.Reserva
     devuelto = devolucion_de(s, negocio, reserva)
     return esquemas.ReservaPublica(
         id=reserva.id,
+        link=link_de_la_reserva(negocio, reserva),
         estado=reserva.estado,
         complejo=negocio.nombre,
         slug=negocio.slug,
@@ -249,6 +258,18 @@ def ver_reserva(
     negocio = buscar_negocio(session, slug)
     with sesion_de_negocio(negocio.id) as s:
         reserva = _buscar(s, negocio, reserva_id)
+        s.commit()
+        return _publica(s, negocio, reserva)
+
+
+@router.get("/por-codigo/{codigo}")
+def ver_reserva_por_codigo(
+    slug: str, codigo: str, session: SesionPublica
+) -> esquemas.ReservaPublica:
+    """La reserva por el código de su link (/{slug}/r/{codigo})."""
+    negocio = buscar_negocio(session, slug)
+    with sesion_de_negocio(negocio.id) as s:
+        reserva = _buscar(s, negocio, codigo=codigo)
         s.commit()
         return _publica(s, negocio, reserva)
 

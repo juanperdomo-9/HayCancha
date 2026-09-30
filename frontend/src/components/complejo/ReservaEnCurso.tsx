@@ -36,9 +36,7 @@ export function ReservaEnCurso({ slug, turno, fecha, deporte, cancha, canchaEleg
   const [datos, setDatos] = useState<Datos>({ nombre: '', telefono: '', email: '' })
   const [errores, setErrores] = useState<Partial<Record<keyof Datos, string>>>({})
   const saldo = Number(cancha.precio) - Number(cancha.sena)
-  const canchaTexto = canchaElegida
-    ? `${cancha.nombre}${cancha.caracteristicas ? ` (${cancha.caracteristicas.toLowerCase()})` : ''}`
-    : 'te asignamos la primera libre'
+  const canchaTexto = canchaElegida ? `${cancha.nombre}${cancha.caracteristicas ? ` (${cancha.caracteristicas.toLowerCase()})` : ''}` : 'te asignamos la primera libre'
 
   function enviar(e: FormEvent) {
     e.preventDefault()
@@ -55,10 +53,10 @@ export function ReservaEnCurso({ slug, turno, fecha, deporte, cancha, canchaEleg
         email: datos.email.trim() || undefined,
       },
       {
-        onSuccess: ({ id: reservaId, url_pago }) => {
-          // Con Mercado Pago se va a pagar afuera; al volver, cae en la página de la reserva.
+        onSuccess: ({ url_pago, link }) => {
+          // Con Mercado Pago se va a pagar afuera; al volver, cae en el link de la reserva.
           if (url_pago) window.location.assign(url_pago)
-          else navegar(`/${slug}/reserva/${reservaId}`)
+          else navegar(link)
         },
       },
     )
@@ -134,6 +132,9 @@ export function ReservaEnCurso({ slug, turno, fecha, deporte, cancha, canchaEleg
           </button>
           <p className="text-center text-[12.5px] text-tenue">
             Te guardamos el turno {minutosParaPagar} minutos para que pagues la seña con Mercado Pago. No hace falta crear una cuenta.
+          </p>
+          <p className="text-center text-[12.5px] text-tenue">
+            Después de pagar te damos <b className="text-tinta">el link de tu reserva: guardalo</b>, lo vas a necesitar para cancelar o cambiar el horario.
           </p>
         </form>
       ) : (

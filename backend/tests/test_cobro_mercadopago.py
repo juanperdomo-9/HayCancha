@@ -186,7 +186,15 @@ def test_la_reserva_online_devuelve_el_link_de_mercado_pago(complejo, api_mp) ->
     assert preferencia["items"][0]["currency_id"] == "ARS"
     assert preferencia["items"][0]["title"].startswith("Seña: Cancha 1")
     assert preferencia["notification_url"].endswith(f"/webhooks/mercadopago/{complejo['id']}")
-    assert preferencia["back_urls"]["success"].endswith(f"/{complejo['slug']}/reserva/{reserva_id}")
+    link = creada.json()["link"]
+    assert re.fullmatch(rf"/{complejo['slug']}/r/[a-z]{{3}}\d{{1,2}}-20hs-[a-z2-9]{{8}}", link)
+    assert preferencia["back_urls"]["success"].endswith(link)
+    por_codigo = TestClient(app).get(
+        f"/publico/complejos/{complejo['slug']}/reservas/por-codigo/{link.rsplit('/', 1)[1]}"
+    )
+    assert (por_codigo.json()["id"], por_codigo.json()["link"]) == (reserva_id, link)
+    otro = TestClient(app).get(f"/publico/complejos/{complejo['slug']}/reservas/por-codigo/x")
+    assert otro.status_code == 404
     assert preferencia["binary_mode"] is True and preferencia["expires"] is True
     assert preferencia["marketplace_fee"] == 0
     assert {t["id"] for t in preferencia["payment_methods"]["excluded_payment_types"]} == {

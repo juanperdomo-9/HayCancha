@@ -49,6 +49,7 @@ export default function App() {
       )}
       <Route path="/:slug" element={<Complejo />} />
       <Route path="/:slug/reserva/:id" element={<EstadoReserva />} />
+      <Route path="/:slug/r/:codigo" element={<EstadoReserva />} />
       <Route path="*" element={<NoEncontrado />} />
     </Routes>
   )

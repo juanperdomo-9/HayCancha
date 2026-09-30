@@ -11,6 +11,7 @@ Así ninguna devolución se pierde aunque algo falle en el medio.
 """
 
 import logging
+import secrets
 import uuid
 from dataclasses import dataclass, field
 from decimal import Decimal
@@ -91,6 +92,30 @@ class ProveedorSimulado:
             reserva_id=reserva.id,
             detalle={"simulado": True},
         )
+
+
+# Sin 0/o, 1/l/i: el código se puede dictar o copiar a mano sin confundirse.
+ALFABETO_DEL_CODIGO = "abcdefghjkmnpqrstuvwxyz23456789"
+DIAS_DEL_CODIGO = ["lun", "mar", "mie", "jue", "vie", "sab", "dom"]
+
+
+def nuevo_codigo(negocio: Negocio, reserva: Reserva) -> str:
+    """El código del link de la reserva, por ejemplo "sab3-21hs-k7m2q9xa": día y hora (en
+    la zona del complejo) para reconocerlo, y 8 caracteres al azar (unos 40 bits) para que
+    nadie pueda adivinar el de otro. No lleva datos personales."""
+    from app.services.disponibilidad import zona_del_negocio
+
+    inicio = reserva.inicio.astimezone(zona_del_negocio(negocio))
+    hora = f"{inicio:%H}hs" if inicio.minute == 0 else f"{inicio:%H%M}hs"
+    azar = "".join(secrets.choice(ALFABETO_DEL_CODIGO) for _ in range(8))
+    return f"{DIAS_DEL_CODIGO[inicio.weekday()]}{inicio.day}-{hora}-{azar}"
+
+
+def link_de_la_reserva(negocio: Negocio, reserva: Reserva) -> str:
+    """La ruta de la página de la reserva (las viejas, sin código, van por el id)."""
+    if reserva.codigo:
+        return f"/{negocio.slug}/r/{reserva.codigo}"
+    return f"/{negocio.slug}/reserva/{reserva.id}"
 
 
 def proveedor_para(negocio: Negocio) -> ProveedorDePagos | None:

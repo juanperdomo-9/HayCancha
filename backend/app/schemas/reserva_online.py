@@ -22,10 +22,14 @@ class ReservaCreada(BaseModel):
     id: uuid.UUID
     # A dónde ir a pagar (Mercado Pago). None: se paga en la página de la reserva (simulado).
     url_pago: str | None
+    # El link de la reserva en la página (ruta, sin el dominio): /{slug}/r/{codigo}.
+    link: str
 
 
 class ReservaPublica(BaseModel):
     id: uuid.UUID
+    # El link para volver a la reserva (ruta, sin el dominio). Es lo único que la identifica.
+    link: str
     estado: Literal["pendiente_pago", "confirmada", "vencida", "cancelada"]
     complejo: str
     slug: str

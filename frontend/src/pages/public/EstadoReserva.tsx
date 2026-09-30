@@ -14,8 +14,8 @@ import NoEncontrado from './NoEncontrado'
 
 /** A dónde vuelve el jugador después de pagar: espera el pago y confirma el turno. */
 export default function EstadoReserva() {
-  const { slug = '', id = '' } = useParams()
-  const { data: reserva, error, isPending } = useReservaPublica(slug, id)
+  const { slug = '', id, codigo } = useParams()
+  const { data: reserva, error, isPending } = useReservaPublica(slug, { id, codigo })
 
   if (isPending) {
     return (
@@ -88,7 +88,7 @@ function Contenido({ r }: { r: ReservaPublica }) {
         <p className="mx-auto max-w-[42ch] text-tenue">
           El resto, <b className="text-tinta">{plata(r.saldo)}</b>, lo pagás en la cancha.
         </p>
-        <GuardarLink />
+        <GuardarLink link={r.link} complejo={r.complejo} />
         <GestionReserva r={r} />
       </>
     )
@@ -98,9 +98,7 @@ function Contenido({ r }: { r: ReservaPublica }) {
       <>
         <Pastilla color="bg-tenue">Vencida</Pastilla>
         <Titulo>Se terminó el tiempo para pagar</Titulo>
-        <p className="mx-auto max-w-[42ch] text-tenue">
-          El turno se liberó. Si sigue libre, podés reservarlo de nuevo desde la página del complejo.
-        </p>
+        <p className="mx-auto max-w-[42ch] text-tenue">El turno se liberó. Si sigue libre, podés reservarlo de nuevo desde la página del complejo.</p>
       </>
     )
   }
@@ -273,14 +271,34 @@ function Sello({ estado }: { estado: ReservaPublica['estado'] }) {
 }
 
 /** Sin cuenta ni email, el link es la forma de volver a la reserva. */
-function GuardarLink() {
+/** El link es la única forma de volver a la reserva: se destaca y se puede copiar o compartir. */
+function GuardarLink({ link: ruta, complejo }: { link: string; complejo: string }) {
   const [copiado, setCopiado] = useState(false)
-  const link = window.location.href
+  const link = `${window.location.origin}${ruta}`
+  const puedeCompartir = typeof navigator.share === 'function'
   return (
-    <div className="mt-5 grid gap-2 rounded-xl bg-lienzo p-3.5 text-left ring-1 ring-borde">
-      <span className="text-[13px] font-semibold">Guardá el link de tu reserva</span>
+    <div className="mt-5 grid gap-2.5 rounded-xl bg-amber-50 p-4 text-left ring-2 ring-amber-300">
+      <p className="text-[15px] font-bold text-amber-950">Guardá este link</p>
+      <p className="text-sm text-amber-950">
+        Es la única forma de ver tu reserva. <b>Si lo perdés, no vas a poder cancelarla ni cambiar el horario.</b>
+      </p>
+      {puedeCompartir && (
+        <button
+          type="button"
+          onClick={() => navigator.share({ title: `Mi reserva en ${complejo}`, url: link }).catch(() => undefined)}
+          className="rounded-lg bg-complejo px-3 py-2.5 text-sm font-bold text-complejo-sobre"
+        >
+          Compartir o guardar el link
+        </button>
+      )}
       <div className="flex gap-2">
-        <input readOnly value={link} onFocus={(e) => e.currentTarget.select()} aria-label="Link de tu reserva" className="w-full min-w-0 rounded-lg bg-superficie px-3 py-2 text-[13px] text-tenue ring-1 ring-borde" />
+        <input
+          readOnly
+          value={link}
+          onFocus={(e) => e.currentTarget.select()}
+          aria-label="Link de tu reserva"
+          className="w-full min-w-0 rounded-lg bg-superficie px-3 py-2 text-[13px] text-tenue ring-1 ring-borde"
+        />
         <button
           type="button"
           onClick={async () => {

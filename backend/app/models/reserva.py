@@ -88,6 +88,8 @@ class Reserva(Base):
     mp_preference_id: Mapped[str | None] = mapped_column(String)
     # Link de Checkout Pro para pagar la seña (mientras está pendiente de pago).
     url_pago: Mapped[str | None] = mapped_column(String)
+    # El link de la reserva online: /{slug}/r/{codigo} (ver la migración 0009).
+    codigo: Mapped[str | None] = mapped_column(String, unique=True)
     # Cuántas veces el jugador cambió el horario desde la página (se permite una).
     cambios_de_horario: Mapped[int] = mapped_column(server_default=text("0"))
     # Conexión desde la que se reservó online, transformada con una clave (HMAC): sirve

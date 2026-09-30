@@ -31,7 +31,7 @@ from sqlalchemy.orm import Session
 from app.config import get_settings
 from app.models import Negocio, Reserva
 from app.services.cifrado import ClaveFaltante, cifrar, descifrar
-from app.services.cobros import MONEDA, ErrorDePago, PagoInformado
+from app.services.cobros import MONEDA, ErrorDePago, PagoInformado, link_de_la_reserva
 from app.services.disponibilidad import ahora
 
 logger = logging.getLogger(__name__)
@@ -256,7 +256,7 @@ class ProveedorMercadoPago:
 
     def crear_cobro(self, negocio: Negocio, reserva: Reserva, descripcion: str) -> str | None:
         settings = get_settings()
-        vuelta = f"{settings.frontend_url}/{negocio.slug}/reserva/{reserva.id}"
+        vuelta = f"{settings.frontend_url}{link_de_la_reserva(negocio, reserva)}"
         preferencia = {
             "items": [
                 {

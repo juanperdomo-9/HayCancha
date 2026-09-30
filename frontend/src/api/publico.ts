@@ -82,11 +82,7 @@ export function useComplejo(slug: string) {
 export function useDisponibilidad(slug: string, deporte: string | undefined, fecha: string) {
   return useQuery({
     queryKey: ['disponibilidad', slug, deporte, fecha],
-    queryFn: () =>
-      pedir<Disponibilidad>(
-        `/publico/complejos/${encodeURIComponent(slug)}/disponibilidad?` +
-          new URLSearchParams({ deporte: deporte ?? '', fecha }),
-      ),
+    queryFn: () => pedir<Disponibilidad>(`/publico/complejos/${encodeURIComponent(slug)}/disponibilidad?` + new URLSearchParams({ deporte: deporte ?? '', fecha })),
     enabled: Boolean(deporte),
     // Los horarios cambian mientras el jugador mira: se refrescan solos.
     refetchInterval: 60_000,
@@ -107,6 +103,8 @@ export type NuevaReserva = {
 
 export type ReservaPublica = {
   id: string
+  /** Ruta de la reserva (/slug/r/codigo): es lo único que la identifica. */
+  link: string
   estado: 'pendiente_pago' | 'confirmada' | 'vencida' | 'cancelada'
   complejo: string
   slug: string
@@ -146,16 +144,18 @@ const reservas = (slug: string) => `/publico/complejos/${encodeURIComponent(slug
 export function useCrearReserva(slug: string) {
   const cliente = useQueryClient()
   return useMutation({
-    mutationFn: (datos: NuevaReserva) => enviar<{ id: string; url_pago: string | null }>(reservas(slug), 'POST', datos),
+    mutationFn: (datos: NuevaReserva) => enviar<{ id: string; url_pago: string | null; link: string }>(reservas(slug), 'POST', datos),
     // Pase lo que pase, los horarios cambiaron: se vuelven a pedir.
     onSettled: () => cliente.invalidateQueries({ queryKey: ['disponibilidad', slug] }),
   })
 }
 
-export function useReservaPublica(slug: string, id: string) {
+/** La reserva por su código (link nuevo, /slug/r/codigo) o por su id (links viejos). */
+export function useReservaPublica(slug: string, clave: { id?: string; codigo?: string }) {
+  const ruta = clave.codigo ? `por-codigo/${encodeURIComponent(clave.codigo)}` : encodeURIComponent(clave.id ?? '')
   return useQuery({
-    queryKey: ['reserva-publica', slug, id],
-    queryFn: () => pedir<ReservaPublica>(`${reservas(slug)}/${encodeURIComponent(id)}`),
+    queryKey: ['reserva-publica', slug, clave.codigo ?? clave.id],
+    queryFn: () => pedir<ReservaPublica>(`${reservas(slug)}/${ruta}`),
     retry: false,
     // Mientras espera el pago, se consulta seguido hasta que se confirme.
     refetchInterval: (consulta) => (consulta.state.data?.estado === 'pendiente_pago' ? 3_000 : false),
@@ -168,7 +168,7 @@ export function useCancelarReserva(slug: string, id: string) {
   return useMutation({
     mutationFn: (telefono: string) => enviar<ReservaPublica>(`${reservas(slug)}/${encodeURIComponent(id)}/cancelar`, 'POST', { telefono }),
     onSuccess: (reserva) => {
-      cliente.setQueryData(['reserva-publica', slug, id], reserva)
+      cliente.setQueriesData({ queryKey: ['reserva-publica', slug] }, (vieja?: ReservaPublica) => (vieja?.id === reserva.id ? reserva : vieja))
       cliente.invalidateQueries({ queryKey: ['disponibilidad', slug] })
     },
   })
@@ -178,10 +178,9 @@ export function useCancelarReserva(slug: string, id: string) {
 export function useCambiarHorario(slug: string, id: string) {
   const cliente = useQueryClient()
   return useMutation({
-    mutationFn: (datos: { telefono: string; inicio: string }) =>
-      enviar<ReservaPublica>(`${reservas(slug)}/${encodeURIComponent(id)}/cambiar`, 'POST', datos),
+    mutationFn: (datos: { telefono: string; inicio: string }) => enviar<ReservaPublica>(`${reservas(slug)}/${encodeURIComponent(id)}/cambiar`, 'POST', datos),
     onSuccess: (reserva) => {
-      cliente.setQueryData(['reserva-publica', slug, id], reserva)
+      cliente.setQueriesData({ queryKey: ['reserva-publica', slug] }, (vieja?: ReservaPublica) => (vieja?.id === reserva.id ? reserva : vieja))
       cliente.invalidateQueries({ queryKey: ['disponibilidad', slug] })
     },
   })
@@ -191,6 +190,6 @@ export function useSimularPago(slug: string, id: string) {
   const cliente = useQueryClient()
   return useMutation({
     mutationFn: () => enviar<ReservaPublica>(`${reservas(slug)}/${encodeURIComponent(id)}/simular-pago`, 'POST'),
-    onSuccess: (reserva) => cliente.setQueryData(['reserva-publica', slug, id], reserva),
+    onSuccess: (reserva) => cliente.setQueriesData({ queryKey: ['reserva-publica', slug] }, (vieja?: ReservaPublica) => (vieja?.id === reserva.id ? reserva : vieja)),
   })
 }
