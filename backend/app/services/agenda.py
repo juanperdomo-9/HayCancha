@@ -40,7 +40,8 @@ class ResumenDelDia:
 
 
 def saldo(reserva: Reserva) -> Decimal:
-    return (reserva.precio or CERO) - reserva.sena
+    # Si el turno quedó más barato que la seña (un cambio de horario), no queda nada por cobrar.
+    return max(CERO, (reserva.precio or CERO) - reserva.sena)
 
 
 def agenda_del_dia(session: Session, negocio: Negocio, fecha: date) -> list[CanchaDeAgenda]:

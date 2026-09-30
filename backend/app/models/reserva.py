@@ -86,6 +86,13 @@ class Reserva(Base):
     motivo_bloqueo: Mapped[str | None] = mapped_column(String)
     vence_a: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     mp_preference_id: Mapped[str | None] = mapped_column(String)
+    # Link de Checkout Pro para pagar la seña (mientras está pendiente de pago).
+    url_pago: Mapped[str | None] = mapped_column(String)
+    # Cuántas veces el jugador cambió el horario desde la página (se permite una).
+    cambios_de_horario: Mapped[int] = mapped_column(server_default=text("0"))
+    # Conexión desde la que se reservó online, transformada con una clave (HMAC): sirve
+    # para el tope de reservas sin pagar sin guardar la IP.
+    conexion: Mapped[str | None] = mapped_column(String)
     origen: Mapped[str] = mapped_column(String)
     creado_por: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("usuarios.id"))
     creado_a: Mapped[CreadoA]

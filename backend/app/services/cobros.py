@@ -3,8 +3,14 @@
 Un turno solo pasa a `confirmada` por `acreditar_pago`, con lo que informa el proveedor
 al consultarlo (nunca con lo que dice el cuerpo de un webhook). El proveedor es Mercado
 Pago con el token del complejo o, solo en desarrollo, uno simulado.
+
+Devoluciones: un pago que hay que devolver queda con `devolucion = "pendiente"` en la
+misma transacción en que se decide. Después se le pide a Mercado Pago (`devolver`); si
+no la acepta (por ejemplo, el complejo no tiene saldo), la tarea periódica la reintenta.
+Así ninguna devolución se pierde aunque algo falle en el medio.
 """
 
+import logging
 import uuid
 from dataclasses import dataclass, field
 from decimal import Decimal
@@ -18,7 +24,10 @@ from sqlalchemy.orm import Session
 
 from app.config import get_settings
 from app.models import Negocio, Pago, Reserva
+from app.services.disponibilidad import ahora
 from app.services.reservas import EXCLUSION_VIOLATION
+
+logger = logging.getLogger(__name__)
 
 MONEDA = "ARS"
 
@@ -40,8 +49,12 @@ class Resultado(StrEnum):
     YA_REGISTRADO = "ya_registrado"  # el mismo pago llegó otra vez
     SIN_RESERVA = "sin_reserva"
     NO_APROBADO = "no_aprobado"
-    MONTO_INVALIDO = "monto_invalido"
-    A_DEVOLVER = "a_devolver"  # hay que reembolsarlo
+    MONTO_INVALIDO = "monto_invalido"  # aprobado pero por otro monto: se devuelve
+    A_DEVOLVER = "a_devolver"  # aprobado, pero el turno ya no es suyo: se devuelve
+
+
+class ErrorDePago(Exception):
+    """El proveedor no pudo hacer lo que se le pidió (crear el cobro, devolver…)."""
 
 
 class ProveedorDePagos(Protocol):
@@ -52,7 +65,9 @@ class ProveedorDePagos(Protocol):
         (None si el pago se hace en la propia página, como en el simulado)."""
         ...
 
-    def reembolsar(self, negocio: Negocio, pago_id: str) -> None: ...
+    def reembolsar(self, negocio: Negocio, pago_id: str) -> None:
+        """Devuelve el pago completo. Si no puede, lanza ErrorDePago."""
+        ...
 
 
 class ProveedorSimulado:
@@ -81,9 +96,14 @@ class ProveedorSimulado:
 def proveedor_para(negocio: Negocio) -> ProveedorDePagos | None:
     """Con qué cobra este complejo. None: todavía no toma reservas online.
 
-    El cobro con la cuenta vinculada de Mercado Pago (preferencia y webhook) llega en el
-    bloque 2C; hasta entonces solo existe el pago simulado de desarrollo."""
-    if get_settings().pagos_simulados:
+    Con Mercado Pago vinculado (y la app de HayCancha configurada) cobra en la cuenta del
+    complejo. Sin vincular, solo en desarrollo, el pago simulado."""
+    settings = get_settings()
+    if negocio.mp_access_token_enc and settings.mercadopago_configurado:
+        from app.services.mercadopago import ProveedorMercadoPago
+
+        return ProveedorMercadoPago()
+    if settings.pagos_simulados:
         return ProveedorSimulado()
     return None
 
@@ -91,7 +111,8 @@ def proveedor_para(negocio: Negocio) -> ProveedorDePagos | None:
 def acreditar_pago(session: Session, negocio: Negocio, pago: PagoInformado) -> Resultado:
     """Registra el pago y, si corresponde, confirma la reserva. No hace commit.
 
-    Si devuelve A_DEVOLVER, quien llama tiene que reembolsar el pago (y marcarlo)."""
+    Si hay que devolver la plata (A_DEVOLVER o MONTO_INVALIDO), el pago queda con
+    devolucion = "pendiente": después de hacer commit, quien llama usa `devolver`."""
     if pago.reserva_id is None:
         return Resultado.SIN_RESERVA
     reserva = session.scalar(
@@ -102,7 +123,7 @@ def acreditar_pago(session: Session, negocio: Negocio, pago: PagoInformado) -> R
     if reserva is None:
         return Resultado.SIN_RESERVA
 
-    nuevo = session.execute(
+    registrado = session.execute(
         insert(Pago)
         .values(
             negocio_id=negocio.id,
@@ -116,48 +137,111 @@ def acreditar_pago(session: Session, negocio: Negocio, pago: PagoInformado) -> R
         .on_conflict_do_nothing(index_elements=["mp_payment_id"])
         .returning(Pago.id)
     ).scalar_one_or_none()
-    if nuevo is None:
+    if registrado is None:
         return Resultado.YA_REGISTRADO
+
+    def a_devolver(resultado: Resultado) -> Resultado:
+        session.execute(update(Pago).where(Pago.id == registrado).values(devolucion="pendiente"))
+        return resultado
 
     if pago.estado != "approved":
         return Resultado.NO_APROBADO
     if pago.moneda != MONEDA or pago.monto != reserva.sena:
-        return Resultado.MONTO_INVALIDO
+        return a_devolver(Resultado.MONTO_INVALIDO)
 
     if reserva.estado == "pendiente_pago":
-        reserva.estado, reserva.vence_a = "confirmada", None
+        reserva.estado, reserva.vence_a, reserva.url_pago = "confirmada", None, None
         session.flush()
         return Resultado.CONFIRMADA
     if reserva.estado == "vencida":
         # Si el turno sigue libre, se confirma igual; si otro lo tomó, la base lo impide.
         try:
             with session.begin_nested():
-                reserva.estado, reserva.vence_a = "confirmada", None
+                reserva.estado, reserva.vence_a, reserva.url_pago = "confirmada", None, None
                 session.flush()
             return Resultado.CONFIRMADA
         except IntegrityError as error:
             if getattr(error.orig, "sqlstate", None) != EXCLUSION_VIOLATION:
                 raise
             session.refresh(reserva)
-            return Resultado.A_DEVOLVER
-    # Cancelada, o ya confirmada por otro pago (pagó dos veces): se devuelve.
-    return Resultado.A_DEVOLVER
-
-
-def marcar_devuelto(session: Session, negocio: Negocio, pago_id: str) -> None:
-    session.execute(
-        update(Pago)
-        .where(Pago.negocio_id == negocio.id, Pago.mp_payment_id == pago_id)
-        .values(estado="refunded")
-    )
+    # Cancelada, vencida con el turno tomado, o ya confirmada por otro pago (pagó dos
+    # veces): se devuelve.
+    return a_devolver(Resultado.A_DEVOLVER)
 
 
 def pago_aprobado_de(session: Session, negocio: Negocio, reserva: Reserva) -> Pago | None:
-    """El pago aprobado (no devuelto) de una reserva, si lo tiene."""
+    """El pago aprobado que confirmó la reserva (el que no hay que devolver), si lo tiene."""
     return session.scalar(
         select(Pago).where(
             Pago.negocio_id == negocio.id,
             Pago.reserva_id == reserva.id,
             Pago.estado == "approved",
+            Pago.devolucion.is_(None),
         )
     )
+
+
+def devolucion_de(session: Session, negocio: Negocio, reserva: Reserva) -> Pago | None:
+    """El pago de la reserva que se devolvió o se está devolviendo, si hay uno.
+    Si hay varios (pagó dos veces), el más reciente."""
+    return session.scalar(
+        select(Pago)
+        .where(
+            Pago.negocio_id == negocio.id,
+            Pago.reserva_id == reserva.id,
+            Pago.devolucion.is_not(None),
+        )
+        .order_by(Pago.creado_a.desc())
+        .limit(1)
+    )
+
+
+def pedir_devolucion(pago: Pago) -> None:
+    """Marca el pago para devolver (en la transacción de quien llama)."""
+    if pago.devolucion is None:
+        pago.devolucion = "pendiente"
+
+
+def devolver(
+    session: Session, negocio: Negocio, pago: Pago, proveedor: ProveedorDePagos | None
+) -> bool:
+    """Le pide al proveedor que devuelva un pago marcado como pendiente y hace commit.
+
+    True si quedó devuelto. Si el proveedor no lo acepta, queda pendiente para reintentar."""
+    if pago.devolucion != "pendiente":
+        return pago.devolucion == "hecha"
+    pago.devolucion_intentos += 1
+    try:
+        if proveedor is None:
+            raise ErrorDePago("El complejo no tiene con qué devolver (Mercado Pago sin vincular)")
+        proveedor.reembolsar(negocio, pago.mp_payment_id)
+    except ErrorDePago as error:
+        logger.warning("No se pudo devolver el pago %s: %s", pago.mp_payment_id, error)
+        session.commit()
+        return False
+    pago.devolucion, pago.estado, pago.devuelto_a = "hecha", "refunded", ahora()
+    session.commit()
+    logger.info("Pago %s devuelto", pago.mp_payment_id)
+    return True
+
+
+def reintentar_devoluciones(session_admin: Session) -> tuple[int, int]:
+    """Reintenta las devoluciones pendientes de todos los complejos (tarea periódica).
+
+    Devuelve (devueltas, siguen_pendientes)."""
+    from app.db import sesion_de_negocio
+
+    pendientes = session_admin.execute(
+        select(Pago.id, Pago.negocio_id).where(Pago.devolucion == "pendiente")
+    ).all()
+    devueltas = 0
+    for pago_id, negocio_id in pendientes:
+        with sesion_de_negocio(negocio_id) as s:
+            negocio = s.get(Negocio, negocio_id)
+            pago = s.get(Pago, pago_id, with_for_update=True)
+            if pago is None or pago.devolucion != "pendiente":
+                s.rollback()
+                continue
+            if devolver(s, negocio, pago, proveedor_para(negocio)):
+                devueltas += 1
+    return devueltas, len(pendientes) - devueltas

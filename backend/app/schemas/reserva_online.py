@@ -48,3 +48,32 @@ class ReservaPublica(BaseModel):
     direccion: str | None
     barrio: str | None
     referencia: str | None
+    # Para cambiar el horario: el deporte (código) con el que se consulta la disponibilidad.
+    deporte_codigo: str
+    cancha_id: uuid.UUID
+    # La seña se pagó online (y no se devolvió).
+    sena_pagada: bool
+    # Hasta cuándo se puede cancelar recuperando la seña (y cambiar el horario).
+    cancelable_hasta: datetime
+    puede_cancelar: bool
+    # Si cancela ahora, ¿recupera la seña?
+    recupera_sena: bool
+    puede_cambiar: bool
+    ya_cambio_horario: bool
+    # Devolución de la seña: None, "pendiente" (en proceso) o "hecha".
+    devolucion: Literal["pendiente", "hecha"] | None
+    monto_devuelto: Decimal | None
+
+
+Telefono = Annotated[str, StringConstraints(strip_whitespace=True, min_length=6, max_length=40)]
+
+
+class ConfirmacionDelJugador(BaseModel):
+    """El jugador demuestra que la reserva es suya con el teléfono que usó al reservar."""
+
+    telefono: Telefono
+
+
+class CambioDeHorario(ConfirmacionDelJugador):
+    inicio: datetime
+    recurso_id: uuid.UUID | None = None

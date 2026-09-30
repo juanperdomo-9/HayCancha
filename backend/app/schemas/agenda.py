@@ -98,6 +98,10 @@ class ReservaDetalle(BaseModel):
     minutos_para_pagar: int | None
     cliente: Cliente | None
     creado_a: datetime
+    # La seña se pagó online (con Mercado Pago) y no se devolvió.
+    sena_online: bool
+    # Devolución de la seña pagada online: None, "pendiente" (en proceso) o "hecha".
+    devolucion: Literal["pendiente", "hecha"] | None
 
 
 class ReservaManual(BaseModel):
@@ -114,6 +118,11 @@ class ReservaManual(BaseModel):
 class CambiosDeReserva(BaseModel):
     asistencia: Literal["vino", "no_vino"] | None = None
     saldo_cobrado: bool | None = None
+
+
+class Cancelacion(BaseModel):
+    # Solo cuenta si la seña se pagó online. Por defecto se devuelve.
+    devolver_sena: bool = True
 
 
 class Movimiento(BaseModel):

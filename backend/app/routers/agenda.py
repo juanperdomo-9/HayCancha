@@ -8,7 +8,7 @@ import uuid
 from datetime import date, timedelta
 
 from fastapi import APIRouter, HTTPException, status
-from sqlalchemy import select, update
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -17,6 +17,8 @@ from app.dependencias import PanelActual
 from app.models import Cliente, Deporte, Negocio, Recurso, Reserva
 from app.schemas import agenda as esquemas
 from app.services.agenda import agenda_del_dia, minutos_para_pagar, resumen, saldo
+from app.services.cancelaciones import cancelar
+from app.services.cobros import devolucion_de, devolver, pago_aprobado_de, proveedor_para
 from app.services.disponibilidad import ahora, hoy_en_el_negocio, zona_del_negocio
 from app.services.reservas import (
     EXCLUSION_VIOLATION,
@@ -145,6 +147,7 @@ def _detalle(s: Session, negocio: Negocio, reserva: Reserva) -> esquemas.Reserva
     ).one()
     cliente = s.get(Cliente, reserva.cliente_id) if reserva.cliente_id else None
     zona = zona_del_negocio(negocio)
+    devuelto = devolucion_de(s, negocio, reserva)
     return esquemas.ReservaDetalle(
         id=reserva.id,
         estado=reserva.estado,
@@ -172,6 +175,8 @@ def _detalle(s: Session, negocio: Negocio, reserva: Reserva) -> esquemas.Reserva
         if cliente
         else None,
         creado_a=reserva.creado_a,
+        sena_online=pago_aprobado_de(s, negocio, reserva) is not None,
+        devolucion=devuelto.devolucion if devuelto else None,
     )
 
 
@@ -237,22 +242,22 @@ def cambiar_reserva(
 
 
 @router.post("/reservas/{reserva_id}/cancelar")
-def cancelar_reserva(reserva_id: uuid.UUID, panel: PanelActual) -> esquemas.ReservaDetalle:
+def cancelar_reserva(
+    reserva_id: uuid.UUID, panel: PanelActual, datos: esquemas.Cancelacion | None = None
+) -> esquemas.ReservaDetalle:
     """Cancela una reserva o levanta un bloqueo, con sus espejos de canchas combinadas.
-    La devolución de la seña pagada online llega con Mercado Pago (fase 2)."""
+    Si la seña se pagó online, se devuelve salvo que el dueño elija no hacerlo."""
+    datos = datos or esquemas.Cancelacion()
     with sesion_de_negocio(panel.negocio_id) as s:
         reserva = _buscar_reserva(s, panel, reserva_id)
         if reserva.estado not in ("pendiente_pago", "confirmada", "bloqueada"):
             raise HTTPException(
                 status.HTTP_422_UNPROCESSABLE_CONTENT, "Esa reserva ya no está activa."
             )
-        reserva.estado = "cancelada"
-        s.execute(
-            update(Reserva)
-            .where(Reserva.negocio_id == panel.negocio_id, Reserva.reserva_origen_id == reserva.id)
-            .values(estado="cancelada")
-        )
+        pago = cancelar(s, panel.negocio, reserva, devolver_sena=datos.devolver_sena)
         s.commit()
+        if pago is not None:
+            devolver(s, panel.negocio, pago, proveedor_para(panel.negocio))
         return _detalle(s, panel.negocio, reserva)
 
 

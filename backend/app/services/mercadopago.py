@@ -1,4 +1,4 @@
-"""Mercado Pago: vincular la cuenta de cada complejo (OAuth) y mantener sus tokens.
+"""Mercado Pago: vincular la cuenta de cada complejo (OAuth), mantener sus tokens y cobrar.
 
 Cada complejo cobra en su propia cuenta. El dueño autoriza a la app de HayCancha desde
 el panel y Mercado Pago nos da un access token (dura 180 días) y un refresh token para
@@ -7,14 +7,21 @@ renovarlo. Los dos se guardan encriptados y nunca salen del backend.
 Flujo de autorización con PKCE (code_challenge S256) y `state`:
 https://www.mercadopago.com.ar/developers/es/docs/security/oauth/creation
 Renovación: https://www.mercadopago.com.ar/developers/es/docs/security/oauth/renewal
+
+Cobro (Checkout Pro): una preferencia por reserva, un webhook por pago y la API de
+reembolsos. Todo con el access token del complejo. Se usa la API REST con httpx (el SDK
+oficial solo arma estos mismos pedidos).
 """
 
 import base64
 import hashlib
+import hmac
 import logging
 import secrets
+import uuid
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from decimal import Decimal, InvalidOperation
 from urllib.parse import urlencode
 
 import httpx
@@ -22,20 +29,22 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.config import get_settings
-from app.models import Negocio
+from app.models import Negocio, Reserva
 from app.services.cifrado import ClaveFaltante, cifrar, descifrar
+from app.services.cobros import MONEDA, ErrorDePago, PagoInformado
 from app.services.disponibilidad import ahora
 
 logger = logging.getLogger(__name__)
 
 URL_AUTORIZACION = "https://auth.mercadopago.com/authorization"
-URL_TOKEN = "https://api.mercadopago.com/oauth/token"
+URL_API = "https://api.mercadopago.com"
+URL_TOKEN = f"{URL_API}/oauth/token"
 
 # Se renueva con este margen antes de que venza (el token dura 180 días).
 RENOVAR_ANTES = timedelta(days=30)
 
 
-class ErrorMercadoPago(Exception):
+class ErrorMercadoPago(ErrorDePago):
     def __init__(self, mensaje: str, *, permanente: bool = False) -> None:
         super().__init__(mensaje)
         # El refresh token ya no sirve (el dueño revocó el permiso): hay que volver a vincular.
@@ -193,3 +202,156 @@ def renovar_tokens_por_vencer(session: Session) -> ResultadoRenovacion:
             logger.error("Token de %s ilegible: %s", negocio.slug, error)
             resultado.fallidos += 1
     return resultado
+
+
+# --- Cobro de la seña (Checkout Pro) ---
+
+# Pagos en efectivo (Rapipago, Pago Fácil…): tardan en acreditarse y el turno no puede
+# quedar trabado tanto tiempo.
+TIPOS_EXCLUIDOS = ("ticket", "atm")
+
+# Lo que se guarda de la respuesta de un pago (sin datos personales del que pagó).
+CAMPOS_DEL_PAGO = (
+    "id",
+    "status",
+    "status_detail",
+    "transaction_amount",
+    "currency_id",
+    "payment_type_id",
+    "payment_method_id",
+    "date_approved",
+    "external_reference",
+    "collector_id",
+    "live_mode",
+)
+
+
+def _llamar(negocio: Negocio, metodo: str, ruta: str, **opciones) -> dict:
+    """Llama a la API de Mercado Pago con el access token del complejo."""
+    try:
+        token = access_token_de(negocio)
+    except ClaveFaltante as error:
+        raise ErrorMercadoPago(str(error)) from error
+    headers = {"Authorization": f"Bearer {token}", **opciones.pop("headers", {})}
+    try:
+        with _http() as http:
+            respuesta = http.request(metodo, f"{URL_API}{ruta}", headers=headers, **opciones)
+    except httpx.HTTPError as error:
+        raise ErrorMercadoPago(f"Mercado Pago no respondió: {error}") from error
+    if respuesta.status_code >= 400:
+        raise ErrorMercadoPago(
+            f"Mercado Pago respondió {respuesta.status_code} a {metodo} {ruta}",
+            permanente=respuesta.status_code in (401, 403),
+        )
+    return respuesta.json() if respuesta.content else {}
+
+
+def _fecha(momento: datetime) -> str:
+    """Formato que pide Mercado Pago: 2026-10-01T21:00:00.000-03:00."""
+    return momento.isoformat(timespec="milliseconds")
+
+
+class ProveedorMercadoPago:
+    simulado = False
+
+    def crear_cobro(self, negocio: Negocio, reserva: Reserva, descripcion: str) -> str | None:
+        settings = get_settings()
+        vuelta = f"{settings.frontend_url}/{negocio.slug}/reserva/{reserva.id}"
+        preferencia = {
+            "items": [
+                {
+                    "id": str(reserva.id),
+                    "title": descripcion,
+                    "quantity": 1,
+                    # Mercado Pago recibe un número JSON; la seña ya viene redondeada a centavos.
+                    "unit_price": float(reserva.sena),
+                    "currency_id": MONEDA,
+                }
+            ],
+            "external_reference": str(reserva.id),
+            "notification_url": f"{settings.app_base_url}/webhooks/mercadopago/{negocio.id}",
+            "back_urls": {"success": vuelta, "failure": vuelta, "pending": vuelta},
+            "auto_return": "approved",
+            "expires": True,
+            "expiration_date_from": _fecha(ahora()),
+            "expiration_date_to": _fecha(reserva.vence_a or ahora()),
+            "binary_mode": True,
+            "payment_methods": {"excluded_payment_types": [{"id": t} for t in TIPOS_EXCLUIDOS]},
+            "marketplace_fee": 0,
+        }
+        creada = _llamar(
+            negocio,
+            "POST",
+            "/checkout/preferences",
+            json=preferencia,
+            headers={"X-Idempotency-Key": f"preferencia-{reserva.id}"},
+        )
+        reserva.mp_preference_id = creada.get("id")
+        url = creada.get("init_point") or creada.get("sandbox_init_point")
+        if not url:
+            raise ErrorMercadoPago("Mercado Pago no devolvió el link de pago")
+        return url
+
+    def reembolsar(self, negocio: Negocio, pago_id: str) -> None:
+        """Devolución total. La clave de idempotencia es fija por pago: si se reintenta,
+        Mercado Pago no devuelve dos veces."""
+        _llamar(
+            negocio,
+            "POST",
+            f"/v1/payments/{pago_id}/refunds",
+            json={},
+            headers={"X-Idempotency-Key": f"devolucion-{pago_id}"},
+        )
+
+
+def consultar_pago(negocio: Negocio, pago_id: str) -> PagoInformado:
+    """El pago tal como lo informa Mercado Pago, consultado con el token del complejo."""
+    pago = _llamar(negocio, "GET", f"/v1/payments/{pago_id}")
+    try:
+        reserva_id = uuid.UUID(str(pago.get("external_reference") or ""))
+    except ValueError:
+        reserva_id = None
+    # Un pago cobrado en otra cuenta no es de este complejo, aunque diga su reserva.
+    cobrador = pago.get("collector_id")
+    if cobrador is not None and negocio.mp_user_id and str(cobrador) != negocio.mp_user_id:
+        reserva_id = None
+    try:
+        monto = Decimal(str(pago.get("transaction_amount"))).quantize(Decimal("0.01"))
+    except InvalidOperation:
+        monto = Decimal("0.00")
+    return PagoInformado(
+        id=str(pago.get("id", pago_id)),
+        estado=str(pago.get("status", "")),
+        monto=monto,
+        moneda=str(pago.get("currency_id", "")),
+        reserva_id=reserva_id,
+        detalle={campo: pago.get(campo) for campo in CAMPOS_DEL_PAGO if campo in pago},
+    )
+
+
+# --- Firma de los webhooks ---
+
+
+def firma_valida(
+    x_signature: str | None, x_request_id: str | None, data_id: str | None, secreto: str
+) -> bool:
+    """Valida el header x-signature ("ts=...,v1=...") de un aviso de Mercado Pago.
+
+    Se firma "id:{data.id};request-id:{x-request-id};ts:{ts};" con HMAC-SHA256 y la clave
+    secreta de webhooks. data.id va en minúsculas. Si falta alguno de esos valores, esa
+    parte se saca del texto que se firma, como indica la documentación.
+    """
+    if not x_signature or not secreto:
+        return False
+    partes = dict(parte.strip().split("=", 1) for parte in x_signature.split(",") if "=" in parte)
+    ts, v1 = partes.get("ts"), partes.get("v1")
+    if not ts or not v1:
+        return False
+    manifest = ""
+    if data_id:
+        manifest += f"id:{data_id.lower()};"
+    if x_request_id:
+        manifest += f"request-id:{x_request_id};"
+    manifest += f"ts:{ts};"
+    esperada = hmac.new(secreto.encode(), manifest.encode(), hashlib.sha256).hexdigest()
+    return hmac.compare_digest(esperada, v1.strip().lower())

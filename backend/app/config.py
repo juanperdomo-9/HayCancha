@@ -41,6 +41,8 @@ class Settings(BaseSettings):
     # Adonde vuelve Mercado Pago después de autorizar. Vacío: {APP_BASE_URL}/mercadopago/callback.
     # Tiene que ser exactamente la misma que la cargada en la app de Mercado Pago.
     mp_redirect_uri: str = ""
+    # Clave secreta de webhooks (Tus integraciones > Webhooks): valida la firma de los avisos.
+    mp_webhook_secret: str = ""
     # true para vincular cuentas de prueba de Mercado Pago (devuelve credenciales TEST-).
     mp_tokens_de_prueba: bool = False
 

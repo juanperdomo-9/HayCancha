@@ -1,8 +1,18 @@
 import uuid
+from datetime import datetime
 from decimal import Decimal
 from typing import Any
 
-from sqlalchemy import ForeignKey, ForeignKeyConstraint, Numeric, String
+from sqlalchemy import (
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    ForeignKeyConstraint,
+    Index,
+    Numeric,
+    String,
+    text,
+)
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -14,6 +24,9 @@ class Pago(Base):
 
     mp_payment_id es único: los webhooks pueden llegar repetidos y el pago se registra una
     sola vez. `estado` es el de Mercado Pago (approved, rejected, refunded…).
+
+    `devolucion`: None (no se devuelve), "pendiente" (hay que devolverlo y Mercado Pago
+    todavía no lo aceptó: se reintenta) o "hecha".
     """
 
     __tablename__ = "pagos"
@@ -22,6 +35,14 @@ class Pago(Base):
             ["negocio_id", "reserva_id"],
             ["reservas.negocio_id", "reservas.id"],
             name="fk_pagos_reserva",
+        ),
+        CheckConstraint(
+            "devolucion IS NULL OR devolucion IN ('pendiente', 'hecha')", name="devolucion_valida"
+        ),
+        Index(
+            "ix_pagos_devolucion_pendiente",
+            "devolucion",
+            postgresql_where=text("devolucion = 'pendiente'"),
         ),
     )
 
@@ -33,4 +54,7 @@ class Pago(Base):
     moneda: Mapped[str] = mapped_column(String, server_default="ARS")
     estado: Mapped[str] = mapped_column(String)
     detalle: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+    devolucion: Mapped[str | None] = mapped_column(String)
+    devolucion_intentos: Mapped[int] = mapped_column(server_default="0")
+    devuelto_a: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     creado_a: Mapped[CreadoA]
