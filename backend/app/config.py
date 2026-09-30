@@ -30,6 +30,12 @@ class Settings(BaseSettings):
     cookie_segura: bool = False
     # Dónde se guardan logos y portadas (en la puesta en línea, un almacenamiento de archivos).
     carpeta_archivos: Path = Path("archivos")
+    # Supabase Storage para logos y portadas (producción). Vacíos: se usa la carpeta.
+    supabase_url: str = ""
+    # Settings > API Keys > Secret keys (sb_secret_...). Nunca en el frontend.
+    supabase_secret_key: str = ""
+    # Bucket público (Storage > New bucket, marcado como Public).
+    supabase_bucket: str = "archivos"
     # SOLO DESARROLLO: reservas online sin Mercado Pago, con un botón que simula el pago.
     pagos_simulados: bool = False
 

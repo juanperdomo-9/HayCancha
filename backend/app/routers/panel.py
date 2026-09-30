@@ -7,6 +7,7 @@ from typing import Literal
 from fastapi import APIRouter, BackgroundTasks, HTTPException, UploadFile, status
 from sqlalchemy import delete, func, select
 from sqlalchemy.exc import IntegrityError
+from starlette.concurrency import run_in_threadpool
 
 from app.db import sesion_de_negocio
 from app.dependencias import PanelActual, PanelDeConfiguracion
@@ -77,7 +78,7 @@ async def subir_imagen(
     tipo: Literal["logo", "portada"], archivo: UploadFile, panel: PanelDeConfiguracion
 ) -> esquemas.Configuracion:
     try:
-        url = guardar_imagen(panel.negocio_id, tipo, await archivo.read())
+        url = await run_in_threadpool(guardar_imagen, panel.negocio_id, tipo, await archivo.read())
     except ArchivoInvalido as error:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(error)) from error
     with sesion_de_negocio(panel.negocio_id) as s:

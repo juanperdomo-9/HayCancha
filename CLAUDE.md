@@ -55,7 +55,7 @@ La interfaz es en español de Argentina, con voseo ("Reservá", "Elegí un horar
   - Las extensiones van en el esquema `extensions`, como en Supabase. El rol `app_user` necesita ese esquema en su `search_path`.
   - Los tests automáticos usan un Postgres local descartable (`docker-compose.yml` en la raíz, puerto 5433, variable `TEST_DATABASE_URL`), nunca un proyecto de Supabase. Sin esa variable, los tests que necesitan base se saltean.
 - Dominios: `haycancha.com.ar` (frontend) y `api.haycancha.com.ar` (backend). Tienen que compartir dominio para que la cookie de sesión funcione.
-- Deploy: Render (web service para el backend, static site para el frontend, cron job para tareas periódicas)
+- Deploy: Render (web service para el backend, static site para el frontend, cron job para tareas periódicas), definido en `render.yaml` (Blueprint, región Oregon como Supabase). Pasos en `docs/puesta-en-linea.md`
 - Webhooks en desarrollo local: túnel tipo ngrok
 
 ## Estructura del repo
@@ -109,7 +109,8 @@ Nunca subir secretos al repo. Mantener actualizados `backend/.env.example` y `fr
 | `DATABASE_URL_ADMIN` | Rol dueño de las tablas: migraciones y panel de superadmin |
 | `JWT_SECRET` | Firma de las sesiones y de los links de invitación (32+ caracteres al azar) |
 | `COOKIE_SEGURA` | `true` en producción: la cookie de sesión solo por https |
-| `CARPETA_ARCHIVOS` | Dónde se guardan logos y portadas (hasta la puesta en línea) |
+| `CARPETA_ARCHIVOS` | Dónde se guardan logos y portadas en desarrollo |
+| `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_BUCKET` | Producción: logos y portadas en Supabase Storage (bucket público `archivos`), por la API REST con httpx. La clave `sb_secret_...` va en el header `apikey` |
 | `VITE_GOOGLE_MAPS_KEY` | (frontend) Maps Embed API para el mapa de cada complejo; restringida al dominio |
 | `TOKEN_ENCRYPTION_KEY` | Clave Fernet para encriptar tokens de Mercado Pago |
 | `MP_CLIENT_ID`, `MP_CLIENT_SECRET` | App de Mercado Pago (OAuth) |
