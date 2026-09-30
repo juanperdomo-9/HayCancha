@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 
 import { LogoHayCancha } from './marca/LogoHayCancha'
+import { BotonTurnia } from './TurniaCelular'
 
 const ANIO = new Date().getFullYear()
 
@@ -46,6 +47,7 @@ export function PieHayCancha({ extra }: { extra?: ReactNode }) {
           <Link to="/ingresar" className="text-cal/80 hover:text-cal">
             Acceso a tu panel
           </Link>
+          <BotonTurnia className="justify-self-start text-left text-cal/80 hover:text-cal">Conocé Turnia</BotonTurnia>
         </nav>
       </div>
       <div className="border-t border-cal/10">
@@ -88,10 +90,16 @@ export function PieComplejo({ nombre, direccion, barrio, referencia }: PieComple
             </span>
           )}
         </div>
-        <Link to="/" className="grid justify-items-start gap-1.5 text-sm text-white/60 hover:text-white sm:justify-items-end">
-          Reservas online con
-          <LogoHayCancha sobreOscuro className="text-[20px]" />
-        </Link>
+        <div className="grid justify-items-start gap-1.5 text-sm text-white/60 sm:justify-items-end">
+          <Link to="/" className="grid justify-items-start gap-1.5 hover:text-white sm:justify-items-end">
+            Reservas online con
+            <LogoHayCancha sobreOscuro className="text-[20px]" />
+          </Link>
+          <span>
+            un sistema de{' '}
+            <BotonTurnia className="font-semibold text-white/85 underline decoration-white/30 underline-offset-3 hover:text-white hover:decoration-white">Turnia</BotonTurnia>
+          </span>
+        </div>
       </div>
       <div className="border-t border-white/10">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-4 text-[13px] text-white/55 sm:px-8">
