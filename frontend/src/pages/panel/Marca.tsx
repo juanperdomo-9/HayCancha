@@ -27,6 +27,7 @@ function FormularioMarca({ slug, c }: { slug: string; c: Configuracion }) {
     direccion: c.direccion ?? '',
     barrio: c.barrio ?? '',
     referencia: c.referencia ?? '',
+    whatsapp: c.whatsapp ?? '',
     color_primario: c.color_primario,
     servicios: c.servicios,
   })
@@ -42,7 +43,7 @@ function FormularioMarca({ slug, c }: { slug: string; c: Configuracion }) {
     e.preventDefault()
     setOk(false)
     guardar.mutate(
-      { nombre: datos.nombre, direccion: datos.direccion || null, barrio: datos.barrio || null, referencia: datos.referencia || null, color_primario: datos.color_primario.toUpperCase(), servicios: datos.servicios },
+      { nombre: datos.nombre, direccion: datos.direccion || null, barrio: datos.barrio || null, referencia: datos.referencia || null, whatsapp: datos.whatsapp.replace(/\D/g, ''), color_primario: datos.color_primario.toUpperCase(), servicios: datos.servicios },
       { onSuccess: () => setOk(true) },
     )
   }
@@ -77,6 +78,15 @@ function FormularioMarca({ slug, c }: { slug: string; c: Configuracion }) {
                 value={datos.referencia}
                 onChange={(e) => setDatos({ ...datos, referencia: e.target.value })}
                 ayuda="Se muestra debajo de la dirección. No se usa para buscar en el mapa."
+              />
+              <Campo
+                etiqueta="WhatsApp para consultas (opcional)"
+                placeholder="54 9 221 555-1234"
+                inputMode="tel"
+                className="sm:col-span-2"
+                value={datos.whatsapp}
+                onChange={(e) => setDatos({ ...datos, whatsapp: e.target.value })}
+                ayuda="Con 54 9 y el código de área. Si lo cargás, tu página muestra un botón «Consultar por WhatsApp». Las reservas y los pagos siempre pasan por la página."
               />
             </div>
           </Tarjeta>

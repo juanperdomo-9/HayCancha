@@ -43,6 +43,10 @@ class Settings(BaseSettings):
     mp_redirect_uri: str = ""
     # Clave secreta de webhooks (Tus integraciones > Webhooks): valida la firma de los avisos.
     mp_webhook_secret: str = ""
+    # Resend: avisos al dueño e invitaciones. Sin clave, los emails solo se muestran en el log.
+    email_api_key: str = ""
+    # Remitente, con el dominio verificado en Resend: "HayCancha <avisos@mail.haycancha.com.ar>".
+    email_from: str = ""
     # true para vincular cuentas de prueba de Mercado Pago (devuelve credenciales TEST-).
     mp_tokens_de_prueba: bool = False
 

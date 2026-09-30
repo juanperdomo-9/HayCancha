@@ -27,6 +27,7 @@ export type Configuracion = {
   direccion: string | null
   barrio: string | null
   referencia: string | null
+  whatsapp: string | null
   servicios: string[]
   logo_url: string | null
   portada_url: string | null

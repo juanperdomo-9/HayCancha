@@ -4,7 +4,7 @@ y filtra por negocio_id. La configuración es solo para el dueño (y el superadm
 import uuid
 from typing import Literal
 
-from fastapi import APIRouter, HTTPException, UploadFile, status
+from fastapi import APIRouter, BackgroundTasks, HTTPException, UploadFile, status
 from sqlalchemy import delete, func, select
 from sqlalchemy.exc import IntegrityError
 
@@ -12,6 +12,7 @@ from app.db import sesion_de_negocio
 from app.dependencias import PanelActual, PanelDeConfiguracion
 from app.models import Deporte, Horario, Negocio, Recurso, Usuario
 from app.schemas import panel as esquemas
+from app.services import email
 from app.services.archivos import ArchivoInvalido, guardar_imagen
 from app.services.auth import Usuario as UsuarioAuth
 from app.services.auth import link_de_invitacion
@@ -54,6 +55,8 @@ def cambiar_configuracion(
     cambios: esquemas.CambiosDeConfiguracion, panel: PanelDeConfiguracion
 ) -> esquemas.Configuracion:
     valores = cambios.model_dump(exclude_unset=True)
+    if valores.get("whatsapp") == "":
+        valores["whatsapp"] = None  # vacío: sin botón de WhatsApp
     sena_tipo = valores.get("sena_tipo", panel.negocio.sena_tipo)
     sena_valor = valores.get("sena_valor", panel.negocio.sena_valor)
     if sena_tipo == "porcentaje" and sena_valor > 100:
@@ -271,7 +274,7 @@ def listar_equipo(panel: PanelDeConfiguracion) -> list[esquemas.Integrante]:
 
 @router.post("/equipo", status_code=status.HTTP_201_CREATED)
 def invitar_empleado(
-    datos: esquemas.NuevoIntegrante, panel: PanelDeConfiguracion
+    datos: esquemas.NuevoIntegrante, panel: PanelDeConfiguracion, tareas: BackgroundTasks
 ) -> esquemas.IntegranteConLink:
     with sesion_de_negocio(panel.negocio_id) as s:
         usuario = Usuario(negocio_id=panel.negocio_id, email=datos.email.lower(), rol="empleado")
@@ -282,9 +285,11 @@ def invitar_empleado(
             raise HTTPException(
                 status.HTTP_409_CONFLICT, "Ese email ya tiene una cuenta en HayCancha."
             ) from error
-        return esquemas.IntegranteConLink(
-            integrante=_integrante(usuario), link=link_de_invitacion(_usuario_auth(usuario))
+        link = link_de_invitacion(_usuario_auth(usuario))
+        tareas.add_task(
+            email.enviar, email.invitacion(panel.negocio, usuario.email, link=link, rol="empleado")
         )
+        return esquemas.IntegranteConLink(integrante=_integrante(usuario), link=link)
 
 
 def _buscar_integrante(s, panel, usuario_id: uuid.UUID) -> Usuario:
@@ -297,10 +302,16 @@ def _buscar_integrante(s, panel, usuario_id: uuid.UUID) -> Usuario:
 
 
 @router.post("/equipo/{usuario_id}/invitacion")
-def nuevo_link(usuario_id: uuid.UUID, panel: PanelDeConfiguracion) -> esquemas.LinkDeInvitacion:
+def nuevo_link(
+    usuario_id: uuid.UUID, panel: PanelDeConfiguracion, tareas: BackgroundTasks
+) -> esquemas.LinkDeInvitacion:
     with sesion_de_negocio(panel.negocio_id) as s:
         usuario = _buscar_integrante(s, panel, usuario_id)
-        return esquemas.LinkDeInvitacion(link=link_de_invitacion(_usuario_auth(usuario)))
+        link = link_de_invitacion(_usuario_auth(usuario))
+        tareas.add_task(
+            email.enviar, email.invitacion(panel.negocio, usuario.email, link=link, rol=usuario.rol)
+        )
+        return esquemas.LinkDeInvitacion(link=link)
 
 
 @router.patch("/equipo/{usuario_id}")

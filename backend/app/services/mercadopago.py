@@ -195,6 +195,13 @@ def renovar_tokens_por_vencer(session: Session) -> ResultadoRenovacion:
                 logger.warning("Mercado Pago de %s ya no autoriza: se desvincula", negocio.slug)
                 desvincular(negocio)
                 resultado.desvinculados += 1
+                from app.services import email
+
+                email.enviar(
+                    email.mercadopago_desvinculado(
+                        negocio, email.emails_de_duenos(session, negocio.id)
+                    )
+                )
             else:
                 logger.warning("No se pudo renovar el token de %s: %s", negocio.slug, error)
                 resultado.fallidos += 1

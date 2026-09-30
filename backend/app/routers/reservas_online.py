@@ -12,7 +12,7 @@ import uuid
 from datetime import timedelta
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -21,6 +21,7 @@ from app.db import get_session, sesion_de_negocio
 from app.models import Cliente, Deporte, Negocio, Recurso, Reserva
 from app.routers.publico import DIAS_RESERVABLES, buscar_negocio
 from app.schemas import reserva_online as esquemas
+from app.services import avisos
 from app.services.agenda import saldo
 from app.services.cancelaciones import (
     CambioNoPermitido,
@@ -280,11 +281,13 @@ def cancelar(
     reserva_id: uuid.UUID,
     datos: esquemas.ConfirmacionDelJugador,
     session: SesionPublica,
+    tareas: BackgroundTasks,
 ) -> esquemas.ReservaPublica:
     """Con la anticipación de la política del complejo, la seña se devuelve sola."""
     negocio = buscar_negocio(session, slug)
     with sesion_de_negocio(negocio.id) as s:
         reserva = _del_jugador(s, negocio, reserva_id, datos.telefono)
+        confirmada = reserva.estado == "confirmada"
         try:
             pago = cancelar_como_jugador(s, negocio, reserva)
         except CambioNoPermitido as error:
@@ -292,7 +295,8 @@ def cancelar(
         s.commit()
         if pago is not None:
             devolver(s, negocio, pago, proveedor_para(negocio))
-        # Acá se avisa al dueño por email (bloque 2D).
+        if confirmada:  # una pendiente de pago que se cancela no le importa al dueño
+            tareas.add_task(avisos.reserva_cancelada, negocio.id, reserva.id)
         return _publica(s, negocio, reserva)
 
 
@@ -302,11 +306,13 @@ def cambiar_horario(
     reserva_id: uuid.UUID,
     datos: esquemas.CambioDeHorario,
     session: SesionPublica,
+    tareas: BackgroundTasks,
 ) -> esquemas.ReservaPublica:
     """Una vez, con la anticipación de la política. La seña pagada se mantiene."""
     negocio = buscar_negocio(session, slug)
     with sesion_de_negocio(negocio.id) as s:
         reserva = _del_jugador(s, negocio, reserva_id, datos.telefono)
+        antes = reserva.inicio
         try:
             cambiar_como_jugador(
                 s, negocio, reserva, inicio=datos.inicio, recurso_id=datos.recurso_id
@@ -320,13 +326,13 @@ def cambiar_horario(
         except TurnoInvalido as error:
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(error)) from error
         s.commit()
-        # Acá se avisa al dueño por email (bloque 2D).
+        tareas.add_task(avisos.horario_cambiado, negocio.id, reserva.id, antes)
         return _publica(s, negocio, reserva)
 
 
 @router.post("/{reserva_id}/simular-pago")
 def simular_pago(
-    slug: str, reserva_id: uuid.UUID, session: SesionPublica
+    slug: str, reserva_id: uuid.UUID, session: SesionPublica, tareas: BackgroundTasks
 ) -> esquemas.ReservaPublica:
     """SOLO DESARROLLO: acredita un pago aprobado por el mismo camino que el webhook."""
     negocio = buscar_negocio(session, slug)
@@ -344,4 +350,5 @@ def simular_pago(
             s.rollback()
             raise HTTPException(status.HTTP_409_CONFLICT, "Esta reserva ya no se puede pagar.")
         s.commit()
+        tareas.add_task(avisos.reserva_confirmada, negocio.id, reserva.id)
         return _publica(s, negocio, reserva)

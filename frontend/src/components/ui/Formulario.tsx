@@ -102,7 +102,7 @@ export function CopiarLink({ link, etiqueta = 'Link para elegir la contraseña' 
           {copiado ? 'Copiado' : 'Copiar'}
         </Boton>
       </div>
-      <span className="text-[12px] text-gris">Vence en 7 días y sirve una sola vez.</span>
+      <span className="text-[12px] text-gris">Ya se lo mandamos por email. Si no le llega, pasale este link. Vence en 7 días y sirve una sola vez.</span>
     </div>
   )
 }

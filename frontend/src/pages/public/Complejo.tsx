@@ -1,3 +1,4 @@
+import { MessageCircle } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router'
@@ -205,6 +206,17 @@ function PaginaComplejo({ complejo }: { complejo: ComplejoDetalle }) {
             Dónde queda
           </h3>
           <MapaComplejo nombre={complejo.nombre} direccion={complejo.direccion} barrio={complejo.barrio} referencia={complejo.referencia} />
+          {complejo.whatsapp && (
+            <a
+              href={`https://wa.me/${complejo.whatsapp}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold ring-[1.5px] ring-borde ring-inset hover:ring-tinta"
+            >
+              <MessageCircle className="size-4" aria-hidden="true" />
+              Consultar por WhatsApp
+            </a>
+          )}
         </div>
         {complejo.servicios.length > 0 && (
           <div>

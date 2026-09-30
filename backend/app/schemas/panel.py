@@ -56,6 +56,7 @@ class Configuracion(BaseModel):
     direccion: str | None
     barrio: str | None
     referencia: str | None
+    whatsapp: str | None
     servicios: list[str]
     logo_url: str | None
     portada_url: str | None
@@ -72,6 +73,8 @@ class CambiosDeConfiguracion(BaseModel):
     direccion: TextoOpcional | None = None
     barrio: TextoOpcional | None = None
     referencia: TextoOpcional | None = None
+    # Con código de país y de área, solo números (5491155551234). Vacío: sin botón.
+    whatsapp: Annotated[str, StringConstraints(pattern=r"^(\d{10,15})?$")] | None = None
     servicios: list[Texto] | None = None
     color_primario: Color | None = None
     color_secundario: Color | None = None

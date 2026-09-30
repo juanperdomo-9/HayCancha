@@ -51,6 +51,8 @@ class Negocio(Base):
     plan: Mapped[str | None] = mapped_column(String)
     estado_cuenta: Mapped[str] = mapped_column(String, server_default="al_dia")
     # Mercado Pago (fase 2). Los tokens van encriptados y nunca salen del backend.
+    # WhatsApp para consultas (opcional): si está, la página muestra "Consultar por WhatsApp".
+    whatsapp: Mapped[str | None] = mapped_column(String)
     mp_user_id: Mapped[str | None] = mapped_column(String)
     mp_access_token_enc: Mapped[str | None] = mapped_column(String)
     mp_refresh_token_enc: Mapped[str | None] = mapped_column(String)

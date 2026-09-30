@@ -4,7 +4,7 @@ configuración de un complejo se hace desde su propio panel (/panel/{slug})."""
 
 import uuid
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, HTTPException, status
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -13,6 +13,7 @@ from app.db import sesion_admin
 from app.dependencias import Superadmin
 from app.models import Negocio, Recurso, Usuario
 from app.schemas import panel as esquemas
+from app.services import email as correo
 from app.services.auth import Usuario as UsuarioAuth
 from app.services.auth import link_de_invitacion
 from app.services.slugs import validar_slug
@@ -64,7 +65,9 @@ def listar_complejos(_: Superadmin) -> list[esquemas.ComplejoAdmin]:
 
 
 @router.post("/complejos", status_code=status.HTTP_201_CREATED)
-def dar_de_alta(datos: esquemas.AltaDeComplejo, _: Superadmin) -> esquemas.ComplejoCreado:
+def dar_de_alta(
+    datos: esquemas.AltaDeComplejo, _: Superadmin, tareas: BackgroundTasks
+) -> esquemas.ComplejoCreado:
     try:
         slug = validar_slug(datos.slug)
     except ValueError as error:
@@ -99,7 +102,11 @@ def dar_de_alta(datos: esquemas.AltaDeComplejo, _: Superadmin) -> esquemas.Compl
             raise HTTPException(
                 status.HTTP_409_CONFLICT, "La dirección o el email ya están en uso."
             ) from error
-        return esquemas.ComplejoCreado(complejo=_complejo(s, negocio), link_dueno=_link(dueno))
+        link = _link(dueno)
+        tareas.add_task(
+            correo.enviar, correo.invitacion(negocio, dueno.email, link=link, rol="dueno")
+        )
+        return esquemas.ComplejoCreado(complejo=_complejo(s, negocio), link_dueno=link)
 
 
 def _buscar(session: Session, negocio_id: uuid.UUID) -> Negocio:
@@ -122,10 +129,16 @@ def cambiar_complejo(
 
 
 @router.post("/complejos/{negocio_id}/invitacion")
-def link_para_el_dueno(negocio_id: uuid.UUID, _: Superadmin) -> esquemas.LinkDeInvitacion:
+def link_para_el_dueno(
+    negocio_id: uuid.UUID, _: Superadmin, tareas: BackgroundTasks
+) -> esquemas.LinkDeInvitacion:
     with sesion_admin() as s:
-        _buscar(s, negocio_id)
+        negocio = _buscar(s, negocio_id)
         dueno = _dueno(s, negocio_id)
         if dueno is None:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Ese complejo no tiene dueño cargado.")
-        return esquemas.LinkDeInvitacion(link=_link(dueno))
+        link = _link(dueno)
+        tareas.add_task(
+            correo.enviar, correo.invitacion(negocio, dueno.email, link=link, rol="dueno")
+        )
+        return esquemas.LinkDeInvitacion(link=link)

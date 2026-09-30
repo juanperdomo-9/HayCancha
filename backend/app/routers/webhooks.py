@@ -17,14 +17,24 @@ import logging
 import uuid
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Body, Depends, Header, HTTPException, Request, Response, status
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Body,
+    Depends,
+    Header,
+    HTTPException,
+    Request,
+    Response,
+    status,
+)
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.config import get_settings
 from app.db import get_session, sesion_de_negocio
 from app.models import Negocio, Pago
-from app.services import mercadopago
+from app.services import avisos, mercadopago
 from app.services.cobros import Resultado, acreditar_pago, devolver, proveedor_para
 
 logger = logging.getLogger(__name__)
@@ -65,7 +75,9 @@ def _validar(request: Request, cuerpo: dict[str, Any], x_signature, x_request_id
     return pago_id if _es_de_pago(request, cuerpo) else None
 
 
-def procesar_pago(negocio: Negocio, pago_id: str) -> Resultado:
+def procesar_pago(
+    negocio: Negocio, pago_id: str, tareas: BackgroundTasks | None = None
+) -> Resultado:
     """Consulta el pago y lo acredita. Si hay que devolverlo, lo devuelve (o lo deja
     pendiente para que la tarea periódica lo reintente)."""
     try:
@@ -85,7 +97,8 @@ def procesar_pago(negocio: Negocio, pago_id: str) -> Resultado:
             if pago is not None:
                 devolver(s, negocio, pago, proveedor_para(negocio))
     logger.info("Pago %s de %s: %s", pago_id, negocio.slug, resultado)
-    # Acá se avisa al dueño por email cuando se confirma (bloque 2D).
+    if resultado is Resultado.CONFIRMADA and tareas is not None:
+        tareas.add_task(avisos.reserva_confirmada, negocio.id, informado.reserva_id)
     return resultado
 
 
@@ -94,6 +107,7 @@ def aviso_del_complejo(
     negocio_id: uuid.UUID,
     request: Request,
     session: SesionPublica,
+    tareas: BackgroundTasks,
     cuerpo: Cuerpo = None,
     x_signature: FirmaHeader = None,
     x_request_id: RequestIdHeader = None,
@@ -105,7 +119,7 @@ def aviso_del_complejo(
     if negocio is None or not negocio.mp_access_token_enc:
         logger.warning("Aviso del pago %s para un complejo sin Mercado Pago", pago_id)
         return _ok()
-    procesar_pago(negocio, pago_id)
+    procesar_pago(negocio, pago_id, tareas)
     return _ok()
 
 
@@ -113,6 +127,7 @@ def aviso_del_complejo(
 def aviso_general(
     request: Request,
     session: SesionPublica,
+    tareas: BackgroundTasks,
     cuerpo: Cuerpo = None,
     x_signature: FirmaHeader = None,
     x_request_id: RequestIdHeader = None,
@@ -132,7 +147,7 @@ def aviso_general(
     falla: HTTPException | None = None
     for negocio in negocios:
         try:
-            if procesar_pago(negocio, pago_id) is not Resultado.SIN_RESERVA:
+            if procesar_pago(negocio, pago_id, tareas) is not Resultado.SIN_RESERVA:
                 return _ok()
         except HTTPException as error:  # ese complejo no pudo consultar: probamos el resto
             falla = error

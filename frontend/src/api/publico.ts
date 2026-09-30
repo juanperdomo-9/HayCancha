@@ -33,6 +33,7 @@ export type ComplejoDetalle = {
   barrio: string | null
   direccion: string | null
   referencia: string | null
+  whatsapp: string | null
   servicios: string[]
   logo_url: string | null
   portada_url: string | null

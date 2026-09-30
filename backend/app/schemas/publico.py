@@ -49,6 +49,7 @@ class ComplejoDetalle(BaseModel):
     barrio: str | None
     direccion: str | None
     referencia: str | None
+    whatsapp: str | None
     servicios: list[str]
     logo_url: str | None
     portada_url: str | None

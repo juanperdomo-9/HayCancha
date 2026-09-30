@@ -19,7 +19,7 @@ La interfaz es en español de Argentina, con voseo ("Reservá", "Elegí un horar
 
 - **Una fase a la vez.** Hacé solo la fase que te pida. No adelantes funciones de fases siguientes.
 - **Primero el plan, después el código.** Antes de cada tarea grande, proponé un plan corto (archivos a crear o tocar, decisiones) y esperá el OK.
-- **Nada de WhatsApp.** Todo pasa en la página. Las notificaciones van por email (y push más adelante).
+- **Nada de WhatsApp.** Todo pasa en la página. Las notificaciones van por email (y push más adelante). Única excepción: el complejo puede cargar un número para un botón "Consultar por WhatsApp" en su página (solo abre un chat para dudas; reservas, pagos y avisos nunca pasan por ahí).
 - **La IA nunca confirma turnos ni valida pagos.** Un turno solo pasa a `confirmada` cuando llega un webhook de Mercado Pago válido con el pago aprobado. Nunca se aceptan capturas de comprobantes.
 - **Nunca confiar en montos del frontend.** Precios y señas se calculan siempre en el backend.
 - **Preguntá antes de sumar dependencias** que no estén en la sección Stack.
@@ -118,7 +118,7 @@ Nunca subir secretos al repo. Mantener actualizados `backend/.env.example` y `fr
 | `MP_TOKENS_DE_PRUEBA` | `true` solo para vincular cuentas de prueba de Mercado Pago (credenciales TEST-) |
 | `APP_BASE_URL` | URL pública del backend (para `notification_url`) |
 | `FRONTEND_URL` | URL pública del frontend (para `back_urls`) |
-| `EMAIL_API_KEY`, `EMAIL_FROM` | Envío de emails con Resend (avisos al dueño e invitaciones) |
+| `EMAIL_API_KEY`, `EMAIL_FROM` | Envío de emails con Resend (avisos al dueño e invitaciones). Sin clave, los emails se muestran en el log. `EMAIL_FROM` con el dominio verificado: `HayCancha <avisos@mail.haycancha.com.ar>` |
 | `PAGOS_SIMULADOS` | Solo desarrollo: permite reservas online sin Mercado Pago, con un botón para simular el pago |
 | `LLM_API_KEY` | Solo fase 3 |
 
@@ -346,7 +346,8 @@ Hasta la puesta en línea, todo se desarrolla en local: la base es el Postgres d
 - [x] Preferencia con vencimiento, sin efectivo y `binary_mode`
 - [x] Webhook con firma, consulta del pago, idempotencia y reembolsos (con reintento de devoluciones pendientes)
 - [x] Cancelación y cambio de horario del jugador (una vez, con la anticipación de la política), y "¿Devolver la seña?" al cancelar desde el panel
-- [ ] Emails al dueño (reserva nueva) e invitaciones, con Resend
+- [x] Emails al dueño (reserva nueva, cancelación, cambio de horario, devolución pendiente, Mercado Pago desvinculado) e invitaciones por email, con Resend (sin `EMAIL_API_KEY` se muestran en el log). Falta verificar el dominio en Resend (puesta en línea)
+- [x] Botón opcional "Consultar por WhatsApp" por complejo (`negocios.whatsapp`)
 - [ ] Pruebas completas con usuarios de prueba de Mercado Pago
 
 **Puesta en línea** (cuando haya que mostrarlo afuera o antes de cobrar señas reales; puede ir entre la fase 1 y la 2). Plan detallado en `docs/puesta-en-linea.md`: el dominio se delega a un DNS (Cloudflare) porque nic.ar no guarda registros, y los logos no pueden quedar en el disco de Render (se borra en cada deploy).

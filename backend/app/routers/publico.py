@@ -134,6 +134,7 @@ def ver_complejo(slug: str, session: SesionPublica) -> esquemas.ComplejoDetalle:
         barrio=negocio.barrio,
         direccion=negocio.direccion,
         referencia=negocio.referencia,
+        whatsapp=negocio.whatsapp,
         servicios=negocio.servicios,
         logo_url=negocio.logo_url,
         portada_url=negocio.portada_url,

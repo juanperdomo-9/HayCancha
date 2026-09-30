@@ -242,7 +242,12 @@ def devolver(
         proveedor.reembolsar(negocio, pago.mp_payment_id)
     except ErrorDePago as error:
         logger.warning("No se pudo devolver el pago %s: %s", pago.mp_payment_id, error)
+        primera_vez = pago.devolucion_intentos == 1
         session.commit()
+        if primera_vez:
+            from app.services import avisos
+
+            avisos.devolucion_pendiente(negocio.id, pago.id)
         return False
     pago.devolucion, pago.estado, pago.devuelto_a = "hecha", "refunded", ahora()
     session.commit()
