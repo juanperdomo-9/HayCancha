@@ -23,6 +23,7 @@ from app.services.reservas import (
     DatosCliente,
     TurnoInvalido,
     TurnoNoDisponible,
+    esperar_turno_para_reservar,
     reservar,
     turno_de_la_cancha,
 )
@@ -278,6 +279,7 @@ def mover_reserva(
             raise HTTPException(
                 status.HTTP_422_UNPROCESSABLE_CONTENT, "Ese horario no es un turno de esa cancha."
             )
+        esperar_turno_para_reservar(s, panel.negocio_id)
         reserva.recurso_id, reserva.inicio, reserva.fin = cancha.id, turno.inicio, turno.fin
         reserva.precio = turno.precio
         try:
@@ -309,6 +311,7 @@ def bloquear(datos: esquemas.Bloqueo, panel: PanelActual) -> esquemas.ResultadoD
                 )
             )
         }
+        esperar_turno_para_reservar(s, panel.negocio_id)
         for pedido in datos.turnos:
             cancha = canchas.get(pedido.recurso_id)
             turno = turno_de_la_cancha(s, panel.negocio, cancha, pedido.inicio) if cancha else None

@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from decimal import Decimal
 
-from sqlalchemy import update
+from sqlalchemy import func, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -92,6 +92,17 @@ def turno_de_la_cancha(
     return None
 
 
+def esperar_turno_para_reservar(session: Session, negocio_id: uuid.UUID) -> None:
+    """Las reservas de un mismo complejo se crean de a una (lock hasta el commit).
+
+    Sin esto, dos reservas simultáneas que prueban canchas en distinto orden pueden
+    esperarse una a la otra en la regla de superposición y Postgres corta una por deadlock.
+    """
+    session.execute(
+        select(func.pg_advisory_xact_lock(func.hashtextextended(f"reservas:{negocio_id}", 0)))
+    )
+
+
 def reservar(
     session: Session,
     negocio: Negocio,
@@ -119,6 +130,7 @@ def reservar(
     if not candidatas:
         raise TurnoInvalido("Ese horario no es un turno de esa cancha.")
 
+    esperar_turno_para_reservar(session, negocio.id)
     liberar_vencidas(session, negocio.id, [c.id for c in candidatas])
     cliente_id = buscar_o_crear_cliente(session, negocio.id, cliente)
 

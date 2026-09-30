@@ -1,7 +1,7 @@
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -37,6 +37,13 @@ class Settings(BaseSettings):
     @classmethod
     def _usar_psycopg(cls, url: str) -> str:
         return normalizar_url_postgres(url)
+
+    @model_validator(mode="after")
+    def _sin_pagos_simulados_en_produccion(self) -> "Settings":
+        # Con cookie segura estamos en https (producción): ahí nunca se simulan pagos.
+        if self.pagos_simulados and self.cookie_segura:
+            raise ValueError("PAGOS_SIMULADOS no se puede usar en producción (COOKIE_SEGURA=true).")
+        return self
 
 
 @lru_cache

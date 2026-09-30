@@ -14,10 +14,10 @@ from sqlalchemy.orm import Session
 
 from app.db import get_session, sesion_de_negocio
 from app.models import Cliente, Deporte, Negocio, Recurso, Reserva
-from app.routers.publico import buscar_negocio
+from app.routers.publico import DIAS_RESERVABLES, buscar_negocio
 from app.schemas import reserva_online as esquemas
 from app.services.cobros import ProveedorSimulado, Resultado, acreditar_pago, proveedor_para
-from app.services.disponibilidad import ahora, zona_del_negocio
+from app.services.disponibilidad import ahora, hoy_en_el_negocio, zona_del_negocio
 from app.services.reservas import (
     DatosCliente,
     TurnoInvalido,
@@ -66,6 +66,18 @@ def reservar_online(
     if proveedor is None:
         raise HTTPException(
             status.HTTP_409_CONFLICT, "Este complejo todavía no toma reservas online."
+        )
+
+    # La página solo ofrece turnos por venir dentro del plazo; el backend lo exige igual.
+    if datos.inicio <= ahora():
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT, "Ese turno ya empezó. Elegí otro."
+        )
+    fecha = datos.inicio.astimezone(zona_del_negocio(negocio)).date()
+    if fecha >= hoy_en_el_negocio(negocio) + timedelta(days=DIAS_RESERVABLES):
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            f"Se puede reservar hasta {DIAS_RESERVABLES} días para adelante.",
         )
 
     with sesion_de_negocio(negocio.id) as s:

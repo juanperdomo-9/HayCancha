@@ -243,3 +243,25 @@ def test_pago_de_una_reserva_de_otro_complejo_no_se_acredita(
     otro = admin.get(Negocio, crear_negocio())
     with sesion_de_negocio(otro.id) as s:
         assert acreditar_pago(s, otro, pago(pendiente)) is Resultado.SIN_RESERVA
+
+
+@pytest.mark.parametrize("dias", [-2, 31])
+def test_no_se_reserva_un_turno_pasado_ni_demasiado_lejano(complejo, simulados, dias) -> None:
+    inicio = complejo["a_las"](21) + timedelta(days=dias)
+    respuesta = TestClient(app).post(
+        f"/publico/complejos/{complejo['slug']}/reservas",
+        json={"deporte": "futbol5", "inicio": inicio.isoformat(),
+              "nombre": "Juan Pérez", "telefono": "11 5555-1234"},
+    )  # fmt: skip
+    assert respuesta.status_code == 422
+
+
+def test_pagos_simulados_no_arranca_en_produccion(monkeypatch) -> None:
+    from pydantic import ValidationError
+
+    from app.config import Settings
+
+    monkeypatch.setenv("PAGOS_SIMULADOS", "true")
+    monkeypatch.setenv("COOKIE_SEGURA", "true")
+    with pytest.raises(ValidationError, match="PAGOS_SIMULADOS"):
+        Settings()
