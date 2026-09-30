@@ -129,3 +129,14 @@ def test_whatsapp_opcional_del_complejo(complejo) -> None:  # noqa: F811
     assert cliente.patch(config, json={"whatsapp": "5492215551234"}).status_code == 200
     assert TestClient(app).get(publico).json()["whatsapp"] == "5492215551234"
     assert cliente.patch(config, json={"whatsapp": ""}).json()["whatsapp"] is None
+
+
+def test_ubicacion_para_el_mapa(complejo) -> None:  # noqa: F811
+    cliente = entrar(complejo["dueno"])
+    config = f"/panel/{complejo['slug']}/configuracion"
+    assert cliente.patch(config, json={"latitud": 40.0, "longitud": -3.7}).status_code == 422
+    ok = cliente.patch(config, json={"latitud": -34.9214, "longitud": -57.9545})
+    assert ok.status_code == 200, ok.text
+    lista = TestClient(app).get("/publico/complejos").json()
+    propio = next(c for c in lista if c["slug"] == complejo["slug"])
+    assert (propio["latitud"], propio["longitud"]) == (-34.9214, -57.9545)

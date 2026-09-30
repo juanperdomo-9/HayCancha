@@ -28,6 +28,8 @@ export type Configuracion = {
   barrio: string | null
   referencia: string | null
   whatsapp: string | null
+  latitud: number | null
+  longitud: number | null
   servicios: string[]
   logo_url: string | null
   portada_url: string | null

@@ -8,6 +8,8 @@ export type Deporte = { codigo: string; nombre: string }
 
 export type ComplejoResumen = {
   slug: string
+  latitud: number | null
+  longitud: number | null
   nombre: string
   barrio: string | null
   logo_url: string | null

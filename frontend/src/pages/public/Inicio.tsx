@@ -7,6 +7,8 @@ import { DirectorioComplejos } from '../../components/complejo/DirectorioComplej
 import { LogoHayCancha } from '../../components/marca/LogoHayCancha'
 import { PieHayCancha } from '../../components/PieDePagina'
 import { TemaComplejo } from '../../theme/TemaComplejo'
+import { useComplejos } from '../../api/publico'
+import { MapaDeCanchas } from '../../components/MapaLeaflet'
 
 const ENTRADA = [0.2, 0.8, 0.2, 1] as const
 
@@ -65,8 +67,8 @@ export default function Inicio() {
               transition={{ duration: 0.6, ease: ENTRADA, delay: 0.15 }}
               className="mt-6 max-w-[44ch] text-[clamp(17px,1.7vw,20px)] text-gris"
             >
-              Mirá qué canchas están libres de verdad, <b className="font-semibold text-noche">pagá la seña con Mercado Pago</b> y el
-              turno queda tuyo. Sin esperar que alguien te conteste un mensaje.
+              Mirá qué canchas están libres de verdad, <b className="font-semibold text-noche">pagá la seña con Mercado Pago</b> y el turno queda tuyo. Sin esperar que
+              alguien te conteste un mensaje.
             </motion.p>
             <motion.div
               initial={{ opacity: 0, y: 14 }}
@@ -74,16 +76,10 @@ export default function Inicio() {
               transition={{ duration: 0.6, ease: ENTRADA, delay: 0.22 }}
               className="mt-8 flex flex-wrap gap-2.5"
             >
-              <a
-                href="#complejos"
-                className="rounded-full bg-cesped px-5 py-3 font-semibold text-white transition-transform hover:-translate-y-px"
-              >
+              <a href="#complejos" className="rounded-full bg-cesped px-5 py-3 font-semibold text-white transition-transform hover:-translate-y-px">
                 Buscar cancha
               </a>
-              <a
-                href="#duenos"
-                className="rounded-full px-5 py-3 font-semibold ring-[1.5px] ring-noche transition-colors ring-inset hover:bg-noche hover:text-crema"
-              >
+              <a href="#duenos" className="rounded-full px-5 py-3 font-semibold ring-[1.5px] ring-noche transition-colors ring-inset hover:bg-noche hover:text-crema">
                 Tengo un complejo
               </a>
             </motion.div>
@@ -107,6 +103,16 @@ export default function Inicio() {
           </motion.div>
         </section>
 
+        <section id="mapa" className="border-t border-linea">
+          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-8 sm:py-24">
+            <h2 className="font-titulo text-[clamp(40px,6vw,64px)] leading-[.9] font-extrabold uppercase">El mapa de las canchas</h2>
+            <p className="mt-2 mb-6 max-w-[60ch] text-gris">
+              Todos los complejos que trabajan con HayCancha. Buscá por nombre, barrio o deporte y tocá un pin para ver sus horarios.
+            </p>
+            <SeccionMapa />
+          </div>
+        </section>
+
         <section id="complejos" className="border-t border-linea">
           <div className="mx-auto max-w-6xl px-4 py-16 sm:px-8 sm:py-24">
             <DirectorioComplejos />
@@ -116,9 +122,7 @@ export default function Inicio() {
         <section id="duenos" className="bg-noche text-cal">
           <div className="mx-auto max-w-6xl px-4 py-16 sm:px-8 sm:py-28">
             <p className="text-xs font-semibold tracking-[.12em] text-cal/60 uppercase">Para dueños de complejos</p>
-            <h2 className="mt-3 font-titulo text-[clamp(42px,6.4vw,80px)] leading-[.9] font-extrabold text-balance uppercase">
-              Tu agenda se llena sola
-            </h2>
+            <h2 className="mt-3 font-titulo text-[clamp(42px,6.4vw,80px)] leading-[.9] font-extrabold text-balance uppercase">Tu agenda se llena sola</h2>
             <ul className="mt-10 grid gap-8 sm:grid-cols-3 sm:gap-10">
               {PARA_DUENOS.map(({ icono: Icono, clave, titulo, texto }) => (
                 <li key={clave} className="grid content-start gap-2">
@@ -136,4 +140,9 @@ export default function Inicio() {
       <PieHayCancha />
     </div>
   )
+}
+
+function SeccionMapa() {
+  const { data } = useComplejos()
+  return <MapaDeCanchas complejos={data ?? []} />
 }

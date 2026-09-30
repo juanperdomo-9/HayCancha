@@ -1,5 +1,5 @@
 import { ImageUp, Plus, X } from 'lucide-react'
-import { type FormEvent, useRef, useState } from 'react'
+import { type FormEvent, useCallback, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router'
 
 import { mensaje } from '../../api/client'
@@ -9,6 +9,7 @@ import { PortadaComplejo } from '../../components/complejo/PortadaComplejo'
 import { Aviso, Boton, Campo, Tarjeta } from '../../components/ui/Formulario'
 import { TemaComplejo } from '../../theme/TemaComplejo'
 import { EncabezadoSeccion } from './EncabezadoSeccion'
+import { ElegirUbicacion } from '../../components/MapaLeaflet'
 
 const SERVICIOS_COMUNES = ['Vestuarios', 'Duchas', 'Estacionamiento', 'Bufé', 'Parrilla', 'Wi-Fi', 'Alquiler de pelotas', 'Alquiler de paletas']
 
@@ -28,9 +29,13 @@ function FormularioMarca({ slug, c }: { slug: string; c: Configuracion }) {
     barrio: c.barrio ?? '',
     referencia: c.referencia ?? '',
     whatsapp: c.whatsapp ?? '',
+    latitud: c.latitud,
+    longitud: c.longitud,
     color_primario: c.color_primario,
     servicios: c.servicios,
   })
+  // Estable: el mapa la usa en sus efectos.
+  const ubicacion = useCallback((u: { latitud: number | null; longitud: number | null }) => setDatos((d) => ({ ...d, ...u })), [])
   const [otroServicio, setOtroServicio] = useState('')
   const [ok, setOk] = useState(false)
 
@@ -43,7 +48,17 @@ function FormularioMarca({ slug, c }: { slug: string; c: Configuracion }) {
     e.preventDefault()
     setOk(false)
     guardar.mutate(
-      { nombre: datos.nombre, direccion: datos.direccion || null, barrio: datos.barrio || null, referencia: datos.referencia || null, whatsapp: datos.whatsapp.replace(/\D/g, ''), color_primario: datos.color_primario.toUpperCase(), servicios: datos.servicios },
+      {
+        nombre: datos.nombre,
+        direccion: datos.direccion || null,
+        barrio: datos.barrio || null,
+        referencia: datos.referencia || null,
+        whatsapp: datos.whatsapp.replace(/\D/g, ''),
+        latitud: datos.latitud,
+        longitud: datos.longitud,
+        color_primario: datos.color_primario.toUpperCase(),
+        servicios: datos.servicios,
+      },
       { onSuccess: () => setOk(true) },
     )
   }
@@ -69,7 +84,12 @@ function FormularioMarca({ slug, c }: { slug: string; c: Configuracion }) {
           <Tarjeta titulo="Datos del complejo">
             <div className="grid gap-4 sm:grid-cols-2">
               <Campo etiqueta="Nombre" required value={datos.nombre} onChange={(e) => setDatos({ ...datos, nombre: e.target.value })} className="sm:col-span-2" />
-              <Campo etiqueta="Dirección" placeholder="Av. Triunvirato 4820" value={datos.direccion} onChange={(e) => setDatos({ ...datos, direccion: e.target.value })} />
+              <Campo
+                etiqueta="Dirección"
+                placeholder="Av. Triunvirato 4820"
+                value={datos.direccion}
+                onChange={(e) => setDatos({ ...datos, direccion: e.target.value })}
+              />
               <Campo etiqueta="Barrio o ciudad" placeholder="Villa Urquiza" value={datos.barrio} onChange={(e) => setDatos({ ...datos, barrio: e.target.value })} />
               <Campo
                 etiqueta="Referencia para llegar"
@@ -89,6 +109,17 @@ function FormularioMarca({ slug, c }: { slug: string; c: Configuracion }) {
                 ayuda="Con 54 9 y el código de área. Si lo cargás, tu página muestra un botón «Consultar por WhatsApp». Las reservas y los pagos siempre pasan por la página."
               />
             </div>
+          </Tarjeta>
+          <Tarjeta
+            titulo="Ubicación en el mapa"
+            descripcion="Así aparece tu complejo en el mapa de HayCancha. Buscá la dirección y, si el pin no quedó justo en la entrada, tocá el lugar exacto o arrastralo."
+          >
+            <ElegirUbicacion
+              valor={{ latitud: datos.latitud, longitud: datos.longitud }}
+              color={datos.color_primario}
+              direccion={[datos.direccion, datos.barrio, 'Argentina'].filter(Boolean).join(', ')}
+              onCambiar={ubicacion}
+            />
           </Tarjeta>
           <Tarjeta titulo="Servicios" descripcion="Tocá los que tiene tu complejo.">
             <div className="flex flex-wrap gap-2">

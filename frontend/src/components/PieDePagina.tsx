@@ -28,8 +28,14 @@ export function PieHayCancha({ extra }: { extra?: ReactNode }) {
         </div>
         <nav aria-label="HayCancha" className="grid content-start gap-2 text-sm">
           <b className="mb-1 text-xs tracking-[.12em] text-cal/50 uppercase">Jugadores</b>
-          <a href="#complejos" className="text-cal/80 hover:text-cal">
+          <a href="/#complejos" className="text-cal/80 hover:text-cal">
             Buscar cancha
+          </a>
+          <a href="/#mapa" className="text-cal/80 hover:text-cal">
+            Mapa de canchas
+          </a>
+          <a href="/#mapa" className="text-cal/80 hover:text-cal">
+            Buscar complejos
           </a>
         </nav>
         <nav aria-label="Complejos" className="grid content-start gap-2 text-sm">

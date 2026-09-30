@@ -1,7 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import ARRAY, CheckConstraint, DateTime, Numeric, String, text
+from sqlalchemy import ARRAY, CheckConstraint, DateTime, Double, Numeric, String, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base, CreadoA, UuidPk
@@ -53,6 +53,9 @@ class Negocio(Base):
     # Mercado Pago (fase 2). Los tokens van encriptados y nunca salen del backend.
     # WhatsApp para consultas (opcional): si está, la página muestra "Consultar por WhatsApp".
     whatsapp: Mapped[str | None] = mapped_column(String)
+    # Ubicación para el mapa de la página principal (la marca el dueño o el equipo).
+    latitud: Mapped[float | None] = mapped_column(Double)
+    longitud: Mapped[float | None] = mapped_column(Double)
     mp_user_id: Mapped[str | None] = mapped_column(String)
     mp_access_token_enc: Mapped[str | None] = mapped_column(String)
     mp_refresh_token_enc: Mapped[str | None] = mapped_column(String)

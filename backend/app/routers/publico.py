@@ -112,6 +112,8 @@ def listar_complejos(
                 color_secundario=negocio.color_secundario,
                 deportes=[esquemas.Deporte(codigo=d.codigo, nombre=d.nombre) for d in deportes],
                 hoy=hoy_en_el_negocio(negocio),
+                latitud=negocio.latitud,
+                longitud=negocio.longitud,
                 proximo_turno=esquemas.ProximoTurno(
                     fecha=proximo.inicio.astimezone(zona).date(),
                     hora=proximo.inicio.astimezone(zona).strftime("%H:%M"),

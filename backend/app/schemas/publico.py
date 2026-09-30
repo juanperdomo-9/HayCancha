@@ -29,6 +29,8 @@ class ComplejoResumen(BaseModel):
     deportes: list[Deporte]
     hoy: date
     proximo_turno: ProximoTurno | None
+    latitud: float | None
+    longitud: float | None
 
 
 class Cancha(BaseModel):

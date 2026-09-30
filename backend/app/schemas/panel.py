@@ -57,6 +57,8 @@ class Configuracion(BaseModel):
     barrio: str | None
     referencia: str | None
     whatsapp: str | None
+    latitud: float | None
+    longitud: float | None
     servicios: list[str]
     logo_url: str | None
     portada_url: str | None
@@ -75,6 +77,9 @@ class CambiosDeConfiguracion(BaseModel):
     referencia: TextoOpcional | None = None
     # Con código de país y de área, solo números (5491155551234). Vacío: sin botón.
     whatsapp: Annotated[str, StringConstraints(pattern=r"^(\d{10,15})?$")] | None = None
+    # El pin del mapa. Argentina está entre -56 y -21 de latitud y -74 y -53 de longitud.
+    latitud: Annotated[float, Field(ge=-56, le=-21)] | None = None
+    longitud: Annotated[float, Field(ge=-74, le=-53)] | None = None
     servicios: list[Texto] | None = None
     color_primario: Color | None = None
     color_secundario: Color | None = None
