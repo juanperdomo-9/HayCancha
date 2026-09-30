@@ -11,6 +11,7 @@ import { PieComplejo } from '../../components/PieDePagina'
 import { TemaComplejo } from '../../theme/TemaComplejo'
 import { fechaLarga, plata } from '../../utils/formato'
 import NoEncontrado from './NoEncontrado'
+import { BotonModo } from '../../components/BotonModo'
 
 /** A dónde vuelve el jugador después de pagar: espera el pago y confirma el turno. */
 export default function EstadoReserva() {
@@ -44,6 +45,7 @@ function Pagina({ reserva: r }: { reserva: ReservaPublica }) {
             <LogoComplejo nombre={r.complejo} logoUrl={r.logo_url} className="w-8 flex-none rounded-lg text-[32px] ring-0" />
             <span className="truncate">{r.complejo}</span>
           </Link>
+          <BotonModo className="text-tinta hover:bg-lienzo" />
         </div>
       </header>
       <main className="flex-1 px-4 py-8 sm:py-14">

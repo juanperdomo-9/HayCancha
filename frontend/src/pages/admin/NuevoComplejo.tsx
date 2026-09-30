@@ -130,7 +130,7 @@ export default function NuevoComplejo() {
                 type="button"
                 aria-pressed={datos.servicios.includes(s)}
                 onClick={() => setDatos({ ...datos, servicios: datos.servicios.includes(s) ? datos.servicios.filter((x) => x !== s) : [...datos.servicios, s] })}
-                className="rounded-full bg-white px-3.5 py-1.5 text-sm ring-1 ring-linea aria-pressed:bg-noche aria-pressed:text-crema aria-pressed:ring-noche"
+                className="rounded-full bg-superficie px-3.5 py-1.5 text-sm ring-1 ring-linea aria-pressed:bg-noche aria-pressed:text-crema aria-pressed:ring-noche"
               >
                 {s}
               </button>
@@ -162,7 +162,7 @@ export default function NuevoComplejo() {
             <select
               value={datos.sena_tipo}
               onChange={(e) => setDatos({ ...datos, sena_tipo: e.target.value as AltaDeComplejo['sena_tipo'] })}
-              className="rounded-[10px] border-[1.5px] border-linea bg-white px-3 py-[11px] text-[16px] font-normal"
+              className="rounded-[10px] border-[1.5px] border-linea bg-superficie px-3 py-[11px] text-[16px] font-normal"
             >
               <option value="porcentaje">Porcentaje del turno</option>
               <option value="fija">Monto fijo</option>
@@ -205,7 +205,7 @@ export default function NuevoComplejo() {
             aria-label="Color del complejo"
             value={datos.color_primario}
             onChange={(e) => setDatos({ ...datos, color_primario: e.target.value })}
-            className="size-11 cursor-pointer rounded-lg border-[1.5px] border-linea bg-white p-1"
+            className="size-11 cursor-pointer rounded-lg border-[1.5px] border-linea bg-superficie p-1"
           />
           <code className="text-sm text-gris">{datos.color_primario.toUpperCase()}</code>
         </div>

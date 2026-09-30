@@ -16,6 +16,7 @@ import { PieComplejo } from '../../components/PieDePagina'
 import { TemaComplejo } from '../../theme/TemaComplejo'
 import { DIAS_CORTOS, desdeIso, plata } from '../../utils/formato'
 import NoEncontrado from './NoEncontrado'
+import { BotonModo } from '../../components/BotonModo'
 
 const ENTRADA = [0.2, 0.8, 0.2, 1] as const
 const DIAS_EN_LA_TIRA = 14
@@ -69,9 +70,12 @@ function PaginaComplejo({ complejo }: { complejo: ComplejoDetalle }) {
             <LogoComplejo nombre={complejo.nombre} logoUrl={complejo.logo_url} className="w-8 flex-none rounded-lg text-[32px] ring-0" />
             <span className="truncate">{complejo.nombre}</span>
           </span>
-          <a href="#info" className="text-sm font-semibold whitespace-nowrap text-complejo-texto">
-            Cómo llegar
-          </a>
+          <span className="flex items-center gap-2">
+            <a href="#info" className="text-sm font-semibold whitespace-nowrap text-complejo-texto">
+              Cómo llegar
+            </a>
+            <BotonModo className="text-tinta hover:bg-lienzo" />
+          </span>
         </div>
       </header>
 
@@ -103,7 +107,7 @@ function PaginaComplejo({ complejo }: { complejo: ComplejoDetalle }) {
             {complejo.barrio && <p className="mt-3 text-white/75">{complejo.barrio}</p>}
             <ul className="mt-4 flex flex-wrap gap-2">
               {complejo.deportes.map((d) => (
-                <li key={d.codigo} className="rounded-full border border-white/25 bg-white/7 px-3 py-1 text-[13px]">
+                <li key={d.codigo} className="rounded-full border border-white/25 bg-superficie/7 px-3 py-1 text-[13px]">
                   <b className="font-semibold">{d.nombre}</b> · {d.canchas.length} {d.canchas.length === 1 ? 'cancha' : 'canchas'} ·
                   turnos de {d.duraciones_min.join(' y ')} min
                 </li>

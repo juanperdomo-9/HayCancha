@@ -21,7 +21,7 @@ function Credito() {
 /** Pie de la página principal de HayCancha. */
 export function PieHayCancha({ extra }: { extra?: ReactNode }) {
   return (
-    <footer className="border-t border-cal/10 bg-noche text-cal">
+    <footer className="bloque-oscuro border-t border-cal/10 bg-bloque text-cal">
       <div className="mx-auto grid max-w-6xl gap-8 px-4 pt-12 pb-8 sm:px-8 md:grid-cols-[1.4fr_1fr_1fr]">
         <div className="grid content-start gap-3">
           <LogoHayCancha sobreOscuro className="text-[26px]" />

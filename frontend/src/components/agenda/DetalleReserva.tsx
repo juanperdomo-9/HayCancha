@@ -60,12 +60,12 @@ function Detalle({ slug, r, agenda, onListo }: { slug: string; r: ReservaDetalle
       </div>
 
       {r.estado === 'bloqueada' ? (
-        <p className="rounded-xl bg-white px-4 py-3 ring-1 ring-linea">
+        <p className="rounded-xl bg-superficie px-4 py-3 ring-1 ring-linea">
           <b>Motivo:</b> {r.motivo_bloqueo}
         </p>
       ) : (
         r.cliente && (
-          <div className="grid gap-3 rounded-xl bg-white p-4 ring-1 ring-linea">
+          <div className="grid gap-3 rounded-xl bg-superficie p-4 ring-1 ring-linea">
             <div>
               <b className="text-lg">{r.cliente.nombre}</b>
               <p className="text-sm text-gris">
@@ -96,7 +96,7 @@ function Detalle({ slug, r, agenda, onListo }: { slug: string; r: ReservaDetalle
       )}
 
       {r.estado !== 'bloqueada' && (
-        <dl className="grid gap-1.5 rounded-xl bg-white p-4 tabular-nums ring-1 ring-linea">
+        <dl className="grid gap-1.5 rounded-xl bg-superficie p-4 tabular-nums ring-1 ring-linea">
           <div className="flex justify-between">
             <dt className="text-gris">Turno</dt>
             <dd>{r.precio ? plata(r.precio) : '—'}</dd>
@@ -139,7 +139,7 @@ function Detalle({ slug, r, agenda, onListo }: { slug: string; r: ReservaDetalle
                 aria-pressed={r.asistencia === valor}
                 disabled={cambiar.isPending}
                 onClick={() => cambiar.mutate({ id: r.id, asistencia: r.asistencia === valor ? null : valor })}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-3 py-2.5 font-semibold ring-1 ring-linea aria-pressed:bg-noche aria-pressed:text-crema aria-pressed:ring-noche"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-superficie px-3 py-2.5 font-semibold ring-1 ring-linea aria-pressed:bg-noche aria-pressed:text-crema aria-pressed:ring-noche"
               >
                 <Icono className="size-4" aria-hidden="true" />
                 {texto}
@@ -208,7 +208,7 @@ function Mover({ slug, r, agenda, onCancelar, onListo }: { slug: string; r: Rese
   if (!mismoDia) return <Aviso tipo="info">Abrí la agenda del día de esta reserva para moverla.</Aviso>
 
   return (
-    <div className="grid gap-3 rounded-xl bg-white p-4 ring-1 ring-linea">
+    <div className="grid gap-3 rounded-xl bg-superficie p-4 ring-1 ring-linea">
       <label className="grid gap-1.5 text-[13px] font-semibold">
         Cancha
         <select
@@ -217,7 +217,7 @@ function Mover({ slug, r, agenda, onCancelar, onListo }: { slug: string; r: Rese
             setCanchaId(e.target.value)
             setInicio('')
           }}
-          className="rounded-[10px] border-[1.5px] border-linea bg-white px-3 py-2.5 text-[16px] font-normal"
+          className="rounded-[10px] border-[1.5px] border-linea bg-superficie px-3 py-2.5 text-[16px] font-normal"
         >
           {canchas.map((c) => (
             <option key={c.id} value={c.id}>

@@ -57,7 +57,7 @@ function FormularioReservas({ slug, configuracion: c }: { slug: string; configur
                 ['fija', 'Un monto fijo'],
               ] as const
             ).map(([tipo, texto]) => (
-              <label key={tipo} className="flex cursor-pointer items-center gap-2.5 rounded-xl bg-white px-3.5 py-2.5 ring-1 ring-linea has-checked:ring-2 has-checked:ring-complejo">
+              <label key={tipo} className="flex cursor-pointer items-center gap-2.5 rounded-xl bg-superficie px-3.5 py-2.5 ring-1 ring-linea has-checked:ring-2 has-checked:ring-complejo">
                 <input
                   type="radio"
                   name="sena_tipo"

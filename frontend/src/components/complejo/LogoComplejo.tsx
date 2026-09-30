@@ -13,7 +13,7 @@ export function LogoComplejo({ nombre, logoUrl, className = '' }: Props) {
       <img
         src={logoUrl}
         alt={`Logo de ${nombre}`}
-        className={`aspect-square rounded-2xl bg-white object-contain p-1.5 ring-3 ring-tiza ${className}`}
+        className={`aspect-square rounded-2xl bg-superficie object-contain p-1.5 ring-3 ring-tiza ${className}`}
       />
     )
   }

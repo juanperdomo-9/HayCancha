@@ -8,6 +8,7 @@ import { LogoHayCancha } from '../../components/marca/LogoHayCancha'
 import { PantallaMensaje, RequiereSesion } from '../../components/RequiereSesion'
 import { Aviso, Boton, CopiarLink } from '../../components/ui/Formulario'
 import NuevoComplejo from './NuevoComplejo'
+import { BotonModo } from '../../components/BotonModo'
 
 /** Panel de HayCancha: todos los complejos, altas, suspensiones y cobros. */
 export default function Admin() {
@@ -34,13 +35,14 @@ function MarcoAdmin({ yo, children }: { yo: UsuarioSesion; children: ReactNode }
   const navegar = useNavigate()
   return (
     <div className="min-h-dvh bg-crema text-noche">
-      <header className="bg-noche text-cal">
+      <header className="bloque-oscuro bg-bloque text-cal">
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3.5 sm:px-8">
           <Link to="/admin" aria-label="Panel de HayCancha">
             <LogoHayCancha sobreOscuro className="text-[22px]" />
           </Link>
           <span className="rounded-md bg-cal/10 px-2 py-0.5 text-xs font-semibold tracking-[.08em] text-cesped-claro uppercase">Admin</span>
           <span className="ml-auto hidden text-sm text-cal/60 md:inline">{yo.email}</span>
+          <BotonModo className="ml-auto text-cal hover:bg-cal/10 md:ml-0" />
           <button
             type="button"
             onClick={() => salir.mutate(undefined, { onSuccess: () => navegar('/ingresar') })}
@@ -118,7 +120,7 @@ function FilaComplejo({ complejo: c }: { complejo: ComplejoAdmin }) {
             disabled={cambiar.isPending}
             onChange={(e) => cambiar.mutate({ id: c.id, estado_cuenta: e.target.value as ComplejoAdmin['estado_cuenta'] })}
             className={`rounded-lg border-[1.5px] px-2.5 py-1.5 text-sm font-semibold ${
-              suspendido ? 'border-red-300 bg-red-50 text-red-800' : c.estado_cuenta === 'atrasado' ? 'border-amber-300 bg-amber-50 text-amber-900' : 'border-linea bg-white'
+              suspendido ? 'border-red-300 bg-red-50 text-red-800' : c.estado_cuenta === 'atrasado' ? 'border-amber-300 bg-amber-50 text-amber-900' : 'border-linea bg-superficie'
             }`}
           >
             {Object.entries(ESTADOS).map(([valor, texto]) => (

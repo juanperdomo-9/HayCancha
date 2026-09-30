@@ -285,6 +285,7 @@ Si en el aviso falta alguno de los valores del manifest (por ejemplo, `x-request
 - La base de la página es neutra y el color del complejo es solo acento (botón de reservar, horario elegido, detalles). Nunca pinta fondos grandes.
 - Con cualquier color, el frontend deriva: color de texto encima (blanco o casi negro, el de mayor contraste), una versión oscurecida para textos sobre fondo claro (contraste mínimo 4.5:1) y tonos suaves para fondos.
 - Sin fotos de portada, se usa un dibujo de la cancha vista desde arriba con el color del complejo.
+- **Modo oscuro:** botón de sol y luna en los navbars (principal, complejo, reserva, panel y admin). La primera vez sigue el modo del dispositivo; la elección se guarda en `localStorage` (`theme/modo.ts`, y `index.html` lo fija antes de pintar). En `index.css`, `data-tema="oscuro"` redefine los colores; los bloques oscuros de la marca llevan `bloque-oscuro bg-bloque`, y el color de cada complejo tiene versión clara y oscura (`--complejo-texto-claro`/`-oscuro`, etc.). El mapa de canchas se oscurece con un filtro CSS (sin clave).
 
 **Marca HayCancha: "Cal y césped".** Se usa en la página principal, el panel de superadmin y el marco del panel de los dueños.
 - Colores: crema `#F1E9D8` (fondo), crema oscuro `#E6DAC2`, césped `#1E7A3E` (acento), noche `#14231A` (texto y bloques oscuros), cal `#F6F1E6`, verde claro `#57C986` (acento sobre fondos oscuros).

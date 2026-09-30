@@ -42,7 +42,7 @@ export default function Equipo() {
           </div>
         )}
         {link && (
-          <div className="mt-4 grid gap-3 rounded-xl bg-white p-4 ring-1 ring-linea">
+          <div className="mt-4 grid gap-3 rounded-xl bg-superficie p-4 ring-1 ring-linea">
             <Aviso tipo="ok">
               Listo. Mandale este link a <b>{link.email}</b> para que elija su contraseña.
             </Aviso>

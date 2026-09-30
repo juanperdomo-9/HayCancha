@@ -3,6 +3,8 @@
 /* Marca HayCancha: "Cal y césped". */
 @theme {
   --color-crema: #f1e9d8;
+  /* Bloques oscuros de la marca (cabecera del panel, pie, sección para dueños). */
+  --color-bloque: #14231a;
   --color-crema-oscuro: #e6dac2;
   --color-cesped: #1e7a3e;
   --color-cesped-claro: #57c986;
@@ -59,9 +61,11 @@
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
-    /* El diseño es claro: los controles nativos (campos, autocompletado, barras) también,
-       aunque el sistema esté en modo oscuro. */
+    /* Los controles nativos (campos, autocompletado, barras) siguen el modo elegido. */
     color-scheme: light;
+  }
+  html[data-tema='oscuro'] {
+    color-scheme: dark;
   }
   @media (prefers-reduced-motion: no-preference) {
     html {
@@ -105,4 +109,70 @@
     font-stretch: 78%;
     font-variant-numeric: tabular-nums;
   }
+}
+
+/* --- Modo oscuro: "Cal y césped" de noche. Se activa con data-tema="oscuro" en <html>
+   (ver theme/modo.ts). Se redefinen los colores de la marca y los neutros de las páginas de
+   los complejos; las utilidades de Tailwind los toman solas. --- */
+:root[data-tema='oscuro'] {
+  --color-crema: #0e1511;
+  --color-crema-oscuro: #1c2a22;
+  --color-cal: #16211b;
+  --color-linea: #2c3d33;
+  --color-gris: #a7b1a9;
+  --color-noche: #ecf1ea;
+  --color-bloque: #172a1f;
+  --color-lienzo: #0f1113;
+  --color-superficie: #1a1c20;
+  --color-tinta: #eceef1;
+  --color-tenue: #a3a7ae;
+  --color-borde: #2c2f36;
+}
+/* Dentro de los bloques oscuros de la marca, el texto "cal" sigue siendo claro. */
+:root[data-tema='oscuro'] .bloque-oscuro {
+  --color-cal: #f6f1e6;
+}
+/* El verde césped como texto se aclara para leerse sobre fondo oscuro. */
+:root[data-tema='oscuro'] .text-cesped {
+  color: var(--color-cesped-claro);
+}
+/* Avisos de colores (error, ok, atención): versiones oscuras. */
+:root[data-tema='oscuro'] :is(.bg-red-50, .bg-red-100) {
+  background-color: rgb(127 29 29 / 0.28);
+}
+:root[data-tema='oscuro'] :is(.bg-amber-50, .bg-amber-100, .bg-\[\#fff1c9\]) {
+  background-color: rgb(120 83 9 / 0.3);
+}
+:root[data-tema='oscuro'] :is(.bg-emerald-50, .bg-emerald-100) {
+  background-color: rgb(6 78 59 / 0.35);
+}
+:root[data-tema='oscuro'] :is(.text-red-700, .text-red-800, .text-red-900, .text-red-950) {
+  color: #fca5a5;
+}
+:root[data-tema='oscuro'] :is(.text-amber-700, .text-amber-800, .text-amber-900, .text-amber-950) {
+  color: #fcd34d;
+}
+:root[data-tema='oscuro'] :is(.text-emerald-800, .text-emerald-900) {
+  color: #6ee7b7;
+}
+:root[data-tema='oscuro'] :is(.ring-red-200, .ring-amber-200, .ring-amber-300, .ring-emerald-200) {
+  --tw-ring-color: rgb(255 255 255 / 0.12);
+}
+/* Colores de cada complejo: versión para fondo claro u oscuro (ver theme/paleta.ts). */
+.tema-complejo {
+  --complejo-texto: var(--complejo-texto-claro);
+  --complejo-suave: var(--complejo-suave-claro);
+  --complejo-linea: var(--complejo-linea-claro);
+}
+:root[data-tema='oscuro'] .tema-complejo {
+  --complejo-texto: var(--complejo-texto-oscuro);
+  --complejo-suave: var(--complejo-suave-oscuro);
+  --complejo-linea: var(--complejo-linea-oscuro);
+}
+/* Mapa de canchas en modo oscuro: las capas de OpenStreetMap invertidas (sin clave). */
+:root[data-tema='oscuro'] .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9);
+}
+:root[data-tema='oscuro'] .leaflet-container {
+  background: #1b1d21;
 }

@@ -47,7 +47,7 @@ export default function Canchas() {
               id="deporte-nueva"
               value={nueva.deporte}
               onChange={(e) => setNueva({ ...nueva, deporte: e.target.value })}
-              className="rounded-[10px] border-[1.5px] border-linea bg-white px-3 py-[11px] text-[16px]"
+              className="rounded-[10px] border-[1.5px] border-linea bg-superficie px-3 py-[11px] text-[16px]"
             >
               {deportes.data?.map((d) => (
                 <option key={d.codigo} value={d.codigo}>

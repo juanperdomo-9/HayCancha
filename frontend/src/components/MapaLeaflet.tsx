@@ -35,6 +35,7 @@ function useMapa(contenedor: React.RefObject<HTMLDivElement | null>) {
   useEffect(() => {
     if (!contenedor.current || mapa.current) return
     mapa.current = L.map(contenedor.current, { scrollWheelZoom: false }).setView(CENTRO_POR_DEFECTO, 13)
+    // En modo oscuro las capas se oscurecen con un filtro (ver .leaflet-tile-pane en index.css).
     L.tileLayer(CAPAS, { attribution: ATRIBUCION, maxZoom: 19 }).addTo(mapa.current)
     return () => {
       mapa.current?.remove()
@@ -89,7 +90,7 @@ export function MapaDeCanchas({ complejos }: { complejos: ComplejoResumen[] }) {
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
             placeholder="Nombre, barrio o deporte"
-            className="w-full rounded-xl border-[1.5px] border-linea bg-white px-3.5 py-2.5 text-[16px] focus:border-cesped focus:outline-none"
+            className="w-full rounded-xl border-[1.5px] border-linea bg-superficie px-3.5 py-2.5 text-[16px] focus:border-cesped focus:outline-none"
           />
         </label>
         <ul className="grid max-h-[380px] gap-2 overflow-y-auto">

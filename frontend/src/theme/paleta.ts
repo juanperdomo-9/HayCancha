@@ -18,9 +18,14 @@ export type Tema = {
   profundo: string
   franja: string
   secundario: string
+  textoOscuro: string
+  suaveOscuro: string
+  lineaOscuro: string
 }
 
 export const FONDO_BASE = '#F6F4EF'
+// El fondo de las páginas de los complejos en modo oscuro (--color-lienzo en index.css).
+export const FONDO_OSCURO = '#0F1113'
 export const COLOR_POR_DEFECTO = '#1E7A3E'
 const BLANCO = '#FFFFFF'
 const CASI_NEGRO = '#15161A'
@@ -94,12 +99,21 @@ export function temaComplejo(color: string, secundario?: string | null): Tema {
     texto = mezclar(base, NEGRO, t)
   }
 
+  // En modo oscuro, el texto con el color del complejo se aclara hasta leerse bien.
+  let textoOscuro = base
+  for (let t = 0.05; contraste(textoOscuro, FONDO_OSCURO) < CONTRASTE_TEXTO && t <= 1; t += 0.05) {
+    textoOscuro = mezclar(base, BLANCO, t)
+  }
+
   return {
     complejo: base,
     sobre,
     texto,
+    textoOscuro,
     suave: mezclar(base, FONDO_BASE, 0.86),
+    suaveOscuro: mezclar(base, FONDO_OSCURO, 0.78),
     linea: mezclar(base, FONDO_BASE, 0.55),
+    lineaOscuro: mezclar(base, FONDO_OSCURO, 0.45),
     profundo: mezclar(base, OSCURO, 0.52),
     franja: mezclar(base, OSCURO, 0.4),
     secundario: (secundario && normalizarHex(secundario)) || base,
@@ -111,9 +125,13 @@ export function variablesTema(tema: Tema): Record<`--${string}`, string> {
   return {
     '--complejo': tema.complejo,
     '--complejo-sobre': tema.sobre,
-    '--complejo-texto': tema.texto,
-    '--complejo-suave': tema.suave,
-    '--complejo-linea': tema.linea,
+    // Las versiones -claro y -oscuro las elige index.css según el modo (.tema-complejo).
+    '--complejo-texto-claro': tema.texto,
+    '--complejo-texto-oscuro': tema.textoOscuro,
+    '--complejo-suave-claro': tema.suave,
+    '--complejo-suave-oscuro': tema.suaveOscuro,
+    '--complejo-linea-claro': tema.linea,
+    '--complejo-linea-oscuro': tema.lineaOscuro,
     '--complejo-profundo': tema.profundo,
     '--complejo-franja': tema.franja,
     '--complejo-secundario': tema.secundario,

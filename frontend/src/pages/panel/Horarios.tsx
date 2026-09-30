@@ -73,7 +73,7 @@ export default function Horarios() {
               type="button"
               aria-pressed={codigo === deporteActual}
               onClick={() => setDeporte(codigo)}
-              className="rounded-full border-[1.5px] border-linea bg-white px-4 py-2 text-sm font-semibold aria-pressed:border-noche aria-pressed:bg-noche aria-pressed:text-crema"
+              className="rounded-full border-[1.5px] border-linea bg-superficie px-4 py-2 text-sm font-semibold aria-pressed:border-noche aria-pressed:bg-noche aria-pressed:text-crema"
             >
               {nombre}
             </button>
@@ -142,7 +142,7 @@ function FormularioHorarios({
           {canchas.map((c) => {
             const marcada = elegidas.includes(c.id)
             return (
-              <label key={c.id} className="flex cursor-pointer items-center gap-2 rounded-xl bg-white px-3.5 py-2.5 ring-1 ring-linea has-checked:ring-2 has-checked:ring-complejo">
+              <label key={c.id} className="flex cursor-pointer items-center gap-2 rounded-xl bg-superficie px-3.5 py-2.5 ring-1 ring-linea has-checked:ring-2 has-checked:ring-complejo">
                 <input
                   type="checkbox"
                   checked={marcada}
@@ -165,7 +165,7 @@ function FormularioHorarios({
             {franjas.map((franja) => {
               const turnos = turnosEnFranja(franja)
               return (
-                <div key={franja.clave} className="grid gap-3 rounded-xl bg-white p-3.5 ring-1 ring-linea lg:grid-cols-[auto_1fr_auto] lg:items-center">
+                <div key={franja.clave} className="grid gap-3 rounded-xl bg-superficie p-3.5 ring-1 ring-linea lg:grid-cols-[auto_1fr_auto] lg:items-center">
                   <fieldset className="flex gap-1">
                     <legend className="sr-only">Días</legend>
                     {DIAS.map((letra, dia) => (
@@ -205,7 +205,7 @@ function FormularioHorarios({
                       <select
                         value={franja.duracion_turno_min}
                         onChange={(e) => cambiar(franja.clave, { duracion_turno_min: Number(e.target.value) })}
-                        className="rounded-lg border-[1.5px] border-linea bg-white px-2 py-1.5 text-[15px]"
+                        className="rounded-lg border-[1.5px] border-linea bg-superficie px-2 py-1.5 text-[15px]"
                       >
                         {[...new Set([...DURACIONES, franja.duracion_turno_min])].sort((a, b) => a - b).map((d) => (
                           <option key={d} value={d}>
@@ -216,7 +216,7 @@ function FormularioHorarios({
                     </label>
                     <label className="flex items-center gap-1.5">
                       a
-                      <span className="flex items-center rounded-lg border-[1.5px] border-linea bg-white">
+                      <span className="flex items-center rounded-lg border-[1.5px] border-linea bg-superficie">
                         <span className="pl-2 text-gris">$</span>
                         <input
                           type="number"

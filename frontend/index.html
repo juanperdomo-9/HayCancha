@@ -11,6 +11,15 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Instrument+Sans:wght@400..700&display=swap" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500..900&display=swap" />
     <title>HayCancha</title>
+    <script>
+      // Modo claro u oscuro antes de pintar (ver src/theme/modo.ts).
+      try {
+        var m = localStorage.getItem('hc-modo')
+        if (m !== 'claro' && m !== 'oscuro') m = matchMedia('(prefers-color-scheme: dark)').matches ? 'oscuro' : 'claro'
+        document.documentElement.dataset.tema = m
+        if (m === 'oscuro') document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0E1511')
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

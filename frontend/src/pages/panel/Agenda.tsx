@@ -194,7 +194,7 @@ export default function Agenda() {
                     type="button"
                     aria-pressed={deporte === codigo}
                     onClick={() => setDeporte(codigo)}
-                    className="rounded-full bg-white px-3.5 py-1.5 text-sm font-semibold ring-1 ring-linea aria-pressed:bg-noche aria-pressed:text-crema aria-pressed:ring-noche"
+                    className="rounded-full bg-superficie px-3.5 py-1.5 text-sm font-semibold ring-1 ring-linea aria-pressed:bg-noche aria-pressed:text-crema aria-pressed:ring-noche"
                   >
                     {nombre}
                   </button>
@@ -245,7 +245,7 @@ export default function Agenda() {
               onChange={(e) => setMotivo(e.target.value)}
               placeholder="Motivo: torneo, lluvia, mantenimiento…"
               aria-label="Motivo del bloqueo"
-              className="min-w-0 flex-1 rounded-[10px] border-[1.5px] border-linea bg-white px-3 py-2 text-[16px]"
+              className="min-w-0 flex-1 rounded-[10px] border-[1.5px] border-linea bg-superficie px-3 py-2 text-[16px]"
             />
             <Boton disabled={!seleccionados.size || !motivo.trim()} cargando={bloquear.isPending} onClick={confirmarBloqueo}>
               Bloquear

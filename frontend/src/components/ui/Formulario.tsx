@@ -17,7 +17,7 @@ export function Campo({ etiqueta, ayuda, error, prefijo, className = '', ...prop
       <label htmlFor={id} className="text-[13px] font-semibold">
         {etiqueta}
       </label>
-      <div className="flex items-stretch overflow-hidden rounded-[10px] border-[1.5px] border-linea bg-white focus-within:border-cesped focus-within:shadow-[0_0_0_3px_rgba(30,122,62,.15)] aria-invalid:border-red-600" aria-invalid={Boolean(error)}>
+      <div className="flex items-stretch overflow-hidden rounded-[10px] border-[1.5px] border-linea bg-superficie focus-within:border-cesped focus-within:shadow-[0_0_0_3px_rgba(30,122,62,.15)] aria-invalid:border-red-600" aria-invalid={Boolean(error)}>
         {prefijo && <span className="flex items-center bg-crema-oscuro/60 px-3 text-[15px] text-gris">{prefijo}</span>}
         <input
           id={id}
@@ -94,7 +94,7 @@ export function CopiarLink({ link, etiqueta = 'Link para elegir la contraseña' 
           readOnly
           value={link}
           onFocus={(e) => e.currentTarget.select()}
-          className="w-full min-w-0 rounded-[10px] border-[1.5px] border-linea bg-white px-3 py-2 text-[13px] text-gris"
+          className="w-full min-w-0 rounded-[10px] border-[1.5px] border-linea bg-superficie px-3 py-2 text-[13px] text-gris"
           aria-label={etiqueta}
         />
         <Boton variante="suave" onClick={copiar} className="flex-none" aria-live="polite">

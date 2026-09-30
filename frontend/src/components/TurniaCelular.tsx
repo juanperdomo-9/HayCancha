@@ -58,7 +58,7 @@ function CelularTurnia({ onCerrar }: { onCerrar: () => void }) {
           type="button"
           onClick={onCerrar}
           aria-label="Cerrar"
-          className="absolute -top-2 -right-2 z-10 grid size-10 place-items-center rounded-full bg-white text-noche shadow-lg sm:-right-14 sm:top-0"
+          className="absolute -top-2 -right-2 z-10 grid size-10 place-items-center rounded-full bg-superficie text-noche shadow-lg sm:-right-14 sm:top-0"
         >
           <X className="size-5" aria-hidden="true" />
         </button>
@@ -66,12 +66,12 @@ function CelularTurnia({ onCerrar }: { onCerrar: () => void }) {
         <div className="relative h-[min(760px,82dvh)] w-[min(372px,88vw)] rounded-[48px] bg-[#0d0f14] p-[10px] shadow-[0_40px_90px_-20px_rgba(0,0,0,.7),inset_0_0_0_2px_rgba(255,255,255,.08)]">
           <div className="absolute top-[18px] left-1/2 z-10 h-[26px] w-[104px] -translate-x-1/2 rounded-full bg-black" aria-hidden="true" />
           {!cargado && (
-            <div className="absolute inset-[10px] grid place-content-center justify-items-center gap-3 rounded-[38px] bg-white text-sm text-gris">
+            <div className="absolute inset-[10px] grid place-content-center justify-items-center gap-3 rounded-[38px] bg-superficie text-sm text-gris">
               <span className="size-7 animate-spin rounded-full border-3 border-linea border-t-noche" aria-hidden="true" />
               Cargando Turnia…
             </div>
           )}
-          <iframe title="Turnia" src={TURNIA} onLoad={() => setCargado(true)} className="size-full rounded-[38px] border-0 bg-white" />
+          <iframe title="Turnia" src={TURNIA} onLoad={() => setCargado(true)} className="size-full rounded-[38px] border-0 bg-superficie" />
         </div>
         <a href={TURNIA} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-white/85 underline underline-offset-3 hover:text-white">
           Abrir Turnia en otra pestaña

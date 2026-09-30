@@ -7,6 +7,7 @@ import { LogoComplejo } from '../../components/complejo/LogoComplejo'
 import { LogoHayCancha } from '../../components/marca/LogoHayCancha'
 import { PantallaCargando, PantallaMensaje, RequiereSesion } from '../../components/RequiereSesion'
 import { TemaComplejo } from '../../theme/TemaComplejo'
+import { BotonModo } from '../../components/BotonModo'
 
 /** /panel sin complejo: cada uno va al suyo. */
 export function PanelSinComplejo() {
@@ -52,7 +53,7 @@ function PanelDelComplejo({ slug, yo }: { slug: string; yo: UsuarioSesion }) {
 
   return (
     <TemaComplejo color={panel.color_primario} secundario={panel.color_secundario} className="min-h-dvh bg-crema text-noche">
-      <header className="bg-noche text-cal">
+      <header className="bloque-oscuro bg-bloque text-cal">
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 pt-3 sm:px-8">
           <Link to="/" aria-label="HayCancha" className="hidden sm:block">
             <LogoHayCancha sobreOscuro className="text-[19px]" />
@@ -70,6 +71,7 @@ function PanelDelComplejo({ slug, yo }: { slug: string; yo: UsuarioSesion }) {
               </Link>
             )}
             <span className="hidden text-cal/60 md:inline">{yo.email}</span>
+            <BotonModo className="text-cal hover:bg-cal/10" />
             <button
               type="button"
               onClick={() => salir.mutate(undefined, { onSuccess: () => navegar('/ingresar') })}

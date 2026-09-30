@@ -129,7 +129,7 @@ function FormularioMarca({ slug, c }: { slug: string; c: Configuracion }) {
                   type="button"
                   aria-pressed={datos.servicios.includes(s)}
                   onClick={() => alternar(s)}
-                  className="rounded-full bg-white px-3.5 py-1.5 text-sm ring-1 ring-linea aria-pressed:bg-complejo aria-pressed:text-complejo-sobre aria-pressed:ring-complejo"
+                  className="rounded-full bg-superficie px-3.5 py-1.5 text-sm ring-1 ring-linea aria-pressed:bg-complejo aria-pressed:text-complejo-sobre aria-pressed:ring-complejo"
                 >
                   {s}
                 </button>
@@ -141,7 +141,7 @@ function FormularioMarca({ slug, c }: { slug: string; c: Configuracion }) {
                 onChange={(e) => setOtroServicio(e.target.value)}
                 placeholder="Otro servicio"
                 aria-label="Otro servicio"
-                className="w-full max-w-xs rounded-[10px] border-[1.5px] border-linea bg-white px-3 py-2 text-[15px]"
+                className="w-full max-w-xs rounded-[10px] border-[1.5px] border-linea bg-superficie px-3 py-2 text-[15px]"
               />
               <Boton
                 variante="suave"
@@ -170,7 +170,7 @@ function FormularioMarca({ slug, c }: { slug: string; c: Configuracion }) {
                     type="color"
                     value={datos.color_primario}
                     onChange={(e) => setDatos({ ...datos, color_primario: e.target.value })}
-                    className="size-11 cursor-pointer rounded-lg border-[1.5px] border-linea bg-white p-1"
+                    className="size-11 cursor-pointer rounded-lg border-[1.5px] border-linea bg-superficie p-1"
                   />
                   <code className="text-sm text-gris">{datos.color_primario.toUpperCase()}</code>
                   <span className="text-[12.5px] text-gris">Se usa en botones y detalles; la página se ajusta sola para que se lea bien.</span>
@@ -231,7 +231,7 @@ function SubirImagen({ slug, tipo, titulo, ayuda, url }: { slug: string; tipo: '
       <button
         type="button"
         onClick={() => entrada.current?.click()}
-        className={`group relative grid place-items-center overflow-hidden rounded-xl border-[1.5px] border-dashed border-linea bg-white text-sm text-gris hover:border-noche ${tipo === 'logo' ? 'aspect-square max-w-40' : 'aspect-[16/9]'}`}
+        className={`group relative grid place-items-center overflow-hidden rounded-xl border-[1.5px] border-dashed border-linea bg-superficie text-sm text-gris hover:border-noche ${tipo === 'logo' ? 'aspect-square max-w-40' : 'aspect-[16/9]'}`}
       >
         {url ? (
           <img src={url} alt="" className={`absolute inset-0 size-full ${tipo === 'logo' ? 'object-contain p-2' : 'object-cover'}`} />

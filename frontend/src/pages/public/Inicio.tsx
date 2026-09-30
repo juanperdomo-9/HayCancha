@@ -9,6 +9,7 @@ import { PieHayCancha } from '../../components/PieDePagina'
 import { TemaComplejo } from '../../theme/TemaComplejo'
 import { useComplejos } from '../../api/publico'
 import { MapaDeCanchas } from '../../components/MapaLeaflet'
+import { BotonModo } from '../../components/BotonModo'
 
 const ENTRADA = [0.2, 0.8, 0.2, 1] as const
 
@@ -36,10 +37,11 @@ const PARA_DUENOS = [
 export default function Inicio() {
   return (
     <div className="min-h-dvh bg-crema text-noche">
-      <header className="mx-auto max-w-6xl px-4 py-5 sm:px-8">
+      <header className="mx-auto flex max-w-6xl items-center justify-between px-4 py-5 sm:px-8">
         <Link to="/" aria-label="HayCancha, inicio">
           <LogoHayCancha className="text-[27px]" />
         </Link>
+        <BotonModo className="text-noche ring-1 ring-linea hover:bg-crema-oscuro" />
       </header>
 
       <main>
@@ -89,12 +91,12 @@ export default function Inicio() {
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, ease: ENTRADA, delay: 0.1 }}
-            className="relative aspect-[4/3] max-w-full overflow-hidden rounded-3xl shadow-[0_34px_70px_-34px_rgba(20,18,10,.55)]"
+            className="bloque-oscuro relative aspect-[4/3] max-w-full overflow-hidden rounded-3xl shadow-[0_34px_70px_-34px_rgba(20,18,10,.55)]"
           >
             <TemaComplejo color="#1E7A3E" className="absolute inset-0">
               <DibujoCancha deporte="futbol7" animado className="absolute inset-0" />
             </TemaComplejo>
-            <div className="absolute inset-0 bg-linear-to-t from-noche/70 via-noche/10 to-transparent" />
+            <div className="absolute inset-0 bg-linear-to-t from-bloque/80 via-bloque/10 to-transparent" />
             <p className="absolute bottom-5 left-5 font-titulo text-3xl leading-none font-extrabold text-cal uppercase sm:text-4xl">
               Fútbol · Pádel · Tenis
               <br />
@@ -119,7 +121,7 @@ export default function Inicio() {
           </div>
         </section>
 
-        <section id="duenos" className="bg-noche text-cal">
+        <section id="duenos" className="bloque-oscuro bg-bloque text-cal">
           <div className="mx-auto max-w-6xl px-4 py-16 sm:px-8 sm:py-28">
             <p className="text-xs font-semibold tracking-[.12em] text-cal/60 uppercase">Para dueños de complejos</p>
             <h2 className="mt-3 font-titulo text-[clamp(42px,6.4vw,80px)] leading-[.9] font-extrabold text-balance uppercase">Tu agenda se llena sola</h2>

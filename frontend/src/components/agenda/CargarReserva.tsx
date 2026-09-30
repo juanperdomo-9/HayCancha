@@ -56,7 +56,7 @@ export function CargarReserva({ slug, fecha, cancha, turno, onListo }: Props) {
         ayuda="Con el teléfono lo reconocemos si vuelve a reservar."
       />
       <Campo etiqueta="Email (opcional)" type="email" value={datos.email} onChange={(e) => setDatos({ ...datos, email: e.target.value })} />
-      <label className="flex cursor-pointer items-center gap-3 rounded-xl bg-white px-3.5 py-3 ring-1 ring-linea has-checked:ring-2 has-checked:ring-complejo">
+      <label className="flex cursor-pointer items-center gap-3 rounded-xl bg-superficie px-3.5 py-3 ring-1 ring-linea has-checked:ring-2 has-checked:ring-complejo">
         <input
           type="checkbox"
           checked={datos.sena_en_efectivo}
