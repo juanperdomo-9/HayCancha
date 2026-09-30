@@ -150,3 +150,14 @@ def reservar(
         return reserva
 
     raise TurnoNoDisponible("Ese horario ya no está disponible.")
+
+
+def vencer_pendientes(session: Session) -> int:
+    """Marca como vencidas todas las pendientes de pago con vence_a pasado, de todos los
+    negocios. Lo usa la tarea periódica (conexión de administrador), no las rutas."""
+    resultado = session.execute(
+        update(Reserva)
+        .where(Reserva.estado == "pendiente_pago", Reserva.vence_a < ahora())
+        .values(estado="vencida")
+    )
+    return resultado.rowcount

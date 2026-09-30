@@ -1,28 +1,70 @@
 import { X } from 'lucide-react'
-import { useId, useState } from 'react'
+import { type FormEvent, useId, useState } from 'react'
+import { useNavigate } from 'react-router'
 
-import type { CanchaLibre, DeporteDelComplejo, Turno } from '../../api/publico'
+import { mensaje } from '../../api/client'
+import { type CanchaLibre, type DeporteDelComplejo, type Turno, useCrearReserva } from '../../api/publico'
 import { fechaLarga, plata } from '../../utils/formato'
 
 type Props = {
+  slug: string
   turno: Turno
   fecha: string
   deporte: DeporteDelComplejo
   cancha: CanchaLibre
   canchaElegida: boolean
+  reservasOnline: boolean
+  minutosParaPagar: number
   onCerrar?: () => void
 }
 
+type Datos = { nombre: string; telefono: string; email: string }
+
+function validar(datos: Datos): Partial<Record<keyof Datos, string>> {
+  const errores: Partial<Record<keyof Datos, string>> = {}
+  if (datos.nombre.trim().length < 2) errores.nombre = 'Escribí tu nombre.'
+  if (datos.telefono.replace(/\D/g, '').length < 8) errores.telefono = 'Revisá el teléfono: tiene que tener al menos 8 números.'
+  if (datos.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(datos.email.trim())) errores.email = 'Revisá el email (o dejalo vacío).'
+  return errores
+}
+
 /** Resumen del turno elegido y los datos del jugador. Los montos vienen del backend. */
-export function ReservaEnCurso({ turno, fecha, deporte, cancha, canchaElegida, onCerrar }: Props) {
+export function ReservaEnCurso({ slug, turno, fecha, deporte, cancha, canchaElegida, reservasOnline, minutosParaPagar, onCerrar }: Props) {
   const id = useId()
-  const [datos, setDatos] = useState({ nombre: '', telefono: '', email: '' })
+  const navegar = useNavigate()
+  const crear = useCrearReserva(slug)
+  const [datos, setDatos] = useState<Datos>({ nombre: '', telefono: '', email: '' })
+  const [errores, setErrores] = useState<Partial<Record<keyof Datos, string>>>({})
   const saldo = Number(cancha.precio) - Number(cancha.sena)
   const canchaTexto = canchaElegida
     ? `${cancha.nombre}${cancha.caracteristicas ? ` (${cancha.caracteristicas.toLowerCase()})` : ''}`
     : 'te asignamos la primera libre'
 
-  const campo = (nombre: keyof typeof datos, etiqueta: string, tipo: string, autocompletar: string) => (
+  function enviar(e: FormEvent) {
+    e.preventDefault()
+    const encontrados = validar(datos)
+    setErrores(encontrados)
+    if (Object.keys(encontrados).length) return
+    crear.mutate(
+      {
+        deporte: deporte.codigo,
+        inicio: turno.inicio,
+        recurso_id: canchaElegida ? cancha.id : undefined,
+        nombre: datos.nombre.trim(),
+        telefono: datos.telefono.trim(),
+        email: datos.email.trim() || undefined,
+      },
+      {
+        onSuccess: ({ id: reservaId, url_pago }) => {
+          // Con Mercado Pago se va a pagar afuera; al volver, cae en la página de la reserva.
+          if (url_pago) window.location.assign(url_pago)
+          else navegar(`/${slug}/reserva/${reservaId}`)
+        },
+      },
+    )
+  }
+
+  const campo = (nombre: keyof Datos, etiqueta: string, tipo: string, autocompletar: string) => (
     <div className="grid gap-1.5">
       <label htmlFor={`${id}-${nombre}`} className="text-[13px] font-semibold">
         {etiqueta}
@@ -32,9 +74,11 @@ export function ReservaEnCurso({ turno, fecha, deporte, cancha, canchaElegida, o
         type={tipo}
         autoComplete={autocompletar}
         value={datos[nombre]}
+        aria-invalid={Boolean(errores[nombre])}
         onChange={(e) => setDatos({ ...datos, [nombre]: e.target.value })}
-        className="w-full rounded-[10px] border-[1.5px] border-borde bg-lienzo px-3 py-2.5 text-[16px] text-tinta transition focus:border-complejo focus:shadow-[0_0_0_3px_var(--complejo-suave)] focus:outline-none"
+        className="w-full rounded-[10px] border-[1.5px] border-borde bg-lienzo px-3 py-2.5 text-[16px] text-tinta transition focus:border-complejo focus:shadow-[0_0_0_3px_var(--complejo-suave)] focus:outline-none aria-invalid:border-red-600"
       />
+      {errores[nombre] && <p className="text-[12.5px] text-red-700">{errores[nombre]}</p>}
     </div>
   )
 
@@ -71,21 +115,32 @@ export function ReservaEnCurso({ turno, fecha, deporte, cancha, canchaElegida, o
         </div>
       </dl>
 
-      <form className="grid gap-3" onSubmit={(e) => e.preventDefault()}>
-        {campo('nombre', 'Nombre y apellido', 'text', 'name')}
-        {campo('telefono', 'Teléfono', 'tel', 'tel')}
-        {campo('email', 'Email', 'email', 'email')}
-        <button
-          type="submit"
-          disabled
-          className="mt-1 cursor-not-allowed rounded-xl bg-complejo px-4 py-[15px] font-bold text-complejo-sobre opacity-60"
-        >
-          Pago online: muy pronto
-        </button>
-        <p className="text-center text-[12.5px] text-tenue">
-          Estamos terminando de conectar Mercado Pago. Muy pronto vas a reservar y pagar la seña desde acá, sin crear una cuenta.
+      {reservasOnline ? (
+        <form className="grid gap-3" onSubmit={enviar} noValidate>
+          {campo('nombre', 'Nombre y apellido', 'text', 'name')}
+          {campo('telefono', 'Teléfono', 'tel', 'tel')}
+          {campo('email', 'Email (opcional)', 'email', 'email')}
+          {crear.error && (
+            <p role="alert" className="rounded-xl bg-red-50 px-3.5 py-2.5 text-sm text-red-800 ring-1 ring-red-200">
+              {mensaje(crear.error)}
+            </p>
+          )}
+          <button
+            type="submit"
+            disabled={crear.isPending}
+            className="mt-1 rounded-xl bg-complejo px-4 py-[15px] font-bold text-complejo-sobre transition hover:brightness-105 active:scale-[.98] disabled:opacity-60"
+          >
+            {crear.isPending ? 'Reservando…' : `Pagar seña de ${plata(cancha.sena)}`}
+          </button>
+          <p className="text-center text-[12.5px] text-tenue">
+            Te guardamos el turno {minutosParaPagar} minutos para que pagues la seña con Mercado Pago. No hace falta crear una cuenta.
+          </p>
+        </form>
+      ) : (
+        <p className="rounded-xl bg-complejo-suave px-4 py-3 text-sm">
+          Este complejo todavía no toma reservas online. Muy pronto vas a poder reservar y pagar la seña desde acá.
         </p>
-      </form>
+      )}
     </div>
   )
 }

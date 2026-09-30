@@ -180,7 +180,16 @@ function PaginaComplejo({ complejo }: { complejo: ComplejoDetalle }) {
 
         <aside className="hidden rounded-[18px] border border-borde bg-superficie p-5.5 shadow-[0_24px_50px_-32px_rgba(20,20,25,.3)] lg:sticky lg:top-6 lg:block">
           {turno && cancha && deporteActual ? (
-            <ReservaEnCurso turno={turno} fecha={fecha} deporte={deporteActual} cancha={cancha} canchaElegida={canchaId !== null} />
+            <ReservaEnCurso
+              slug={complejo.slug}
+              turno={turno}
+              fecha={fecha}
+              deporte={deporteActual}
+              cancha={cancha}
+              canchaElegida={canchaId !== null}
+              reservasOnline={complejo.reservas_online}
+              minutosParaPagar={complejo.minutos_para_pagar}
+            />
           ) : (
             <SinTurnoElegido complejo={complejo} />
           )}
@@ -251,6 +260,9 @@ function PaginaComplejo({ complejo }: { complejo: ComplejoDetalle }) {
               {hojaAbierta ? (
                 <div className="px-4 pt-4 pb-[calc(22px+env(safe-area-inset-bottom))]">
                   <ReservaEnCurso
+                    slug={complejo.slug}
+                    reservasOnline={complejo.reservas_online}
+                    minutosParaPagar={complejo.minutos_para_pagar}
                     turno={turno}
                     fecha={fecha}
                     deporte={deporteActual}

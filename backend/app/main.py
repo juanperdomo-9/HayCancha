@@ -9,10 +9,11 @@ from sqlalchemy.orm import Session
 
 from app.config import get_settings
 from app.db import get_session
-from app.routers import admin, agenda, auth, panel, publico
+from app.routers import admin, agenda, auth, panel, publico, reservas_online
 
 app = FastAPI(title="HayCancha")
 app.include_router(publico.router)
+app.include_router(reservas_online.router)
 app.include_router(auth.router)
 app.include_router(panel.router)
 app.include_router(agenda.router)

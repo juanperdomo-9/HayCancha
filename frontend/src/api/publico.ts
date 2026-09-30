@@ -1,6 +1,6 @@
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-import { pedir } from './client'
+import { enviar, pedir } from './client'
 
 /** Lo que devuelven las rutas /publico del backend. La plata viene como texto ("85000.00"). */
 
@@ -44,6 +44,8 @@ export type ComplejoDetalle = {
   sena_valor: string
   horas_cancelacion: number
   minutos_para_pagar: number
+  /** Si ya cobra la seña online (Mercado Pago vinculado, o pago simulado en desarrollo). */
+  reservas_online: boolean
   deportes: DeporteDelComplejo[]
 }
 
@@ -89,5 +91,71 @@ export function useDisponibilidad(slug: string, deporte: string | undefined, fec
     // Los horarios cambian mientras el jugador mira: se refrescan solos.
     refetchInterval: 60_000,
     placeholderData: keepPreviousData,
+  })
+}
+
+// --- Reserva online del jugador ---
+
+export type NuevaReserva = {
+  deporte: string
+  inicio: string
+  recurso_id?: string
+  nombre: string
+  telefono: string
+  email?: string
+}
+
+export type ReservaPublica = {
+  id: string
+  estado: 'pendiente_pago' | 'confirmada' | 'vencida' | 'cancelada'
+  complejo: string
+  slug: string
+  color_primario: string
+  color_secundario: string | null
+  logo_url: string | null
+  jugador: string
+  cancha: string
+  deporte: string
+  fecha: string
+  hora: string
+  hora_fin: string
+  precio: string
+  sena: string
+  saldo: string
+  vence_a: string | null
+  url_pago: string | null
+  pago_simulado: boolean
+  horas_cancelacion: number
+  direccion: string | null
+  barrio: string | null
+  referencia: string | null
+}
+
+const reservas = (slug: string) => `/publico/complejos/${encodeURIComponent(slug)}/reservas`
+
+export function useCrearReserva(slug: string) {
+  const cliente = useQueryClient()
+  return useMutation({
+    mutationFn: (datos: NuevaReserva) => enviar<{ id: string; url_pago: string | null }>(reservas(slug), 'POST', datos),
+    // Pase lo que pase, los horarios cambiaron: se vuelven a pedir.
+    onSettled: () => cliente.invalidateQueries({ queryKey: ['disponibilidad', slug] }),
+  })
+}
+
+export function useReservaPublica(slug: string, id: string) {
+  return useQuery({
+    queryKey: ['reserva-publica', slug, id],
+    queryFn: () => pedir<ReservaPublica>(`${reservas(slug)}/${encodeURIComponent(id)}`),
+    retry: false,
+    // Mientras espera el pago, se consulta seguido hasta que se confirme.
+    refetchInterval: (consulta) => (consulta.state.data?.estado === 'pendiente_pago' ? 3_000 : false),
+  })
+}
+
+export function useSimularPago(slug: string, id: string) {
+  const cliente = useQueryClient()
+  return useMutation({
+    mutationFn: () => enviar<ReservaPublica>(`${reservas(slug)}/${encodeURIComponent(id)}/simular-pago`, 'POST'),
+    onSuccess: (reserva) => cliente.setQueryData(['reserva-publica', slug, id], reserva),
   })
 }

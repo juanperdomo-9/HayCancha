@@ -60,6 +60,8 @@ class ComplejoDetalle(BaseModel):
     sena_valor: Decimal
     horas_cancelacion: int
     minutos_para_pagar: int
+    # Si ya puede cobrar la seña online (Mercado Pago vinculado).
+    reservas_online: bool
     deportes: list[DeporteDelComplejo]
 
 

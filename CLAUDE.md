@@ -117,7 +117,8 @@ Nunca subir secretos al repo. Mantener actualizados `backend/.env.example` y `fr
 | `MP_REDIRECT_URI` | Callback de OAuth |
 | `APP_BASE_URL` | URL pública del backend (para `notification_url`) |
 | `FRONTEND_URL` | URL pública del frontend (para `back_urls`) |
-| `EMAIL_API_KEY`, `EMAIL_FROM` | Envío de emails (proveedor a definir) |
+| `EMAIL_API_KEY`, `EMAIL_FROM` | Envío de emails con Resend (avisos al dueño e invitaciones) |
+| `PAGOS_SIMULADOS` | Solo desarrollo: permite reservas online sin Mercado Pago, con un botón para simular el pago |
 | `LLM_API_KEY` | Solo fase 3 |
 
 ## Multi-tenant: una sola app para todos los complejos
@@ -196,7 +197,7 @@ Estados: `pendiente_pago`, `confirmada`, `vencida`, `cancelada`, `bloqueada`. Un
 ## Pagos con Mercado Pago
 
 **Cada complejo cobra en su propia cuenta**, vinculada con OAuth (modelo marketplace):
-- Botón "Vincular Mercado Pago" en el panel del dueño que lleva a la autorización de Mercado Pago, con `scope` que incluya `offline_access` para poder renovar el token.
+- Botón "Vincular Mercado Pago" en el panel del dueño que lleva a la autorización de Mercado Pago, con **PKCE** (`code_challenge` S256) y `state` para que nadie pueda vincular una cuenta ajena. El `refresh_token` llega con el flujo normal de autorización (verificado en la documentación: ya no hace falta pedir `offline_access`).
 - En el callback se cambia el `code` por `access_token` y `refresh_token`, que se guardan encriptados.
 - El access token dura 180 días. Un job lo renueva antes de vencer con `grant_type=refresh_token` y guarda el par nuevo.
 - Todas las llamadas de pago de un complejo se hacen **con el access token de ese complejo**.
@@ -221,7 +222,17 @@ Estados: `pendiente_pago`, `confirmada`, `vencida`, `cancelada`, `bloqueada`. Un
    - `pendiente_pago`: pasa a `confirmada`.
    - `vencida`: intentar pasarla a `confirmada`. Si la restricción de superposición falla (otro tomó el turno), devolver el pago con la API de reembolsos.
    - `cancelada`: devolver el pago.
-7. Enviar el email de confirmación al jugador y avisar al dueño.
+
+Si en el aviso falta alguno de los valores del manifest (por ejemplo, `x-request-id`), esa parte se saca del texto que se firma, como indica la documentación. Mercado Pago espera un 200 en menos de 22 segundos y reintenta durante días si no lo recibe.
+
+**Comisión de HayCancha** (`marketplace_fee`): 0 por ahora.
+
+**Cancelación por parte del jugador:** desde la página de su reserva, confirmando con el teléfono que usó al reservar. La devolución de la seña sigue la política del complejo.
+
+**Abusos:** hay un tope de reservas pendientes de pago por teléfono al mismo tiempo, para que nadie trabe los turnos con reservas que no va a pagar.
+
+**Pagos simulados (solo desarrollo):** con `PAGOS_SIMULADOS=true`, un complejo sin Mercado Pago vinculado igual toma reservas online y la página de la reserva muestra "Simular pago aprobado", que pasa por el mismo servicio que el webhook. En producción esa variable no existe.
+7. Avisar al dueño por email. **Al jugador no se le manda email**: ve la confirmación en `/:slug/reserva/:id`, donde también se le muestra el link de su reserva para guardarlo (el email del formulario es opcional).
 
 ## Frontend
 
@@ -329,7 +340,7 @@ Hasta la puesta en línea, todo se desarrolla en local: la base es el Postgres d
 - [ ] Reserva `pendiente_pago` con vencimiento y job de vencimiento
 - [ ] Preferencia con vencimiento, sin efectivo y `binary_mode`
 - [ ] Webhook con firma, consulta del pago, idempotencia y reembolsos
-- [ ] Emails de confirmación
+- [ ] Emails al dueño (reserva nueva) e invitaciones, con Resend
 - [ ] Pruebas completas con usuarios de prueba de Mercado Pago
 
 **Puesta en línea** (cuando haya que mostrarlo afuera o antes de cobrar señas reales; puede ir entre la fase 1 y la 2). Plan detallado en `docs/puesta-en-linea.md`: el dominio se delega a un DNS (Cloudflare) porque nic.ar no guarda registros, y los logos no pueden quedar en el disco de Render (se borra en cada deploy).
@@ -347,7 +358,6 @@ Hasta la puesta en línea, todo se desarrolla en local: la base es el Postgres d
 ## Decisiones abiertas
 
 Preguntá antes de asumir cualquiera de estas:
-- Proveedor de email
 - Modelo de IA y su costo por complejo
 
 ## Documentación de referencia

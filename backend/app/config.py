@@ -30,6 +30,8 @@ class Settings(BaseSettings):
     cookie_segura: bool = False
     # Dónde se guardan logos y portadas (en la puesta en línea, un almacenamiento de archivos).
     carpeta_archivos: Path = Path("archivos")
+    # SOLO DESARROLLO: reservas online sin Mercado Pago, con un botón que simula el pago.
+    pagos_simulados: bool = False
 
     @field_validator("database_url", "database_url_admin")
     @classmethod

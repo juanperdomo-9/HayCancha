@@ -1,22 +1,22 @@
 """Tarea periódica que corre el cron job de Render cada minuto.
 
-En la fase 0 solo verifica la conexión con la base. En la fase 2 se le suma
-el vencimiento de las reservas pendientes de pago.
+Vence las reservas pendientes de pago cuyo tiempo para pagar ya pasó, así esos turnos
+vuelven a quedar libres. (Las rutas también las liberan al reservar, pero esto deja la
+agenda al día aunque nadie reserve.)
 """
 
 import logging
 
-from sqlalchemy import text
-
-from app.db import get_engine
+from app.db import sesion_admin
+from app.services.reservas import vencer_pendientes
 
 logger = logging.getLogger(__name__)
 
 
 def main() -> None:
-    with get_engine().connect() as conexion:
-        conexion.execute(text("SELECT 1"))
-    logger.info("tick ok")
+    with sesion_admin() as session, session.begin():
+        vencidas = vencer_pendientes(session)
+    logger.info("tick: %s reservas vencidas", vencidas)
 
 
 if __name__ == "__main__":

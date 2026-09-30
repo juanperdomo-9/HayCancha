@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from app.db import get_session, sesion_de_negocio
 from app.models import Deporte, Horario, Negocio, Recurso
 from app.schemas import publico as esquemas
+from app.services.cobros import proveedor_para
 from app.services.disponibilidad import (
     disponibilidad,
     hoy_en_el_negocio,
@@ -144,6 +145,7 @@ def ver_complejo(slug: str, session: SesionPublica) -> esquemas.ComplejoDetalle:
         sena_valor=negocio.sena_valor,
         horas_cancelacion=negocio.horas_cancelacion,
         minutos_para_pagar=negocio.minutos_para_pagar,
+        reservas_online=proveedor_para(negocio) is not None,
         deportes=deportes,
     )
 

@@ -26,6 +26,8 @@ _url = normalizar_url_postgres(TEST_DATABASE_URL or "postgresql://tests@127.0.0.
 os.environ["DATABASE_URL"] = _url
 os.environ["DATABASE_URL_ADMIN"] = _url
 os.environ["JWT_SECRET"] = "clave-de-tests-" + "x" * 32
+# Los tests no dependen del .env: el pago simulado se prende solo donde se prueba.
+os.environ["PAGOS_SIMULADOS"] = "false"
 os.environ["CARPETA_ARCHIVOS"] = tempfile.mkdtemp(prefix="haycancha-archivos-")
 
 
@@ -51,7 +53,7 @@ def base_de_pruebas() -> Iterator[str]:
     with get_engine_admin().begin() as conexion:
         conexion.execute(
             text(
-                "TRUNCATE reservas, recursos_combinados, horarios, clientes, recursos, "
+                "TRUNCATE pagos, reservas, recursos_combinados, horarios, clientes, recursos, "
                 "usuarios, negocios"
             )
         )
