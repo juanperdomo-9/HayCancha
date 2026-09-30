@@ -24,3 +24,10 @@ describe('mapas', () => {
     )
   })
 })
+
+it('sin clave, el mapa embebido usa el mapa clásico de Google', () => {
+  const url = urlMapaEmbebido('Calle 32 entre 7 y 8, La Plata, Argentina')
+  expect(url.startsWith('https://maps.google.com/maps?')).toBe(true)
+  expect(url).toContain('output=embed')
+  expect(url).toContain('q=Calle+32+entre+7+y+8%2C+La+Plata%2C+Argentina')
+})

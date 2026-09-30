@@ -1,5 +1,6 @@
 /** Links a Google Maps. "Cómo llegar" y "Ver en Google Maps" usan las URLs oficiales de
- * Maps (sin clave); el mapa embebido usa la Maps Embed API (gratis, con clave). */
+ * Maps (sin clave). El mapa embebido usa la Maps Embed API si hay clave (VITE_GOOGLE_MAPS_KEY);
+ * si no, el mapa embebible clásico de Google, que no pide clave. */
 
 type Ubicacion = { direccion: string | null; barrio: string | null }
 
@@ -17,7 +18,11 @@ export function urlVerEnMaps(consulta: string): string {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(consulta)}`
 }
 
-export function urlMapaEmbebido(consulta: string, clave: string): string {
+export function urlMapaEmbebido(consulta: string, clave?: string): string {
+  if (!clave) {
+    const parametros = new URLSearchParams({ q: consulta, hl: 'es', z: '16', output: 'embed' })
+    return `https://maps.google.com/maps?${parametros}`
+  }
   const parametros = new URLSearchParams({ key: clave, q: consulta, language: 'es', region: 'AR' })
   return `https://www.google.com/maps/embed/v1/place?${parametros}`
 }

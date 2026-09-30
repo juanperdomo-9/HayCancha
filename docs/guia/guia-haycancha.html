@@ -372,8 +372,9 @@
         <li>hasta cuándo puede cancelar y recuperar la seña;</li>
         <li>el detalle: complejo, deporte, cancha, día, horario y la dirección.</li>
       </ul>
-      <div class="caja ojo"><b>Ojo: al jugador no le mandamos email</b>
-        <p>La confirmación es esta pantalla. Por eso es muy importante que el jugador <b>guarde el link</b>: con ese link vuelve a ver su reserva, la cancela o le cambia el horario. El email que deja es opcional.</p>
+      <div class="caja ojo"><b>Ojo: el link es la única llave de la reserva</b>
+        <p>Al jugador no le mandamos email: la confirmación es esta pantalla. Cada reserva tiene su <b>link personal</b>, por ejemplo <code>haycancha.com.ar/adriatico/r/sab3-21hs-k7m2q9xa</code> (el complejo, el día, la hora y un código que nadie puede adivinar). La página lo destaca en un recuadro amarillo con <b>"Guardá este link"</b> y botones para copiarlo o compartirlo (por ejemplo, mandárselo a uno mismo por WhatsApp).</p>
+        <p><b>Si el jugador lo pierde, no puede cancelar ni cambiar el horario por su cuenta.</b> En ese caso tiene que llamar al complejo.</p>
       </div>
       <div class="caja peligro"><b>Nunca</b>
         <p>Un turno solo se confirma cuando Mercado Pago avisa que el pago se aprobó. <b>Nunca se aceptan capturas de pantalla de comprobantes</b>: se pueden inventar en un minuto. Si un jugador manda una captura, la respuesta es "si pagaste, la página te lo muestra confirmado".</p>
@@ -576,6 +577,16 @@
     <li>Sin foto de portada, aparece un dibujo de la cancha vista desde arriba con el color del complejo. Sin logo, aparecen las iniciales.</li>
   </ul>
   <figure><img src="img/12-marca.png" alt="Tu página"><figcaption>La pestaña Tu página, con la vista previa.</figcaption></figure>
+  <h4>El mapa</h4>
+  <p>La página de cada complejo muestra <b>un mapa de Google</b> con su ubicación y el botón <b>"Cómo llegar"</b>, que abre Google Maps con el recorrido. No hay que activar nada: el mapa sale solo a partir de la <b>dirección</b> y el <b>barrio o ciudad</b> que se cargan en Tu página (o en el alta).</p>
+  <ol class="pasos">
+    <li>Antes de cargar la dirección, <b>buscala en Google Maps</b> desde el celular o la compu, tal como la escribirías.</li>
+    <li>Si Google la encuentra bien, cargala <b>igual</b> en el campo <b>Dirección</b>. Ejemplos que funcionan: <code>Av. Triunvirato 4820</code>, <code>Calle 32 1150</code>, <code>Calle 7 y Calle 32</code>.</li>
+    <li>En <b>Barrio o ciudad</b> poné la ciudad o el barrio (<code>La Plata</code>, <code>Villa Urquiza</code>): ayuda a que Google no confunda con otra calle igual en otra ciudad.</li>
+    <li>En <b>Referencia para llegar</b> va lo que ayuda a la gente ("al lado de la YPF"). Esa referencia <b>no</b> se usa para el mapa: solo se muestra debajo.</li>
+    <li>Tocá <b>Guardar</b> y mirá el resultado con <b>"Ver página"</b>. Si el pin cae en otro lado, probá escribir la dirección de otra forma (por ejemplo, "Calle 7 y Calle 32" en vez de "7 y 32").</li>
+  </ol>
+  <div class="caja criollo"><b>En criollo</b><p>El mapa hace lo mismo que si escribieras la dirección en el buscador de Google Maps. Si ahí aparece bien, en la página también.</p></div>
 </section>
 
 <section class="nueva">
@@ -675,7 +686,8 @@
     <tr><th style="width:36%">Te dicen...</th><th>Qué hacer</th></tr>
     <tr><td>"Pagué y no me aparece confirmado."</td><td>La página se actualiza sola; a veces Mercado Pago tarda unos segundos en avisar. Si pasaron minutos, buscá la reserva en la agenda: si figura confirmada, está todo bien. Si el pago llegó tarde y el turno ya era de otro, la seña se devolvió sola.</td></tr>
     <tr><td>"Te mando la captura del pago."</td><td>Nunca se acepta. Si el pago existe, Mercado Pago lo avisa y la reserva se confirma sola.</td></tr>
-    <tr><td>"El jugador perdió el link de su reserva."</td><td>El dueño lo encuentra en la agenda por nombre o teléfono y, si hace falta, le cancela o le mueve la reserva desde el panel.</td></tr>
+    <tr><td>"El jugador perdió el link de su reserva."</td><td>Sin el link, el jugador no puede cancelar ni cambiar el horario por su cuenta. El dueño lo encuentra en la agenda por nombre o teléfono y, si hace falta, le cancela o le mueve la reserva desde el panel.</td></tr>
+    <tr><td>"El mapa marca otro lugar."</td><td>Revisar la dirección en Tu página: escribirla como la encuentra Google Maps (ver "El mapa" en la sección 14) y mirar el resultado con "Ver página".</td></tr>
     <tr><td>"Mi página no toma reservas online."</td><td>Revisá la pestaña Cobros: seguramente Mercado Pago no está vinculado o se desvinculó. Hay que volver a vincular. Si el complejo está suspendido, su página no está disponible.</td></tr>
     <tr><td>"No le llegó la devolución al jugador."</td><td>Mirá el detalle de la reserva. Si dice "devolución pendiente", falta saldo en el Mercado Pago del complejo: cuando tenga, sale sola. Si ya salió, los tiempos dependen del banco o la tarjeta del jugador.</td></tr>
     <tr><td>"Llueve, quiero cerrar."</td><td>Bloquear horarios con motivo "lluvia" y, para las reservas que ya estaban, moverlas o cancelarlas con devolución.</td></tr>
@@ -901,7 +913,7 @@ uv run python -m app.cli generar-clave</pre>
   <div class="llave">
     <div class="cabeza"><code>VITE_GOOGLE_MAPS_KEY</code><span>Pública, pero restringida</span></div>
     <div class="cuerpo">
-      <p><b>Qué es:</b> la llave del mapa que aparece en la página de cada complejo. Se ve en la página, por eso hay que <b>restringirla</b> para que solo funcione en nuestro dominio.</p>
+      <p><b>Opcional.</b> El mapa de cada complejo aparece igual sin esta llave. Con la llave se usa la versión oficial de Google (la Maps Embed API), que es la recomendada a largo plazo. Se ve en la página, por eso hay que <b>restringirla</b> para que solo funcione en nuestro dominio.</p>
       <ol class="pasos">
         <li>En Google Cloud, creá un proyecto "HayCancha".</li>
         <li>En <b>APIs y servicios → Biblioteca</b>, buscá <b>"Maps Embed API"</b> y habilitala.</li>
