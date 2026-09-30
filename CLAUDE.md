@@ -332,7 +332,7 @@ Hasta la puesta en línea, todo se desarrolla en local: la base es el Postgres d
 - [ ] Emails de confirmación
 - [ ] Pruebas completas con usuarios de prueba de Mercado Pago
 
-**Puesta en línea** (cuando haya que mostrarlo afuera o antes de cobrar señas reales; puede ir entre la fase 1 y la 2)
+**Puesta en línea** (cuando haya que mostrarlo afuera o antes de cobrar señas reales; puede ir entre la fase 1 y la 2). Plan detallado en `docs/puesta-en-linea.md`: el dominio se delega a un DNS (Cloudflare) porque nic.ar no guarda registros, y los logos no pueden quedar en el disco de Render (se borra en cada deploy).
 - [ ] Dominio `haycancha.com.ar` registrado en nic.ar
 - [ ] Proyectos `pruebas` y `produccion` en Supabase, conexión por el pooler, extensiones y migraciones aplicadas
 - [ ] Deploy en Render (backend, frontend y cron job) con `api.haycancha.com.ar`
