@@ -78,6 +78,7 @@ def main(argv: list[str] | None = None) -> None:
     ejemplo.add_argument("--reemplazar", action="store_true")
     superadmin = comandos.add_parser("crear-superadmin", help="crea un superadmin")
     superadmin.add_argument("--usuario", "--email", dest="usuario", required=True)
+    comandos.add_parser("generar-clave", help="clave nueva para TOKEN_ENCRYPTION_KEY")
     args = parser.parse_args(argv)
 
     if args.comando == "preparar-base":
@@ -89,6 +90,11 @@ def main(argv: list[str] | None = None) -> None:
         print("Usuarios de prueba: ver USUARIOS_DE_EJEMPLO en app/ejemplo.py.")
     elif args.comando == "crear-superadmin":
         crear_superadmin(args.usuario)
+    elif args.comando == "generar-clave":
+        from app.services.cifrado import nueva_clave
+
+        # Una sola vez por entorno: si cambia, hay que volver a vincular Mercado Pago.
+        print(nueva_clave())
 
 
 if __name__ == "__main__":

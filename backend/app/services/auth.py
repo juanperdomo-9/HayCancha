@@ -137,3 +137,12 @@ def usuario_de_invitacion(session: Session, token: str) -> Usuario:
     ):
         raise TokenInvalido
     return usuario
+
+
+def firmar_token(tipo: str, datos: dict, duracion: timedelta) -> str:
+    """Token firmado de corta duración para un flujo puntual (por ejemplo, OAuth)."""
+    return _firmar({**datos, "tipo": tipo}, duracion)
+
+
+def leer_token(token: str, tipo: str) -> dict:
+    return _leer(token, tipo)

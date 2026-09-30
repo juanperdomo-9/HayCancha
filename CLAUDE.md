@@ -114,7 +114,8 @@ Nunca subir secretos al repo. Mantener actualizados `backend/.env.example` y `fr
 | `TOKEN_ENCRYPTION_KEY` | Clave Fernet para encriptar tokens de Mercado Pago |
 | `MP_CLIENT_ID`, `MP_CLIENT_SECRET` | App de Mercado Pago (OAuth) |
 | `MP_WEBHOOK_SECRET` | Clave secreta de webhooks (se genera en "Tus integraciones") |
-| `MP_REDIRECT_URI` | Callback de OAuth |
+| `MP_REDIRECT_URI` | Callback de OAuth (vacío: `{APP_BASE_URL}/mercadopago/callback`) |
+| `MP_TOKENS_DE_PRUEBA` | `true` solo para vincular cuentas de prueba de Mercado Pago (credenciales TEST-) |
 | `APP_BASE_URL` | URL pública del backend (para `notification_url`) |
 | `FRONTEND_URL` | URL pública del frontend (para `back_urls`) |
 | `EMAIL_API_KEY`, `EMAIL_FROM` | Envío de emails con Resend (avisos al dueño e invitaciones) |
@@ -197,7 +198,7 @@ Estados: `pendiente_pago`, `confirmada`, `vencida`, `cancelada`, `bloqueada`. Un
 ## Pagos con Mercado Pago
 
 **Cada complejo cobra en su propia cuenta**, vinculada con OAuth (modelo marketplace):
-- Botón "Vincular Mercado Pago" en el panel del dueño que lleva a la autorización de Mercado Pago, con **PKCE** (`code_challenge` S256) y `state` para que nadie pueda vincular una cuenta ajena. El `refresh_token` llega con el flujo normal de autorización (verificado en la documentación: ya no hace falta pedir `offline_access`).
+- Botón "Vincular Mercado Pago" en el panel del dueño que lleva a la autorización de Mercado Pago, con **PKCE** (`code_challenge` S256) y `state` para que nadie pueda vincular una cuenta ajena. El `refresh_token` llega con el flujo normal de autorización (verificado en la documentación: ya no hace falta pedir `offline_access`). En la app de Mercado Pago hay que habilitar el flujo con PKCE (Detalles de aplicación → Editar); si no, la vinculación falla. El pedido de token va en JSON.
 - En el callback se cambia el `code` por `access_token` y `refresh_token`, que se guardan encriptados.
 - El access token dura 180 días. Un job lo renueva antes de vencer con `grant_type=refresh_token` y guarda el par nuevo.
 - Todas las llamadas de pago de un complejo se hacen **con el access token de ese complejo**.
@@ -222,6 +223,7 @@ Estados: `pendiente_pago`, `confirmada`, `vencida`, `cancelada`, `bloqueada`. Un
    - `pendiente_pago`: pasa a `confirmada`.
    - `vencida`: intentar pasarla a `confirmada`. Si la restricción de superposición falla (otro tomó el turno), devolver el pago con la API de reembolsos.
    - `cancelada`: devolver el pago.
+7. Avisar al dueño por email. **Al jugador no se le manda email**: ve la confirmación en `/:slug/reserva/:id`, donde también se le muestra el link de su reserva para guardarlo (el email del formulario es opcional).
 
 Si en el aviso falta alguno de los valores del manifest (por ejemplo, `x-request-id`), esa parte se saca del texto que se firma, como indica la documentación. Mercado Pago espera un 200 en menos de 22 segundos y reintenta durante días si no lo recibe.
 
@@ -232,7 +234,6 @@ Si en el aviso falta alguno de los valores del manifest (por ejemplo, `x-request
 **Abusos:** hay un tope de reservas pendientes de pago por teléfono al mismo tiempo, para que nadie trabe los turnos con reservas que no va a pagar.
 
 **Pagos simulados (solo desarrollo):** con `PAGOS_SIMULADOS=true`, un complejo sin Mercado Pago vinculado igual toma reservas online y la página de la reserva muestra "Simular pago aprobado", que pasa por el mismo servicio que el webhook. En producción esa variable no existe.
-7. Avisar al dueño por email. **Al jugador no se le manda email**: ve la confirmación en `/:slug/reserva/:id`, donde también se le muestra el link de su reserva para guardarlo (el email del formulario es opcional).
 
 ## Frontend
 
@@ -336,8 +337,8 @@ Hasta la puesta en línea, todo se desarrolla en local: la base es el Postgres d
 - [x] Cargar un complejo de prueba como primer negocio, con varias canchas de fútbol 7, una de fútbol 5 y una de pádel (`app.cli cargar-ejemplo`, con usuarios de prueba solo locales en `app/ejemplo.py`)
 
 **Fase 2: seña con Mercado Pago**
-- [ ] App en Mercado Pago Developers y OAuth por complejo
-- [ ] Reserva `pendiente_pago` con vencimiento y job de vencimiento
+- [ ] App en Mercado Pago Developers y OAuth por complejo (el OAuth con PKCE, la pestaña Cobros y la renovación de tokens ya están; falta crear la app y cargar sus claves)
+- [x] Reserva `pendiente_pago` con vencimiento y job de vencimiento
 - [ ] Preferencia con vencimiento, sin efectivo y `binary_mode`
 - [ ] Webhook con firma, consulta del pago, idempotencia y reembolsos
 - [ ] Emails al dueño (reserva nueva) e invitaciones, con Resend

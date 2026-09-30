@@ -33,6 +33,25 @@ class Settings(BaseSettings):
     # SOLO DESARROLLO: reservas online sin Mercado Pago, con un botón que simula el pago.
     pagos_simulados: bool = False
 
+    # Clave Fernet para encriptar los tokens de Mercado Pago (python -m app.cli generar-clave).
+    token_encryption_key: str = ""
+    # App de HayCancha en Mercado Pago Developers (OAuth para vincular cada complejo).
+    mp_client_id: str = ""
+    mp_client_secret: str = ""
+    # Adonde vuelve Mercado Pago después de autorizar. Vacío: {APP_BASE_URL}/mercadopago/callback.
+    # Tiene que ser exactamente la misma que la cargada en la app de Mercado Pago.
+    mp_redirect_uri: str = ""
+    # true para vincular cuentas de prueba de Mercado Pago (devuelve credenciales TEST-).
+    mp_tokens_de_prueba: bool = False
+
+    @property
+    def mercadopago_configurado(self) -> bool:
+        return bool(self.mp_client_id and self.mp_client_secret and self.token_encryption_key)
+
+    @property
+    def mp_callback(self) -> str:
+        return self.mp_redirect_uri or f"{self.app_base_url}/mercadopago/callback"
+
     @field_validator("database_url", "database_url_admin")
     @classmethod
     def _usar_psycopg(cls, url: str) -> str:

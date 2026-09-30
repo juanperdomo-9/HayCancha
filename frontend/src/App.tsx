@@ -6,6 +6,7 @@ import Ingresar from './pages/Ingresar'
 import Admin from './pages/admin/Admin'
 import Agenda from './pages/panel/Agenda'
 import Canchas from './pages/panel/Canchas'
+import Cobros from './pages/panel/Cobros'
 import Equipo from './pages/panel/Equipo'
 import Horarios from './pages/panel/Horarios'
 import Marca from './pages/panel/Marca'
@@ -33,6 +34,7 @@ export default function App() {
         <Route path="reservas" element={<Reservas />} />
         <Route path="marca" element={<Marca />} />
         <Route path="equipo" element={<Equipo />} />
+        <Route path="cobros" element={<Cobros />} />
       </Route>
       <Route path="/admin/*" element={<Admin />} />
       {import.meta.env.DEV && (

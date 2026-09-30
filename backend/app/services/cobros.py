@@ -79,11 +79,10 @@ class ProveedorSimulado:
 
 
 def proveedor_para(negocio: Negocio) -> ProveedorDePagos | None:
-    """Con qué cobra este complejo. None: todavía no toma reservas online."""
-    if negocio.mp_access_token_enc:
-        from app.services.mercadopago import ProveedorMercadoPago
+    """Con qué cobra este complejo. None: todavía no toma reservas online.
 
-        return ProveedorMercadoPago()
+    El cobro con la cuenta vinculada de Mercado Pago (preferencia y webhook) llega en el
+    bloque 2C; hasta entonces solo existe el pago simulado de desarrollo."""
     if get_settings().pagos_simulados:
         return ProveedorSimulado()
     return None
