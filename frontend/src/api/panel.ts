@@ -83,6 +83,8 @@ export type AltaDeComplejo = {
   direccion?: string
   barrio?: string
   referencia?: string
+  latitud?: number
+  longitud?: number
   servicios: string[]
   dueno_email: string
   sena_tipo: 'fija' | 'porcentaje'

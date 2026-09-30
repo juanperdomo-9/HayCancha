@@ -196,6 +196,8 @@ class AltaDeComplejo(BaseModel):
     direccion: TextoOpcional | None = None
     barrio: TextoOpcional | None = None
     referencia: TextoOpcional | None = None
+    latitud: Annotated[float, Field(ge=-56, le=-21)] | None = None
+    longitud: Annotated[float, Field(ge=-74, le=-53)] | None = None
     servicios: list[Texto] = []
     dueno_email: EmailStr
     sena_tipo: Literal["fija", "porcentaje"] = "porcentaje"

@@ -1,8 +1,9 @@
-import { type FormEvent, useState } from 'react'
+import { type FormEvent, useCallback, useState } from 'react'
 import { Link } from 'react-router'
 
 import { mensaje } from '../../api/client'
 import { type AltaDeComplejo, useAltaDeComplejo } from '../../api/panel'
+import { ElegirUbicacion } from '../../components/MapaLeaflet'
 import { Aviso, Boton, Campo, CopiarLink, Tarjeta } from '../../components/ui/Formulario'
 
 const SERVICIOS = ['Vestuarios', 'Duchas', 'Estacionamiento', 'Bufé', 'Parrilla', 'Wi-Fi', 'Alquiler de pelotas', 'Alquiler de paletas']
@@ -28,6 +29,8 @@ export default function NuevoComplejo() {
     direccion: '',
     barrio: '',
     referencia: '',
+    latitud: null as number | null,
+    longitud: null as number | null,
     servicios: [] as string[],
     dueno_email: '',
     sena_tipo: 'porcentaje' as AltaDeComplejo['sena_tipo'],
@@ -36,6 +39,7 @@ export default function NuevoComplejo() {
     minutos_para_pagar: '10',
     color_primario: '#1E7A3E',
   })
+  const ubicacion = useCallback((u: { latitud: number | null; longitud: number | null }) => setDatos((d) => ({ ...d, ...u })), [])
 
   function enviar(e: FormEvent) {
     e.preventDefault()
@@ -44,6 +48,8 @@ export default function NuevoComplejo() {
       direccion: datos.direccion || undefined,
       barrio: datos.barrio || undefined,
       referencia: datos.referencia || undefined,
+      latitud: datos.latitud ?? undefined,
+      longitud: datos.longitud ?? undefined,
       sena_valor: datos.sena_valor || '0',
       horas_cancelacion: Number(datos.horas_cancelacion),
       minutos_para_pagar: Number(datos.minutos_para_pagar),
@@ -123,9 +129,7 @@ export default function NuevoComplejo() {
                 key={s}
                 type="button"
                 aria-pressed={datos.servicios.includes(s)}
-                onClick={() =>
-                  setDatos({ ...datos, servicios: datos.servicios.includes(s) ? datos.servicios.filter((x) => x !== s) : [...datos.servicios, s] })
-                }
+                onClick={() => setDatos({ ...datos, servicios: datos.servicios.includes(s) ? datos.servicios.filter((x) => x !== s) : [...datos.servicios, s] })}
                 className="rounded-full bg-white px-3.5 py-1.5 text-sm ring-1 ring-linea aria-pressed:bg-noche aria-pressed:text-crema aria-pressed:ring-noche"
               >
                 {s}
@@ -133,6 +137,18 @@ export default function NuevoComplejo() {
             ))}
           </div>
         </fieldset>
+        <div className="mt-4 grid gap-1.5">
+          <span className="text-[13px] font-semibold">Ubicación en el mapa</span>
+          <span className="text-sm text-gris">
+            Se busca sola con la dirección y la ciudad. Si el pin no quedó justo en la entrada, tocá el lugar exacto o arrastralo.
+          </span>
+          <ElegirUbicacion
+            valor={{ latitud: datos.latitud, longitud: datos.longitud }}
+            color={datos.color_primario}
+            direccion={[datos.direccion, datos.barrio, 'Argentina'].filter((p) => p.trim()).join(', ')}
+            onCambiar={ubicacion}
+          />
+        </div>
       </Tarjeta>
 
       <Tarjeta titulo="2. El dueño" descripcion="Con este email entra a su panel. Le vas a pasar un link para que elija su contraseña.">

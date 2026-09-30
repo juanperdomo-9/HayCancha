@@ -146,6 +146,15 @@ export function ElegirUbicacion({ valor, color, direccion, onCambiar }: { valor:
     m.setView(punto, Math.max(m.getZoom(), 16))
   }, [mapa, valor.latitud, valor.longitud, color, onCambiar])
 
+  // Automático: cuando hay dirección y todavía no hay pin, se busca sola.
+  const sinPin = valor.latitud == null
+  useEffect(() => {
+    if (!sinPin || direccion.split(',').length < 3) return
+    const espera = setTimeout(() => void buscar(), 1200)
+    return () => clearTimeout(espera)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [direccion, sinPin])
+
   async function buscar() {
     setBuscando(true)
     setAviso('')
