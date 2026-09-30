@@ -80,3 +80,31 @@ def _subir_a_supabase(ruta: str, contenido: bytes, extension: str) -> str:
     if respuesta.status_code >= 400:
         raise ArchivoInvalido("No pudimos guardar la imagen. Probá de nuevo en un rato.")
     return f"{base}/storage/v1/object/public/{settings.supabase_bucket}/{ruta}"
+
+
+def borrar_imagen(url: str | None) -> None:
+    """Borra el archivo de una imagen que se sacó. Si falla, no importa: la página ya no
+    la usa (solo queda ocupando lugar)."""
+    if not url:
+        return
+    settings = get_settings()
+    base = settings.supabase_url.rstrip("/")
+    publica = f"{base}/storage/v1/object/public/{settings.supabase_bucket}/"
+    try:
+        if base and url.startswith(publica):
+            clave = settings.supabase_secret_key
+            headers = {"apikey": clave}
+            if clave.startswith("eyJ"):
+                headers["Authorization"] = f"Bearer {clave}"
+            ruta = url.removeprefix(publica)
+            with _http() as http:
+                http.delete(
+                    f"{base}/storage/v1/object/{settings.supabase_bucket}/{ruta}", headers=headers
+                )
+        elif url.startswith(f"{settings.app_base_url}/archivos/"):
+            relativa = url.removeprefix(f"{settings.app_base_url}/archivos/")
+            archivo = (settings.carpeta_archivos / relativa).resolve()
+            if settings.carpeta_archivos.resolve() in archivo.parents:
+                archivo.unlink(missing_ok=True)
+    except (httpx.HTTPError, OSError):
+        pass

@@ -14,7 +14,7 @@ from app.dependencias import PanelActual, PanelDeConfiguracion
 from app.models import Deporte, Horario, Negocio, Recurso, Usuario
 from app.schemas import panel as esquemas
 from app.services import email
-from app.services.archivos import ArchivoInvalido, guardar_imagen
+from app.services.archivos import ArchivoInvalido, borrar_imagen, guardar_imagen
 from app.services.auth import Usuario as UsuarioAuth
 from app.services.auth import link_de_invitacion
 from app.services.horarios import FranjaNueva, HorariosInvalidos, validar_franjas
@@ -86,6 +86,21 @@ async def subir_imagen(
         setattr(negocio, f"{tipo}_url", url)
         s.commit()
         s.refresh(negocio)
+        return _configuracion(negocio)
+
+
+@router.delete("/marca/{tipo}")
+def quitar_imagen(
+    tipo: Literal["logo", "portada"], panel: PanelDeConfiguracion
+) -> esquemas.Configuracion:
+    """Saca el logo o la portada: la página vuelve a las iniciales o al dibujo de la cancha."""
+    with sesion_de_negocio(panel.negocio_id) as s:
+        negocio = s.get(Negocio, panel.negocio_id)
+        anterior = getattr(negocio, f"{tipo}_url")
+        setattr(negocio, f"{tipo}_url", None)
+        s.commit()
+        s.refresh(negocio)
+        borrar_imagen(anterior)
         return _configuracion(negocio)
 
 

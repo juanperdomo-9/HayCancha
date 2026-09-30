@@ -4,6 +4,8 @@ import httpx
 
 from app.config import get_settings
 from app.services import archivos
+from tests.test_cobro_mercadopago import api_mp, complejo  # noqa: F401 (fixtures)
+from tests.test_panel_y_admin import crear_usuario  # noqa: F401 (fixture)
 
 PNG = b"\x89PNG\r\n\x1a\n" + b"0" * 100
 
@@ -46,3 +48,15 @@ def test_si_supabase_falla_avisa(monkeypatch) -> None:
         assert "No pudimos guardar" in str(error)
     else:
         raise AssertionError("tenía que fallar")
+
+
+def test_quitar_el_logo(complejo) -> None:  # noqa: F811
+    from tests.test_panel_y_admin import entrar
+
+    cliente = entrar(complejo["dueno"])
+    marca = f"/panel/{complejo['slug']}/marca/logo"
+    subido = cliente.post(marca, files={"archivo": ("logo.png", PNG, "image/png")})
+    assert subido.status_code == 200, subido.text
+    assert subido.json()["logo_url"]
+    quitado = cliente.delete(marca)
+    assert quitado.status_code == 200 and quitado.json()["logo_url"] is None

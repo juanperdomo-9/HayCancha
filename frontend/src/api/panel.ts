@@ -177,6 +177,17 @@ export function useGuardarConfiguracion(slug: string) {
   })
 }
 
+export function useQuitarImagen(slug: string, tipo: 'logo' | 'portada') {
+  const cliente = useQueryClient()
+  return useMutation({
+    mutationFn: () => pedir<Configuracion>(`${base(slug)}/marca/${tipo}`, { method: 'DELETE' }),
+    onSuccess: (configuracion) => {
+      cliente.setQueryData(['panel', slug, 'configuracion'], configuracion)
+      cliente.invalidateQueries({ queryKey: ['panel', slug], exact: true })
+    },
+  })
+}
+
 export function useSubirImagen(slug: string, tipo: 'logo' | 'portada') {
   const cliente = useQueryClient()
   return useMutation({

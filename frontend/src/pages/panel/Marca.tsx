@@ -3,7 +3,7 @@ import { type FormEvent, useCallback, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router'
 
 import { mensaje } from '../../api/client'
-import { type Configuracion, useConfiguracion, useGuardarConfiguracion, useSubirImagen } from '../../api/panel'
+import { type Configuracion, useConfiguracion, useGuardarConfiguracion, useQuitarImagen, useSubirImagen } from '../../api/panel'
 import { LogoComplejo } from '../../components/complejo/LogoComplejo'
 import { PortadaComplejo } from '../../components/complejo/PortadaComplejo'
 import { Aviso, Boton, Campo, Tarjeta } from '../../components/ui/Formulario'
@@ -223,6 +223,7 @@ function FormularioMarca({ slug, c }: { slug: string; c: Configuracion }) {
 
 function SubirImagen({ slug, tipo, titulo, ayuda, url }: { slug: string; tipo: 'logo' | 'portada'; titulo: string; ayuda: string; url: string | null }) {
   const subir = useSubirImagen(slug, tipo)
+  const quitar = useQuitarImagen(slug, tipo)
   const entrada = useRef<HTMLInputElement>(null)
   return (
     <div className="grid content-start gap-2">
@@ -258,6 +259,16 @@ function SubirImagen({ slug, tipo, titulo, ayuda, url }: { slug: string; tipo: '
         }}
       />
       <span className="text-[12.5px] text-gris">{ayuda}</span>
+      {url && (
+        <button
+          type="button"
+          onClick={() => quitar.mutate()}
+          disabled={quitar.isPending}
+          className="justify-self-start text-[13px] font-semibold text-red-700 underline underline-offset-3 disabled:opacity-50"
+        >
+          {quitar.isPending ? 'Quitando…' : tipo === 'logo' ? 'Quitar el logo' : 'Quitar la portada'}
+        </button>
+      )}
       {subir.error && (
         <p role="alert" className="flex items-center gap-1 text-[12.5px] text-red-700">
           <X className="size-3.5" aria-hidden="true" />
