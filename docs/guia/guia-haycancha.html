@@ -1,0 +1,1049 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>HayCancha: guía para el equipo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..800&family=Big+Shoulders+Display:wght@700;800;900&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --crema: #F1E9D8; --crema-oscuro: #E6DAC2; --cesped: #1E7A3E; --noche: #14231A;
+    --cal: #F6F1E6; --verde-claro: #57C986; --gris: #5d6660; --linea: #d9ccb2;
+    --rojo: #a4281e; --amarillo: #fff4d6;
+  }
+  @page { size: A4; margin: 15mm 15mm 16mm; }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { margin: 0; font-family: 'Instrument Sans', system-ui, sans-serif; font-size: 10.6pt; line-height: 1.55; color: var(--noche); background: #fff; }
+  h1, h2, .titulo { font-family: 'Big Shoulders Display', 'Arial Narrow', sans-serif; text-transform: uppercase; letter-spacing: .01em; line-height: .95; margin: 0; }
+  h2 { font-size: 30pt; margin: 0 0 4mm; }
+  h3 { font-size: 14pt; margin: 7mm 0 2mm; break-after: avoid; }
+  h4 { font-size: 11.5pt; margin: 5mm 0 1.5mm; break-after: avoid; }
+  p { margin: 0 0 2.6mm; }
+  ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+  li { margin-bottom: 1.2mm; }
+  a { color: var(--cesped); text-decoration: none; }
+  code, .mono { font-family: Consolas, 'Courier New', monospace; font-size: 9.4pt; background: var(--cal); border: 1px solid var(--linea); border-radius: 4px; padding: .2mm 1.2mm; word-break: break-word; }
+  pre { font-family: Consolas, monospace; font-size: 9pt; background: var(--noche); color: var(--cal); border-radius: 3mm; padding: 3mm 4mm; white-space: pre-wrap; margin: 0 0 3mm; break-inside: avoid; }
+  b, strong { font-weight: 700; }
+  .num { font-family: 'Archivo', sans-serif; font-stretch: 75%; font-weight: 800; }
+
+  /* Portada */
+  .portada { height: 262mm; background: var(--noche); color: var(--cal); border-radius: 5mm; padding: 16mm 14mm; display: flex; flex-direction: column; position: relative; overflow: hidden; break-after: page; }
+  .portada .logo { display: flex; align-items: center; gap: 3mm; font-family: 'Big Shoulders Display'; font-weight: 900; font-size: 20pt; letter-spacing: .02em; }
+  .portada .logo span { color: var(--verde-claro); }
+  .portada h1 { font-size: 78pt; margin-top: auto; color: var(--cal); }
+  .portada h1 em { font-style: normal; color: var(--verde-claro); }
+  .portada .bajada { font-size: 14pt; max-width: 135mm; margin-top: 6mm; color: #d8dfd9; }
+  .portada .pie { margin-top: 12mm; display: flex; justify-content: space-between; font-size: 9.5pt; color: #9fb0a5; border-top: 1px solid #2f4337; padding-top: 4mm; }
+  .cancha-dibujo { position: absolute; right: -30mm; top: 26mm; width: 150mm; opacity: .35; }
+
+  /* Partes y secciones */
+  .parte { break-before: page; background: var(--crema); border-radius: 5mm; padding: 12mm 12mm 10mm; margin-bottom: 7mm; }
+  .parte .etiqueta { font-size: 9pt; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--cesped); }
+  .parte h1 { font-size: 52pt; margin: 2mm 0 4mm; }
+  .parte p { font-size: 12pt; max-width: 150mm; }
+  section { margin-bottom: 6mm; }
+  section.nueva { break-before: page; }
+  .seccion-num { display: block; font-family: 'Archivo', sans-serif; font-stretch: 75%; font-weight: 800; color: var(--cesped); font-size: 11pt; letter-spacing: 0; margin-bottom: 1.5mm; }
+  h2 { break-after: avoid; break-inside: avoid; }
+
+  /* Cajas */
+  .caja { border-radius: 3mm; padding: 3.5mm 4.5mm; margin: 3mm 0 4mm; break-inside: avoid; }
+  .caja > b:first-child { display: block; font-size: 8.8pt; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 1mm; }
+  .caja p:last-child, .caja ul:last-child, .caja ol:last-child { margin-bottom: 0; }
+  .criollo { background: #e3f1e6; border-left: 4px solid var(--cesped); }
+  .criollo > b:first-child { color: var(--cesped); }
+  .ojo { background: var(--amarillo); border-left: 4px solid #c98a07; }
+  .ojo > b:first-child { color: #8a5d00; }
+  .peligro { background: #fbe6e3; border-left: 4px solid var(--rojo); }
+  .peligro > b:first-child { color: var(--rojo); }
+  .ejemplo { background: var(--cal); border: 1px dashed var(--linea); }
+  .ejemplo > b:first-child { color: var(--gris); }
+
+  /* Tablas */
+  table { width: 100%; border-collapse: collapse; margin: 2mm 0 4mm; font-size: 9.8pt; break-inside: auto; }
+  th { text-align: left; background: var(--noche); color: var(--cal); font-weight: 600; padding: 2mm 2.5mm; }
+  td { padding: 2mm 2.5mm; border-bottom: 1px solid var(--linea); vertical-align: top; }
+  tr { break-inside: avoid; }
+  tr:nth-child(even) td { background: #faf6ee; }
+  td:first-child { font-weight: 600; }
+
+  /* Pasos */
+  ol.pasos { list-style: none; padding: 0; counter-reset: paso; }
+  ol.pasos > li { counter-increment: paso; position: relative; padding-left: 10mm; margin-bottom: 2.4mm; min-height: 7mm; }
+  ol.pasos > li::before { content: counter(paso); position: absolute; left: 0; top: -.3mm; width: 6.4mm; height: 6.4mm; border-radius: 50%; background: var(--noche); color: var(--cal); font-family: 'Archivo'; font-stretch: 75%; font-weight: 800; font-size: 10pt; display: grid; place-items: center; }
+
+  /* Capturas */
+  figure { margin: 3mm 0 5mm; break-inside: avoid; }
+  figure img { display: block; width: 100%; border-radius: 3mm; border: 1px solid var(--linea); }
+  figcaption { font-size: 9pt; color: var(--gris); margin-top: 1.5mm; }
+  .lado { display: grid; grid-template-columns: 70mm 1fr; gap: 7mm; align-items: start; break-inside: avoid; margin: 3mm 0 5mm; }
+  .lado figure { margin: 0; }
+  .dos-celus { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; break-inside: avoid; }
+  .dos-celus figure { margin: 0 0 4mm; }
+
+  /* Personajes */
+  .personajes { display: grid; grid-template-columns: 1fr 1fr; gap: 3.5mm; margin: 3mm 0 4mm; }
+  .personaje { background: var(--cal); border: 1px solid var(--linea); border-radius: 3mm; padding: 3.5mm 4mm; break-inside: avoid; }
+  .personaje .quien { font-family: 'Big Shoulders Display'; font-weight: 800; font-size: 16pt; text-transform: uppercase; }
+  .personaje .rol { font-size: 8.6pt; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--cesped); }
+  .personaje p { margin: 1mm 0 0; font-size: 9.8pt; }
+
+  /* Diagrama */
+  .flujo { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2mm; margin: 4mm 0; align-items: stretch; }
+  .flujo div { background: var(--noche); color: var(--cal); border-radius: 3mm; padding: 3mm; font-size: 9pt; position: relative; }
+  .flujo div b { display: block; font-family: 'Big Shoulders Display'; font-size: 13pt; text-transform: uppercase; color: var(--verde-claro); }
+  .mapa { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 3mm; margin: 4mm 0; }
+  .mapa .pieza { border-radius: 3mm; padding: 3mm 3.5mm; border: 1.5px solid var(--noche); background: #fff; break-inside: avoid; }
+  .mapa .pieza.oscura { background: var(--noche); color: var(--cal); }
+  .mapa .pieza b { display: block; font-size: 10.5pt; }
+  .mapa .pieza small { display: block; color: inherit; opacity: .75; font-size: 8.8pt; line-height: 1.4; margin-top: .8mm; }
+  .flecha { text-align: center; font-weight: 700; color: var(--cesped); font-size: 9pt; }
+
+  /* Estados de la agenda */
+  .estados { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2.5mm; margin: 3mm 0 4mm; }
+  .estado { border-radius: 2.5mm; padding: 2.5mm 3mm; font-size: 9pt; break-inside: avoid; }
+  .estado b { display: block; font-size: 10.5pt; }
+  .e-libre { border: 1.5px dashed #c9b999; background: #fff; }
+  .e-pend { background: #fff1c9; border: 1.5px solid #e2b33b; }
+  .e-res { background: var(--noche); color: var(--cal); }
+  .e-bloq { background: repeating-linear-gradient(45deg, #e8e1d2, #e8e1d2 6px, #ddd3bf 6px, #ddd3bf 12px); }
+
+  /* Llaves */
+  .llave { border: 1.5px solid var(--noche); border-radius: 3.5mm; margin: 4mm 0 5mm; break-inside: avoid; overflow: hidden; }
+  .llave .cabeza { background: var(--noche); color: var(--cal); padding: 2.5mm 4mm; display: flex; justify-content: space-between; align-items: baseline; gap: 4mm; }
+  .llave .cabeza code { background: transparent; border: 0; color: var(--verde-claro); font-size: 10.5pt; font-weight: 700; padding: 0; }
+  .llave .cabeza span { font-size: 8.6pt; color: #b9c6bd; text-align: right; }
+  .llave .cuerpo { padding: 3mm 4mm 1mm; }
+  .llave .cuerpo h4 { margin-top: 2mm; }
+  .chip { display: inline-block; font-size: 8pt; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; border-radius: 99px; padding: .4mm 2.2mm; margin-right: 1mm; }
+  .chip.secreta { background: #fbe6e3; color: var(--rojo); }
+  .chip.publica { background: #e3f1e6; color: var(--cesped); }
+  .chip.config { background: var(--crema-oscuro); color: var(--noche); }
+
+  .indice { columns: 2; column-gap: 10mm; font-size: 10.2pt; }
+  .indice div { break-inside: avoid; margin-bottom: 1.3mm; }
+  .indice .p { font-weight: 800; margin-top: 3mm; color: var(--cesped); font-size: 9pt; letter-spacing: .1em; text-transform: uppercase; }
+  .machete { font-size: 9.6pt; }
+  .machete h3 { margin-top: 4mm; }
+  .fin { margin-top: 10mm; background: var(--noche); color: var(--cal); border-radius: 4mm; padding: 8mm; text-align: center; }
+  .fin .titulo { font-size: 30pt; }
+  .fin p { color: #c9d3cc; margin: 2mm 0 0; }
+</style>
+</head>
+<body>
+
+<!-- ============ PORTADA ============ -->
+<div class="portada">
+  <svg class="cancha-dibujo" viewBox="0 0 200 130" fill="none" stroke="#57C986" stroke-width="1.2">
+    <rect x="2" y="2" width="196" height="126" rx="3"/>
+    <line x1="100" y1="2" x2="100" y2="128"/>
+    <circle cx="100" cy="65" r="18"/>
+    <rect x="2" y="35" width="26" height="60"/>
+    <rect x="172" y="35" width="26" height="60"/>
+    <rect x="2" y="50" width="10" height="30"/>
+    <rect x="188" y="50" width="10" height="30"/>
+  </svg>
+  <div class="logo">
+    <svg width="34" height="24" viewBox="0 0 34 24"><rect x="1" y="1" width="32" height="22" rx="3" fill="#1E7A3E" stroke="#F6F1E6" stroke-width="1.6"/><line x1="17" y1="1" x2="17" y2="23" stroke="#F6F1E6" stroke-width="1.6"/><circle cx="17" cy="12" r="4.5" fill="none" stroke="#F6F1E6" stroke-width="1.6"/></svg>
+    <div><span>HAY</span>CANCHA</div>
+  </div>
+  <h1>Guía<br>para el<br><em>equipo</em></h1>
+  <p class="bajada">Todo lo que hay que saber de HayCancha para explicárselo a un complejo, sumarlo, ayudarlo cuando algo no anda y manejar las llaves del sistema. Explicado fácil, paso a paso.</p>
+  <div class="pie"><span>haycancha.com.ar</span><span>Versión 1 · 2026</span><span>Desarrollo web por jpweb.com.ar</span></div>
+</div>
+
+<!-- ============ ÍNDICE ============ -->
+<section>
+  <h2>Qué hay adentro</h2>
+  <p>La guía está dividida en siete partes. Si recién llegás, leela en orden: cada parte usa lo que explicó la anterior. Si ya sabés cómo funciona y buscás algo puntual, andá directo a la parte que necesitás.</p>
+  <div class="indice">
+    <div class="p">Parte 1 · Entender HayCancha</div>
+    <div>1. HayCancha en 30 segundos</div>
+    <div>2. Quién es quién</div>
+    <div>3. Palabras que vas a escuchar</div>
+    <div class="p">Parte 2 · El jugador</div>
+    <div>4. Cómo reserva un jugador</div>
+    <div>5. La seña y el pago</div>
+    <div>6. La confirmación</div>
+    <div>7. Cancelar o cambiar el horario</div>
+    <div>8. La devolución de la seña</div>
+    <div>9. El asistente y el botón de WhatsApp</div>
+    <div class="p">Parte 3 · El dueño y sus empleados</div>
+    <div>10. Entrar al panel</div>
+    <div>11. La agenda</div>
+    <div>12. Qué se puede hacer con una reserva</div>
+    <div>13. Reservas a mano y bloqueos</div>
+    <div>14. La configuración, pestaña por pestaña</div>
+    <div>15. Los emails que recibe el dueño</div>
+    <div>16. Qué puede hacer un empleado</div>
+    <div class="p">Parte 4 · El equipo HayCancha</div>
+    <div>17. El panel de administración</div>
+    <div>18. Cómo sumar un complejo nuevo</div>
+    <div>19. Soporte: problemas y soluciones</div>
+    <div class="p">Parte 5 · Las llaves</div>
+    <div>20. Qué es una llave y las reglas de oro</div>
+    <div>21. Las cuentas de HayCancha</div>
+    <div>22. Cada llave, paso a paso</div>
+    <div>23. Si una llave se filtra</div>
+    <div class="p">Parte 6 · Por dentro</div>
+    <div>24. Las piezas del sistema</div>
+    <div>25. Cómo se cuida cada complejo</div>
+    <div>26. Las tareas automáticas</div>
+    <div class="p">Parte 7 · Machete</div>
+    <div>27. Las reglas que nunca se rompen</div>
+    <div>28. Links y datos para tener a mano</div>
+  </div>
+</section>
+
+<!-- ============ PARTE 1 ============ -->
+<div class="parte">
+  <div class="etiqueta">Parte 1</div>
+  <h1>Entender HayCancha</h1>
+  <p>Qué es, para qué sirve y quién lo usa. Si solo tenés cinco minutos, leé esta parte.</p>
+</div>
+
+<section>
+  <h2><span class="seccion-num">1</span>HayCancha en 30 segundos</h2>
+  <p>HayCancha es una página web donde los jugadores reservan canchas y pagan la seña, sin llamar a nadie y sin esperar que alguien les conteste un mensaje.</p>
+  <p>La usan muchos complejos a la vez: fútbol 5, 7 y 11, pádel, tenis, básquet, vóley y cualquier deporte que se alquile por turno. Cada complejo tiene <b>su propia página</b>, con su logo y sus colores. Por ejemplo, El Potrero está en <code>haycancha.com.ar/el-potrero</code>.</p>
+  <div class="caja criollo"><b>En criollo</b>
+    <p>Imaginate que cada complejo contrata un <b>recepcionista que nunca duerme</b>. Atiende a todos los jugadores al mismo tiempo, a cualquier hora, sabe exactamente qué canchas están libres, cobra la seña y anota la reserva en el cuaderno del complejo. Nunca se equivoca y nunca le da el mismo turno a dos personas. Ese recepcionista es HayCancha.</p>
+  </div>
+  <h3>Lo que hace, en cuatro pasos</h3>
+  <ol class="pasos">
+    <li>El jugador entra a la página del complejo y <b>ve los horarios libres</b> de verdad, en el momento.</li>
+    <li><b>Elige un turno</b> y deja su nombre y su teléfono.</li>
+    <li><b>Paga la seña con Mercado Pago</b>. La plata entra directo en la cuenta del complejo.</li>
+    <li><b>Recibe la confirmación</b> en la pantalla, sin que ninguna persona tenga que hacer nada. El dueño lo ve en su agenda y le llega un email.</li>
+  </ol>
+  <h3>Por qué les sirve a los complejos</h3>
+  <ul>
+    <li><b>Dejan de atender el teléfono y el WhatsApp todo el día</b> para contestar "¿tenés cancha a las 21?".</li>
+    <li><b>Se terminan los plantones</b>: el que reserva online paga una seña, así que es mucho menos probable que no venga.</li>
+    <li><b>Nunca se pisan dos reservas</b>, aunque una sea online y otra la haya anotado el dueño a mano porque alguien llamó.</li>
+    <li><b>Ven todo en una agenda</b> desde el celular: quién viene, quién pagó, cuánto falta cobrar en la cancha.</li>
+    <li><b>No tienen que configurar nada para empezar</b>: el equipo de HayCancha les carga todo.</li>
+  </ul>
+  <figure><img src="img/01-inicio.png" alt="Página principal de HayCancha"><figcaption>La página principal, <code>haycancha.com.ar</code>. Tiene el buscador de canchas para jugadores y una sección para vender el producto a dueños de complejos.</figcaption></figure>
+</section>
+
+<section class="nueva">
+  <h2><span class="seccion-num">2</span>Quién es quién</h2>
+  <p>En HayCancha hay seis "personajes". Cada uno ve cosas distintas y puede hacer cosas distintas. Cuando alguien te pregunte "¿esto quién lo puede hacer?", la respuesta está acá.</p>
+  <div class="personajes">
+    <div class="personaje"><div class="rol">El que juega</div><div class="quien">Jugador</div><p>Entra a la página del complejo, elige un turno y paga la seña. <b>No necesita crear una cuenta ni contraseña.</b> Solo deja su nombre, su teléfono y, si quiere, su email.</p></div>
+    <div class="personaje"><div class="rol">El cliente de HayCancha</div><div class="quien">Dueño</div><p>El dueño o la dueña del complejo. Entra al <b>panel</b> con email y contraseña, ve la agenda, carga reservas a mano, cambia precios, horarios, colores, maneja su equipo y vincula su Mercado Pago.</p></div>
+    <div class="personaje"><div class="rol">El que atiende</div><div class="quien">Empleado</div><p>Alguien que trabaja en el complejo (el encargado, el que está en la caja). Ve y maneja la agenda, pero <b>no puede tocar precios, configuración ni pagos</b>.</p></div>
+    <div class="personaje"><div class="rol">Nosotros</div><div class="quien">Equipo HayCancha</div><p>El <b>superadmin</b>. Da de alta los complejos, les configura todo, lleva el estado de cobro de cada uno y puede suspender a uno que no paga. Puede entrar al panel de cualquier complejo para ayudarlo.</p></div>
+    <div class="personaje"><div class="rol">El cajero</div><div class="quien">Mercado Pago</div><p>Cobra las señas y le avisa a HayCancha cuando un pago se aprobó. <b>Es el único que puede confirmar un pago.</b> También devuelve la plata cuando corresponde.</p></div>
+    <div class="personaje"><div class="rol">El ayudante</div><div class="quien">Asistente</div><p>Un chat con inteligencia artificial en la página de cada complejo. Responde preguntas ("¿tienen vestuario?") y ayuda a reservar. <b>Nunca puede confirmar una reserva ni un pago.</b></p></div>
+  </div>
+  <div class="caja ojo"><b>Ojo</b>
+    <p>El dueño y los empleados de un complejo <b>solo ven su propio complejo</b>. Aunque alguien cambie la dirección en el navegador para espiar otro, el sistema le dice "No podés entrar acá". Solo el equipo HayCancha puede entrar a todos.</p>
+  </div>
+</section>
+
+<section class="nueva">
+  <h2><span class="seccion-num">3</span>Palabras que vas a escuchar</h2>
+  <p>Un diccionario chiquito. No hace falta aprenderlo de memoria: volvé acá cuando una palabra no te suene.</p>
+  <table>
+    <tr><th style="width:30%">Palabra</th><th>Qué quiere decir</th></tr>
+    <tr><td>Complejo</td><td>El lugar con canchas. Es nuestro cliente. En el sistema también se le dice "negocio".</td></tr>
+    <tr><td>Cancha</td><td>Cada espacio que se alquila: Cancha 1, Pádel 2, La techada. Un complejo puede tener muchas, de distintos deportes.</td></tr>
+    <tr><td>Turno</td><td>Un rato de una cancha que se alquila: "el jueves de 21 a 22 en la Cancha 3". Cada deporte tiene su duración (fútbol suele ser 60 minutos; pádel, 90).</td></tr>
+    <tr><td>Franja</td><td>Un tramo del día con un mismo precio. Por ejemplo, de 9 a 18 a $70.000 y de 18 a 24 a $85.000 son dos franjas.</td></tr>
+    <tr><td>Seña</td><td>La parte del precio que el jugador paga por adelantado para reservar. Puede ser un porcentaje (lo habitual es 20%) o un monto fijo.</td></tr>
+    <tr><td>Saldo</td><td>Lo que falta pagar en la cancha: el precio del turno menos la seña.</td></tr>
+    <tr><td>Política de cancelación</td><td>Con cuántas horas de anticipación puede cancelar un jugador y recuperar la seña (por ejemplo, 24 horas). La decide cada complejo.</td></tr>
+    <tr><td>Slug</td><td>El "apellido" del complejo en la dirección web: en <code>haycancha.com.ar/el-potrero</code>, el slug es <code>el-potrero</code>. Va en minúsculas y con guiones.</td></tr>
+    <tr><td>Panel</td><td>La parte privada donde entra el dueño con su contraseña: <code>haycancha.com.ar/panel/el-potrero</code>.</td></tr>
+    <tr><td>Superadmin</td><td>El usuario del equipo HayCancha, que puede ver y configurar todos los complejos. Entra por <code>haycancha.com.ar/admin</code>.</td></tr>
+    <tr><td>Pendiente de pago</td><td>Una reserva que el jugador empezó pero todavía no pagó. El turno queda guardado solo unos minutos (10 por defecto).</td></tr>
+    <tr><td>Confirmada</td><td>Una reserva con la seña pagada, o cargada a mano por el dueño. El turno es de esa persona.</td></tr>
+    <tr><td>Vencida</td><td>Una reserva que no se pagó a tiempo. El turno se liberó y lo puede tomar otro.</td></tr>
+    <tr><td>Cancelada</td><td>Una reserva que se dio de baja (la canceló el jugador o el complejo).</td></tr>
+    <tr><td>Bloqueo</td><td>Un turno que el dueño cerró a propósito (torneo, lluvia, mantenimiento). Nadie lo puede reservar.</td></tr>
+    <tr><td>Vincular Mercado Pago</td><td>Conectar la cuenta de Mercado Pago del complejo con HayCancha, para que las señas entren ahí. Se hace una sola vez.</td></tr>
+    <tr><td>Webhook</td><td>El aviso automático que manda Mercado Pago a HayCancha cuando pasa algo con un pago ("este pago se aprobó"). Es como el timbre: suena solo.</td></tr>
+    <tr><td>Llave (key)</td><td>Una contraseña que usan los programas para hablar entre sí. Hay una parte entera sobre esto (la 5).</td></tr>
+    <tr><td>Canchas combinadas</td><td>Cuando dos canchas chicas juntas forman una grande (dos de fútbol 5 que hacen una de fútbol 7). Si se reserva una, las otras se bloquean solas.</td></tr>
+  </table>
+</section>
+
+<!-- ============ PARTE 2 ============ -->
+<div class="parte">
+  <div class="etiqueta">Parte 2</div>
+  <h1>El jugador</h1>
+  <p>Todo lo que vive el que quiere jugar: desde que entra a la página hasta que llega a la cancha. Es lo primero que le vas a mostrar a un complejo.</p>
+</div>
+
+<section>
+  <h2><span class="seccion-num">4</span>Cómo reserva un jugador</h2>
+  <p>La mayoría de los jugadores reserva desde el celular, así que la página está pensada primero para el celular. El jugador <b>no necesita crear una cuenta</b>: con su nombre y su teléfono alcanza.</p>
+  <div class="lado">
+    <figure><img src="img/03-complejo.png" alt="Página del complejo en el celular"><figcaption>La página de un complejo en el celular, con su logo, sus colores y sus deportes.</figcaption></figure>
+    <div>
+      <h3 style="margin-top:0">Paso 1: entra a la página del complejo</h3>
+      <p>Puede llegar desde el buscador de <code>haycancha.com.ar</code> o directo con el link del complejo, que el dueño comparte en su Instagram, su WhatsApp o donde quiera.</p>
+      <p>Arriba ve el nombre, el barrio y los deportes, con cuántas canchas hay y cuánto dura cada turno. Con el botón <b>"Cómo llegar"</b> abre el mapa.</p>
+      <h3>Paso 2: elige el deporte</h3>
+      <p>Si el complejo tiene más de un deporte, toca el que quiere jugar. Cada deporte muestra su duración y el precio "desde".</p>
+      <div class="caja criollo"><b>En criollo</b><p>Un mismo complejo puede tener 4 canchas de fútbol 7, una de fútbol 5 y una de pádel. <b>Nunca asumas que todo es fútbol.</b></p></div>
+    </div>
+  </div>
+  <div class="lado">
+    <figure><img src="img/04-complejo-turnos.png" alt="Horarios libres"><figcaption>Los horarios del día. Las rayitas verdes son canchas libres; las grises, ocupadas.</figcaption></figure>
+    <div>
+      <h3 style="margin-top:0">Paso 3: elige el día y el horario</h3>
+      <p>Arriba hay una tira con los próximos días. Se puede reservar hasta 30 días para adelante.</p>
+      <p>Cada horario muestra <b>cuántas canchas quedan libres</b> de ese deporte. Por ejemplo, "quedan 2" a las 19. Si dice <b>"completo"</b>, no queda ninguna.</p>
+      <p>Si las canchas son distintas (una techada y otra descubierta), el jugador puede elegir una en particular. Si no elige, <b>el sistema le da la primera libre</b>.</p>
+      <div class="caja ejemplo"><b>Ejemplo</b><p>El Potrero tiene 4 canchas de fútbol 7. A las 21 ya hay 3 reservadas: la página muestra "queda 1". Cuando alguien reserva la última, pasa a "completo" para todos, al instante.</p></div>
+    </div>
+  </div>
+  <div class="lado">
+    <figure><img src="img/05-formulario.png" alt="Formulario de reserva"><figcaption>El resumen del turno y el formulario. Los montos los calcula el sistema.</figcaption></figure>
+    <div>
+      <h3 style="margin-top:0">Paso 4: completa sus datos</h3>
+      <p>Ve el resumen: el horario, el día, el precio del turno, <b>la seña que tiene que pagar ahora</b> y lo que le falta pagar en la cancha.</p>
+      <p>Escribe su nombre, su teléfono y, si quiere, su email. El email es opcional.</p>
+      <h3>Paso 5: toca "Pagar seña"</h3>
+      <p>En ese momento el sistema <b>le guarda el turno</b> por unos minutos (10 por defecto; lo decide cada complejo) y lo lleva a Mercado Pago para pagar.</p>
+      <div class="caja ojo"><b>Ojo</b><p>Los precios y las señas <b>siempre los calcula el sistema</b>, nunca la pantalla del jugador. Aunque alguien quisiera "trucar" el precio desde su computadora, no podría: se cobra lo que dice la configuración del complejo.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="nueva">
+  <h2><span class="seccion-num">5</span>La seña y el pago</h2>
+  <h3>Cómo se calcula la seña</h3>
+  <p>Cada complejo elige una de dos formas:</p>
+  <ul>
+    <li><b>Porcentaje del turno</b> (la más común, casi siempre 20%).</li>
+    <li><b>Monto fijo</b>, por ejemplo $15.000 sin importar el turno.</li>
+  </ul>
+  <div class="caja ejemplo"><b>Ejemplo con números</b>
+    <p>En Adriático el turno de fútbol 5 cuesta <span class="num">$55.000</span> y la seña es del 20%.</p>
+    <ul>
+      <li>Seña: 20% de $55.000 = <b class="num">$11.000</b>. Eso se paga ahora, online.</li>
+      <li>Saldo: $55.000 − $11.000 = <b class="num">$44.000</b>. Eso se paga en la cancha, el día del partido.</li>
+    </ul>
+    <p>Si el complejo cobra más caro de noche (otra franja), el sistema usa el precio del horario elegido y calcula la seña sobre ese precio.</p>
+  </div>
+  <h3>Cómo paga el jugador</h3>
+  <ol class="pasos">
+    <li>Después de tocar "Pagar seña", el jugador va a la pantalla de <b>Mercado Pago</b>. Ahí dice "Seña: Cancha 1, jue 1/10 20:00" y el monto.</li>
+    <li>Paga con <b>tarjeta de crédito, tarjeta de débito o la plata que tenga en Mercado Pago</b>.</li>
+    <li>Mercado Pago le dice al instante si el pago se aprobó o se rechazó. No hay pagos "en espera".</li>
+    <li>Vuelve solo a la página de su reserva en HayCancha, que ya muestra la confirmación.</li>
+  </ol>
+  <div class="caja ojo"><b>Ojo: no se puede pagar en efectivo</b>
+    <p>Los pagos en efectivo (Rapipago, Pago Fácil) están desactivados a propósito: tardan horas o días en acreditarse, y el turno no puede quedar trabado tanto tiempo. Si alguien quiere dejar la seña en efectivo, tiene que ir al complejo o llamar, y el dueño la carga a mano (ver la sección 13).</p>
+  </div>
+  <h3>¿A dónde va la plata?</h3>
+  <p><b>Directo a la cuenta de Mercado Pago del complejo.</b> HayCancha no toca esa plata: no pasa por ninguna cuenta nuestra. Mercado Pago le cobra al complejo su comisión habitual por cada cobro, como con cualquier venta. HayCancha no se queda con ningún porcentaje de las señas; al complejo le cobra su abono por separado.</p>
+  <h3>¿Qué pasa si no paga a tiempo?</h3>
+  <p>Si el jugador no termina de pagar dentro de los minutos que le dimos, <b>la reserva vence sola</b> y el turno vuelve a quedar libre para otro. El link de pago de Mercado Pago también deja de funcionar, así que no puede pagar tarde un turno que ya no es suyo.</p>
+  <div class="caja criollo"><b>En criollo</b>
+    <p>Es como cuando te guardan algo en un negocio: "te lo aparto 10 minutos". Si no volvés, lo vuelven a poner en la vidriera.</p>
+  </div>
+  <h3>Para que nadie trabe los turnos</h3>
+  <p>Un vivo podría reservar muchos turnos sin pagar para que nadie más los tome. Para evitarlo:</p>
+  <ul>
+    <li>Cada reserva sin pagar dura pocos minutos.</li>
+    <li>Un mismo teléfono puede tener <b>como máximo 2 reservas sin pagar</b> al mismo tiempo en un complejo.</li>
+    <li>También hay un límite de reservas sin pagar desde una misma conexión, aunque cambie de teléfono.</li>
+  </ul>
+</section>
+
+<section class="nueva">
+  <h2><span class="seccion-num">6</span>La confirmación</h2>
+  <div class="lado">
+    <figure><img src="img/06-confirmada.png" alt="Reserva confirmada"><figcaption>La confirmación. En la web real, el link empieza con <code>haycancha.com.ar</code>.</figcaption></figure>
+    <div>
+      <p>Mientras el jugador paga, la página de su reserva dice <b>"Esperando el pago"</b> y muestra cuántos minutos le quedan. Se actualiza sola.</p>
+      <p>Apenas Mercado Pago avisa que el pago se aprobó, la página cambia a <b>"¡Listo! El turno es tuyo"</b>, con una animación de confirmación.</p>
+      <p>Ahí mismo ve:</p>
+      <ul>
+        <li>cuánto le falta pagar en la cancha;</li>
+        <li><b>el link de su reserva</b>, con un botón para copiarlo;</li>
+        <li>hasta cuándo puede cancelar y recuperar la seña;</li>
+        <li>el detalle: complejo, deporte, cancha, día, horario y la dirección.</li>
+      </ul>
+      <div class="caja ojo"><b>Ojo: al jugador no le mandamos email</b>
+        <p>La confirmación es esta pantalla. Por eso es muy importante que el jugador <b>guarde el link</b>: con ese link vuelve a ver su reserva, la cancela o le cambia el horario. El email que deja es opcional.</p>
+      </div>
+      <div class="caja peligro"><b>Nunca</b>
+        <p>Un turno solo se confirma cuando Mercado Pago avisa que el pago se aprobó. <b>Nunca se aceptan capturas de pantalla de comprobantes</b>: se pueden inventar en un minuto. Si un jugador manda una captura, la respuesta es "si pagaste, la página te lo muestra confirmado".</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="seccion-num">7</span>Cancelar o cambiar el horario</h2>
+  <p>El jugador puede hacer las dos cosas <b>solo, desde la página de su reserva</b> (la del link que guardó). Para demostrar que la reserva es suya, <b>escribe el teléfono que usó al reservar</b>.</p>
+  <h3>Cancelar</h3>
+  <ol class="pasos">
+    <li>Abre el link de su reserva y toca <b>"Cancelar reserva"</b>.</li>
+    <li>La página le avisa claramente qué pasa con su seña <b>antes</b> de confirmar: "te la devolvemos" o "si cancelás ahora, perdés la seña".</li>
+    <li>Escribe su teléfono y confirma. El turno queda libre al instante para otro jugador y el dueño recibe un email.</li>
+  </ol>
+  <h3>Cambiar el horario</h3>
+  <p>Si le surgió algo, en vez de cancelar puede pasar la reserva a otro turno <b>sin perder la seña</b>. Las reglas son:</p>
+  <ul>
+    <li>Se puede cambiar con la misma anticipación que pide la política de cancelación (por ejemplo, hasta 24 horas antes). Así el complejo no se queda con un turno vacío a último momento.</li>
+    <li>Solo a un turno libre, del mismo deporte y del mismo complejo.</li>
+    <li><b>Se puede cambiar una sola vez.</b></li>
+    <li>La seña ya pagada se mantiene. Si el turno nuevo es más caro (por ejemplo, de noche), la diferencia se paga en la cancha.</li>
+    <li>El dueño recibe un email con el cambio.</li>
+  </ul>
+  <div class="caja ejemplo"><b>Ejemplo</b>
+    <p>Juan reservó el jueves a las 17 ($70.000, seña $14.000). El martes decide pasarlo al viernes a las 21, que cuesta $85.000. Mantiene su seña de $14.000 y en la cancha paga $71.000 ($85.000 − $14.000). Ya no lo puede volver a cambiar; si no puede ir, le queda cancelar según la política.</p>
+  </div>
+</section>
+
+<section class="nueva">
+  <h2><span class="seccion-num">8</span>La devolución de la seña</h2>
+  <p><b>La seña se devuelve sola.</b> Nadie tiene que entrar a Mercado Pago ni hacer una transferencia. HayCancha le pide a Mercado Pago que la devuelva usando la cuenta del complejo (porque la plata se cobró ahí), y Mercado Pago se la reintegra al jugador <b>en el mismo medio con el que pagó</b>.</p>
+  <table>
+    <tr><th style="width:42%">Qué pasó</th><th>Qué pasa con la seña</th></tr>
+    <tr><td>El jugador cancela con más anticipación que la política (por ejemplo, 24 horas antes o más)</td><td>Se le devuelve entera, automáticamente, en ese momento.</td></tr>
+    <tr><td>El jugador cancela con menos anticipación</td><td>La seña queda para el complejo. El jugador lo ve antes de confirmar.</td></tr>
+    <tr><td>El complejo cancela (lluvia, torneo, un problema)</td><td>Se devuelve. Al cancelar, el panel pregunta "¿Devolver la seña?" y viene marcado que sí. El dueño la puede destildar solo en casos especiales (por ejemplo, el jugador pidió cancelar a último momento por teléfono).</td></tr>
+    <tr><td>El pago llegó tarde y el turno ya lo había tomado otro</td><td>Se devuelve sola, sin que nadie haga nada.</td></tr>
+    <tr><td>Alguien pagó dos veces la misma reserva</td><td>El segundo pago se devuelve solo.</td></tr>
+    <tr><td>Reserva cargada a mano con seña en efectivo</td><td>El sistema no la toca: esa plata la maneja el dueño en persona.</td></tr>
+  </table>
+  <h3>¿Cuánto tarda en ver la plata el jugador?</h3>
+  <p>Depende de cómo pagó, no de nosotros. Si pagó con plata de su cuenta de Mercado Pago, suele volver enseguida. Con tarjeta depende del banco: puede tardar algunos días o aparecer en el resumen siguiente.</p>
+  <h3>¿Y si el complejo no tiene saldo?</h3>
+  <p>La devolución sale de la cuenta de Mercado Pago del complejo. Si el complejo ya retiró todo y no le queda plata, Mercado Pago puede rechazarla. En ese caso:</p>
+  <ol class="pasos">
+    <li>La devolución queda marcada como <b>"devolución pendiente"</b> en el detalle de la reserva.</li>
+    <li>Al dueño le llega un email avisándole.</li>
+    <li>El sistema la vuelve a intentar sola. Cuando el complejo tiene saldo, sale.</li>
+  </ol>
+  <p>Nunca queda una devolución perdida sin que nadie se entere. La página de la reserva del jugador muestra "Te devolvimos $X" cuando sale.</p>
+</section>
+
+<section>
+  <h2><span class="seccion-num">9</span>El asistente y el botón de WhatsApp</h2>
+  <h3>El asistente</h3>
+  <p>En la página de cada complejo hay un <b>chat con inteligencia artificial</b>. Es como un empleado que se leyó todo lo que el dueño le contó del complejo.</p>
+  <ul>
+    <li><b>Responde preguntas</b>: "¿tienen vestuarios?", "¿se puede llevar parrilla?", "¿hasta qué hora abren?". Solo sabe lo del complejo donde está: nunca mezcla información de otro.</li>
+    <li><b>Ayuda a reservar</b>: mira los horarios libres, arma la reserva y le da al jugador el link para pagar la seña.</li>
+    <li><b>Cancela</b> una reserva si el jugador se lo pide, con las mismas reglas de siempre.</li>
+    <li>Si le preguntan algo que no sabe, <b>no inventa</b>: lo anota como "pregunta sin responder" para que el dueño la complete desde su panel. La próxima vez ya la sabe.</li>
+    <li>Cada complejo le pone nombre, tono (más formal o más canchero) y mensaje de bienvenida.</li>
+  </ul>
+  <div class="caja peligro"><b>Nunca</b><p>El asistente <b>no puede confirmar reservas ni marcar pagos</b>. No tiene esa herramienta, aunque alguien intente convencerlo. Solo Mercado Pago confirma pagos.</p></div>
+  <p>Para cuidar los costos, hay un límite de mensajes por persona.</p>
+  <h3>El botón de WhatsApp</h3>
+  <p>Si el complejo quiere, carga su número y en su página aparece un botón discreto de <b>"Consultar por WhatsApp"</b>, al lado de la dirección. Abre un chat con el complejo para dudas puntuales.</p>
+  <p>Las reservas, los pagos y los avisos <b>nunca</b> pasan por WhatsApp: todo eso pasa en la página. El botón es solo para consultas.</p>
+</section>
+
+<!-- ============ PARTE 3 ============ -->
+<div class="parte">
+  <div class="etiqueta">Parte 3</div>
+  <h1>El dueño y sus empleados</h1>
+  <p>El panel: la herramienta con la que el complejo maneja su día. El dueño la usa sobre todo desde el celular, parado en la cancha.</p>
+</div>
+
+<section>
+  <h2><span class="seccion-num">10</span>Entrar al panel</h2>
+  <figure><img src="img/07-ingresar.png" alt="Pantalla de ingreso"><figcaption>La pantalla de ingreso, en <code>haycancha.com.ar/ingresar</code>. Es la misma para dueños, empleados y el equipo HayCancha.</figcaption></figure>
+  <h3>La primera vez</h3>
+  <ol class="pasos">
+    <li>Cuando el equipo HayCancha da de alta el complejo, al dueño le llega un <b>email con un link</b> para elegir su contraseña.</li>
+    <li>Toca el link, escribe la contraseña que quiera dos veces y listo: queda adentro de su panel.</li>
+    <li>El link <b>sirve una sola vez y vence a los 7 días</b>. Si se le venció, le mandamos uno nuevo (ver la sección 19).</li>
+  </ol>
+  <p>A los empleados les pasa lo mismo: el dueño los suma desde la pestaña Equipo y a cada uno le llega su link.</p>
+  <h3>Las veces siguientes</h3>
+  <p>Entra en <code>haycancha.com.ar/ingresar</code> con su email y su contraseña. Cae directo en la agenda de su complejo: <code>haycancha.com.ar/panel/el-potrero</code>. La sesión dura dos semanas, así que no tiene que escribir la contraseña cada vez.</p>
+  <div class="caja ojo"><b>Ojo</b><p>El panel se ve con la estructura de HayCancha, pero con el logo y el color del complejo arriba. Así el dueño lo siente suyo.</p></div>
+</section>
+
+<section class="nueva">
+  <h2><span class="seccion-num">11</span>La agenda</h2>
+  <p>Es la pantalla principal. Muestra <b>una columna por cancha</b>, agrupadas por deporte, y <b>una fila por turno</b>. De un vistazo el dueño sabe cómo viene el día.</p>
+  <figure><img src="img/08-agenda.png" alt="Agenda con reservas"><figcaption>La agenda de El Potrero a la noche. Cada rectángulo oscuro es una reserva con el nombre del jugador y lo que falta cobrar. El iconito de la esquina dice de dónde vino (el globo es la página; el teléfono, cargada a mano).</figcaption></figure>
+  <h3>Los cuatro estados de un turno</h3>
+  <div class="estados">
+    <div class="estado e-libre"><b>Libre</b>Con el precio. Tocándolo, se carga una reserva a mano.</div>
+    <div class="estado e-pend"><b>Pendiente de pago</b>El nombre del jugador y cuántos minutos le quedan para pagar.</div>
+    <div class="estado e-res"><b>Reservado</b>El nombre, si pagó la seña, cuánto falta cobrar y de dónde vino.</div>
+    <div class="estado e-bloq"><b>Bloqueado</b>El dueño lo cerró (torneo, lluvia) y el motivo.</div>
+  </div>
+  <h3>El resumen del día</h3>
+  <p>Arriba de todo hay cinco números: <b>turnos ocupados</b>, <b>libres</b>, <b>bloqueados</b>, <b>señas cobradas</b> y <b>lo que falta cobrar en la cancha</b>. Es la caja del día sin hacer cuentas.</p>
+  <div class="dos-celus">
+    <figure><img src="img/09-agenda-movil.png" alt="Agenda en el celular"><figcaption>La agenda en el celular. Si hay muchas canchas, la grilla se desliza de costado y se puede filtrar por deporte.</figcaption></figure>
+    <div>
+      <h3 style="margin-top:0">Se actualiza sola</h3>
+      <p>Cuando entra una reserva nueva desde la página, <b>aparece sola en la agenda</b> en menos de un minuto, sin recargar.</p>
+      <h3>Otro día y la semana</h3>
+      <p>Con las flechas o el calendario se cambia de día. El botón <b>"Semana"</b> muestra los próximos 7 días con cuántos turnos ocupados y libres tiene cada uno. Tocando un día, se abre esa agenda.</p>
+      <h3>Filtrar por deporte</h3>
+      <p>Los botones "Todos, Fútbol 7, Fútbol 5, Pádel" muestran solo las canchas de ese deporte. Muy útil en el celular.</p>
+    </div>
+  </div>
+  <figure><img src="img/17-semana.png" alt="Vista de la semana"><figcaption>La vista de la semana: cuántos turnos ocupados y libres tiene cada día.</figcaption></figure>
+</section>
+
+<section class="nueva">
+  <h2><span class="seccion-num">12</span>Qué se puede hacer con una reserva</h2>
+  <p>Tocando una reserva en la agenda se abre su <b>detalle</b>.</p>
+  <figure><img src="img/19-detalle.png" alt="Detalle de una reserva"><figcaption>El detalle de una reserva, con los datos del jugador y las acciones.</figcaption></figure>
+  <h3>Lo que muestra</h3>
+  <ul>
+    <li>Nombre, teléfono y email del jugador. Con el teléfono hay dos botones: <b>llamar</b> y <b>escribir por WhatsApp</b> (se abre el WhatsApp del celular del dueño).</li>
+    <li>Cuándo reservó y <b>de dónde vino</b>: la página, el asistente o cargada a mano.</li>
+    <li>El estado del pago: seña pagada online, seña en efectivo o sin seña. Si hubo devolución, si salió o si está pendiente.</li>
+  </ul>
+  <h3>Las acciones</h3>
+  <table>
+    <tr><th style="width:30%">Acción</th><th>Para qué sirve</th></tr>
+    <tr><td>Vino / No vino</td><td>Anotar si el jugador se presentó. Sirve para saber quién suele faltar.</td></tr>
+    <tr><td>Saldo cobrado</td><td>Marcar que ya se cobró lo que faltaba en la cancha. Así el resumen del día queda al día.</td></tr>
+    <tr><td>Cancelar</td><td>Dar de baja la reserva. Libera el turno y devuelve la seña según lo que elija el dueño (ver la sección 8).</td></tr>
+    <tr><td>Mover</td><td>Pasar la reserva a otra cancha del mismo deporte o a otro horario libre. Si el turno de destino ya está ocupado, el sistema no deja.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2><span class="seccion-num">13</span>Reservas a mano y bloqueos</h2>
+  <h3>Cargar una reserva a mano</h3>
+  <p>Para alguien que llamó por teléfono o vino en persona. El dueño toca un turno <b>libre</b> en la agenda y escribe:</p>
+  <ul>
+    <li>el nombre y el teléfono del jugador;</li>
+    <li>si dejó <b>seña en efectivo</b> (y el sistema la cuenta en el resumen).</li>
+  </ul>
+  <p>La reserva queda <b>confirmada al instante</b>, sin pasar por Mercado Pago, y ese turno deja de aparecer en la página y en el asistente. <b>Así nunca se pisa una reserva telefónica con una online.</b></p>
+  <figure><img src="img/20-cargar.png" alt="Cargar una reserva a mano"><figcaption>Cargar una reserva a mano desde un turno libre.</figcaption></figure>
+  <h3>Bloquear horarios</h3>
+  <p>Con el botón <b>"Bloquear horarios"</b> la agenda pasa a modo bloqueo: el dueño toca los turnos libres que quiere cerrar (o "Todo el día" en una cancha), escribe el motivo abajo (torneo, lluvia, mantenimiento, cumpleaños) y toca <b>"Bloquear"</b>. Nadie puede reservar un turno bloqueado. Si alguno ya tenía una reserva, el sistema lo saltea y avisa.</p>
+  <figure><img src="img/21-bloquear.png" alt="Bloquear horarios"><figcaption>Bloquear horarios, con el motivo.</figcaption></figure>
+  <div class="caja criollo"><b>En criollo: ¿y si llueve y ya hay reservas?</b>
+    <ol>
+      <li>Bloquear los turnos libres, para que nadie más reserve.</li>
+      <li>Por cada reserva que ya estaba: <b>moverla</b> a otro día (hablando con el jugador) o <b>cancelarla con devolución</b>.</li>
+    </ol>
+  </div>
+</section>
+
+<section class="nueva">
+  <h2><span class="seccion-num">14</span>La configuración, pestaña por pestaña</h2>
+  <p>Arriba del panel están las pestañas. Todas, menos la Agenda, son <b>solo para el dueño</b> (y el equipo HayCancha). El dueño no tiene que tocar nada para empezar, porque se lo dejamos cargado, pero puede cambiar lo que quiera cuando quiera.</p>
+
+  <h3>Canchas</h3>
+  <p>La lista de canchas del complejo, cada una con su deporte, su nombre ("Cancha 1", "La techada") y sus características ("sintético, techada", "blindex"). Se pueden agregar canchas y desactivar las que no se usan (por ejemplo, una en arreglo).</p>
+  <figure><img src="img/14-canchas.png" alt="Pestaña Canchas"><figcaption>La pestaña Canchas.</figcaption></figure>
+
+  <h3>Horarios y precios</h3>
+  <p>Acá se cargan las <b>franjas</b>: qué días, de qué hora a qué hora, cada cuánto es un turno y cuánto cuesta. Una cancha puede tener varias franjas por día, con precios distintos.</p>
+  <figure><img src="img/10-horarios.png" alt="Horarios y precios"><figcaption>Fútbol 7 de El Potrero: de 9 a 18 a $70.000 y de 18 a 24 a $85.000, todos los días. Los mismos horarios se aplican a las cuatro canchas marcadas.</figcaption></figure>
+  <div class="caja ejemplo"><b>Ejemplos</b>
+    <ul>
+      <li>Un complejo que cierra a la 1: franja de 18 a 01. El sistema entiende que termina al día siguiente.</li>
+      <li>Para cerrar a medianoche, la franja va de 09 a 00.</li>
+      <li>Pádel con turnos de 90 minutos: en esa franja se elige "90 min".</li>
+    </ul>
+  </div>
+  <div class="caja ojo"><b>Ojo</b><p>Si el dueño cambia un precio, las reservas que ya estaban hechas <b>mantienen el precio que tenían</b>. El precio nuevo vale para las reservas nuevas.</p></div>
+</section>
+
+<section class="nueva">
+  <h3 style="margin-top:0">Seña y cancelación</h3>
+  <p>Tres decisiones del complejo:</p>
+  <ul>
+    <li><b>La seña</b>: porcentaje o monto fijo, y cuánto. Muestra un ejemplo con un turno para que se entienda.</li>
+    <li><b>La política de cancelación</b>: con cuántas horas de anticipación se puede cancelar y recuperar la seña. No tiene un valor por defecto: se acuerda con cada complejo en el alta.</li>
+    <li><b>Los minutos para pagar</b>: cuánto tiempo se guarda un turno mientras el jugador paga (recomendamos 10).</li>
+  </ul>
+  <figure><img src="img/11-sena.png" alt="Seña y cancelación"><figcaption>La pestaña Seña y cancelación.</figcaption></figure>
+
+  <h3>Tu página</h3>
+  <p>Cómo se ve la página del complejo: <b>logo</b>, <b>foto de portada</b>, <b>colores</b>, dirección, barrio, una referencia para llegar ("al lado de la YPF") y los servicios (vestuarios, bufé, estacionamiento).</p>
+  <ul>
+    <li>El color del complejo se usa solo como acento (botones, el horario elegido). El fondo siempre es neutro, así todas las páginas se leen bien.</li>
+    <li>El sistema calcula solo si el texto encima del color va en blanco o en negro, para que siempre se lea.</li>
+    <li>Sin foto de portada, aparece un dibujo de la cancha vista desde arriba con el color del complejo. Sin logo, aparecen las iniciales.</li>
+  </ul>
+  <figure><img src="img/12-marca.png" alt="Tu página"><figcaption>La pestaña Tu página, con la vista previa.</figcaption></figure>
+</section>
+
+<section class="nueva">
+  <h3 style="margin-top:0">Equipo</h3>
+  <p>Las personas que manejan la agenda. El dueño agrega a un empleado con su nombre y su email, y le llega un link para elegir su contraseña. También puede generar un link nuevo si se le venció, o <b>desactivar</b> a alguien que ya no trabaja ahí (deja de poder entrar al instante).</p>
+  <figure><img src="img/13-equipo.png" alt="Equipo"><figcaption>La pestaña Equipo.</figcaption></figure>
+
+  <h3>Cobros</h3>
+  <p>Donde el dueño <b>vincula su cuenta de Mercado Pago</b>. Se hace una sola vez y tarda un minuto:</p>
+  <ol class="pasos">
+    <li>Toca <b>"Vincular Mercado Pago"</b>.</li>
+    <li>Va a la página de Mercado Pago y entra con <b>la cuenta donde quiere cobrar las señas</b> (idealmente, una a nombre del complejo).</li>
+    <li>Toca <b>"Autorizar"</b> para darle permiso a HayCancha. Vuelve solo al panel, que dice <b>"Mercado Pago vinculado"</b>.</li>
+  </ol>
+  <figure><img src="img/18-cobros.png" alt="Cobros"><figcaption>La pestaña Cobros con Mercado Pago vinculado.</figcaption></figure>
+  <ul>
+    <li>El permiso dura 180 días y <b>se renueva solo</b>. El dueño no tiene que hacer nada.</li>
+    <li>Si el dueño quita el permiso desde su cuenta de Mercado Pago, el panel lo muestra como desvinculado y le llega un email. Mientras tanto, su página no toma reservas online.</li>
+    <li>El botón <b>"Desvincular"</b> corta la conexión. Pide confirmación, porque sin Mercado Pago la página deja de tomar reservas online.</li>
+    <li>HayCancha usa este permiso solo para cobrar las señas y devolverlas cuando corresponde.</li>
+  </ul>
+
+  <h3>Asistente</h3>
+  <p>Lo que "sabe" el chat del complejo. El dueño escribe la información de su complejo (reglas, servicios, cómo llegar, promociones) y ve la lista de <b>preguntas sin responder</b>: lo que los jugadores preguntaron y el asistente no supo. Las contesta y el asistente aprende. También elige el nombre del asistente, su tono y el mensaje de bienvenida.</p>
+</section>
+
+<section>
+  <h2><span class="seccion-num">15</span>Los emails que recibe el dueño</h2>
+  <p>Todos los avisos llegan por <b>email</b> (nada por WhatsApp). Los manda HayCancha desde su propia dirección.</p>
+  <table>
+    <tr><th style="width:38%">Cuándo</th><th>Qué dice</th></tr>
+    <tr><td>Entra una reserva nueva pagada</td><td>Quién reservó, qué cancha, qué día y hora, la seña cobrada y el saldo.</td></tr>
+    <tr><td>Un jugador cancela</td><td>Qué reserva era y si la seña se devolvió o quedó para el complejo.</td></tr>
+    <tr><td>Un jugador cambia el horario</td><td>El turno viejo y el nuevo.</td></tr>
+    <tr><td>Una devolución quedó pendiente</td><td>Que Mercado Pago no pudo devolver porque falta saldo, y que se reintenta sola.</td></tr>
+    <tr><td>Mercado Pago se desvinculó</td><td>Que hay que volver a vincular para seguir tomando reservas online.</td></tr>
+    <tr><td>Alta del complejo o de un empleado</td><td>El link para elegir la contraseña.</td></tr>
+  </table>
+  <p>Al jugador no se le mandan emails: todo lo ve en la página de su reserva.</p>
+</section>
+
+<section>
+  <h2><span class="seccion-num">16</span>Qué puede hacer un empleado</h2>
+  <table>
+    <tr><th>Puede</th><th>No puede</th></tr>
+    <tr><td style="font-weight:400">Ver la agenda del día y de la semana<br>Cargar reservas a mano y bloquear horarios<br>Ver el detalle de una reserva, llamar al jugador<br>Marcar si vino y si pagó el saldo<br>Mover y cancelar reservas</td><td>Cambiar canchas, horarios o precios<br>Cambiar la seña o la política de cancelación<br>Cambiar el logo o los colores<br>Sumar o sacar empleados<br>Ver o tocar Mercado Pago</td></tr>
+  </table>
+  <p>Cuando un empleado entra, solo ve la pestaña Agenda. Si intentara abrir otra pestaña escribiendo la dirección, el sistema no lo deja.</p>
+</section>
+
+<!-- ============ PARTE 4 ============ -->
+<div class="parte">
+  <div class="etiqueta">Parte 4</div>
+  <h1>El equipo HayCancha</h1>
+  <p>Lo que hacemos nosotros: sumar complejos, dejárselos listos, llevar los cobros y ayudarlos cuando algo no anda.</p>
+</div>
+
+<section>
+  <h2><span class="seccion-num">17</span>El panel de administración</h2>
+  <p>Está en <code>haycancha.com.ar/admin</code> y solo entra el equipo HayCancha (el superadmin). Se entra por la misma pantalla de ingreso; el superadmin puede usar un nombre de usuario en vez de un email.</p>
+  <figure><img src="img/15-admin.png" alt="Panel de administración"><figcaption>La lista de complejos. Cada uno muestra su dirección, cuántas canchas tiene, el email del dueño y si ya entró.</figcaption></figure>
+  <h3>Qué se puede hacer</h3>
+  <table>
+    <tr><th style="width:32%">Botón o dato</th><th>Para qué sirve</th></tr>
+    <tr><td>Dar de alta un complejo</td><td>Crear un complejo nuevo con su dueño (sección 18).</td></tr>
+    <tr><td>Configurar</td><td>Abre el panel de ese complejo, con las mismas pantallas que ve el dueño. Sirve para dejarle todo cargado o para ayudarlo.</td></tr>
+    <tr><td>Ver página</td><td>Abre la página pública del complejo, como la ve un jugador.</td></tr>
+    <tr><td>Link para el dueño</td><td>Aparece si el dueño todavía no eligió su contraseña. Genera un link nuevo para mandarle.</td></tr>
+    <tr><td>Ya entró / Falta que elija su contraseña</td><td>Si el dueño ya empezó a usar el panel.</td></tr>
+    <tr><td>Cobro: Al día / Atrasado / Suspendido</td><td>Cómo viene el complejo con el abono de HayCancha. <b>Suspendido</b> apaga su página: deja de aparecer en el buscador y no toma reservas.</td></tr>
+  </table>
+  <div class="caja ojo"><b>Ojo</b><p>Cuando el equipo entra a "Configurar" un complejo, <b>el sistema lo trata como si fuera ese complejo</b>: ve y cambia solo sus datos. Así, aunque tengamos acceso a todo, es muy difícil mezclar datos de un complejo con otro por error.</p></div>
+</section>
+
+<section class="nueva">
+  <h2><span class="seccion-num">18</span>Cómo sumar un complejo nuevo</h2>
+  <p>La idea es que el dueño <b>no tenga que configurar nada</b>. Nosotros cargamos todo y él solo empieza a usarlo.</p>
+  <ol class="pasos">
+    <li><b>La charla.</b> Le mostrás HayCancha (esta guía ayuda) y el dueño dice que sí.</li>
+    <li><b>El formulario de alta.</b> Le mandás el formulario "HayCancha - Formulario de alta de complejos" (21 preguntas, unos 10 minutos). Pregunta: datos del complejo, canchas, horarios y precios, seña y cancelación, logo y fotos, empleados y la cuenta de Mercado Pago.</li>
+    <li><b>Revisar las respuestas.</b> Que no falte la <b>política de cancelación</b> (es obligatoria) y que la dirección elegida (el slug) no esté tomada ni sea una palabra reservada: <code>panel, admin, ingresar, api, precios, ayuda, terminos, privacidad, complejos, duenos, diseno</code>.</li>
+    <li><b>El alta.</b> En <code>/admin</code>, "Dar de alta un complejo". La pantalla sigue el mismo orden que el formulario, así se carga rápido. Se crean el complejo y el usuario del dueño.</li>
+    <li><b>Configurar.</b> Con el botón "Configurar" cargás canchas, horarios y precios, la seña, el logo, la portada y los colores, y los empleados.</li>
+    <li><b>Revisar la página.</b> Con "Ver página", mirala desde el celular como si fueras un jugador: deportes, horarios, precios, dirección.</li>
+    <li><b>El link del dueño.</b> Al dueño le llega un email para elegir su contraseña. Avisale que lo busque (y que mire en correo no deseado).</li>
+    <li><b>Vincular Mercado Pago.</b> Con el dueño al lado (o por videollamada), entra a su panel, pestaña Cobros, y vincula su cuenta. Sin este paso, su página no toma reservas online.</li>
+    <li><b>La prueba de fuego.</b> Hacé una reserva de prueba real con una seña chica y cancelala con anticipación: tiene que confirmarse, aparecer en la agenda, llegarle el email al dueño y devolverse la seña.</li>
+    <li><b>¡A jugar!</b> El dueño comparte su link <code>haycancha.com.ar/su-complejo</code> en Instagram, WhatsApp, Google Maps y donde quiera.</li>
+  </ol>
+  <figure><img src="img/16-alta.png" alt="Alta de un complejo"><figcaption>La pantalla de alta, en el mismo orden que el formulario.</figcaption></figure>
+</section>
+
+<section class="nueva">
+  <h2><span class="seccion-num">19</span>Soporte: problemas y soluciones</h2>
+  <p>Lo que más te van a preguntar, y qué contestar. Casi todo se resuelve desde el panel del complejo (con "Configurar" en <code>/admin</code>).</p>
+  <table>
+    <tr><th style="width:36%">Te dicen...</th><th>Qué hacer</th></tr>
+    <tr><td>"Pagué y no me aparece confirmado."</td><td>La página se actualiza sola; a veces Mercado Pago tarda unos segundos en avisar. Si pasaron minutos, buscá la reserva en la agenda: si figura confirmada, está todo bien. Si el pago llegó tarde y el turno ya era de otro, la seña se devolvió sola.</td></tr>
+    <tr><td>"Te mando la captura del pago."</td><td>Nunca se acepta. Si el pago existe, Mercado Pago lo avisa y la reserva se confirma sola.</td></tr>
+    <tr><td>"El jugador perdió el link de su reserva."</td><td>El dueño lo encuentra en la agenda por nombre o teléfono y, si hace falta, le cancela o le mueve la reserva desde el panel.</td></tr>
+    <tr><td>"Mi página no toma reservas online."</td><td>Revisá la pestaña Cobros: seguramente Mercado Pago no está vinculado o se desvinculó. Hay que volver a vincular. Si el complejo está suspendido, su página no está disponible.</td></tr>
+    <tr><td>"No le llegó la devolución al jugador."</td><td>Mirá el detalle de la reserva. Si dice "devolución pendiente", falta saldo en el Mercado Pago del complejo: cuando tenga, sale sola. Si ya salió, los tiempos dependen del banco o la tarjeta del jugador.</td></tr>
+    <tr><td>"Llueve, quiero cerrar."</td><td>Bloquear horarios con motivo "lluvia" y, para las reservas que ya estaban, moverlas o cancelarlas con devolución.</td></tr>
+    <tr><td>"Quiero subir los precios."</td><td>Pestaña Horarios y precios. Las reservas ya hechas mantienen su precio.</td></tr>
+    <tr><td>"No me acuerdo la contraseña."</td><td>Dueño: desde <code>/admin</code>, generarle un link nuevo. Empleado: el dueño le genera uno desde Equipo.</td></tr>
+    <tr><td>"Se fue un empleado."</td><td>Pestaña Equipo: desactivarlo. Deja de poder entrar al instante.</td></tr>
+    <tr><td>"Alguien me reserva y no paga."</td><td>No pasa nada: la reserva vence sola en pocos minutos y hay un tope de reservas sin pagar por teléfono y por conexión.</td></tr>
+    <tr><td>"No me aparece un turno que debería estar."</td><td>Revisar Horarios y precios (¿está cargada esa franja ese día?), que la cancha esté activa y que no haya un bloqueo.</td></tr>
+    <tr><td>"Unimos dos canchas de 5 para hacer una de 7."</td><td>Se configura como canchas combinadas: al reservar la de 7, las dos de 5 se bloquean solas, y al revés.</td></tr>
+    <tr><td>"Quiero cambiar el logo o los colores."</td><td>Pestaña Tu página. El cambio se ve al instante.</td></tr>
+    <tr><td>"No me llegan los emails."</td><td>Que revise el correo no deseado y que el email del dueño esté bien escrito. Si sigue sin llegar, revisar la cuenta de Resend (Parte 5).</td></tr>
+  </table>
+</section>
+
+<!-- ============ PARTE 5 ============ -->
+<div class="parte">
+  <div class="etiqueta">Parte 5</div>
+  <h1>Las llaves</h1>
+  <p>Las contraseñas que usan los programas para hablar entre sí: dónde se consiguen, dónde se ponen y cómo se cuidan. Es la parte más delicada de todas.</p>
+</div>
+
+<section>
+  <h2><span class="seccion-num">20</span>Qué es una llave y las reglas de oro</h2>
+  <p>HayCancha no trabaja solo: usa a Mercado Pago para cobrar, a Resend para mandar emails, a Supabase para guardar los datos y a Render para estar en internet. Para que cada servicio sepa que quien le habla es de verdad HayCancha, usamos <b>llaves</b> (en inglés, <i>keys</i> o <i>secrets</i>).</p>
+  <div class="caja criollo"><b>En criollo</b>
+    <p>Una llave es como <b>la llave de la casa</b>. Quien la tiene entra, sin que nadie le pregunte quién es. Si la perdés o se la das a alguien, esa persona puede entrar como si fuera vos. Por eso se cuidan tanto.</p>
+  </div>
+  <p>Hay tres tipos:</p>
+  <ul>
+    <li><span class="chip secreta">Secreta</span> Nunca se muestra a nadie. Si se filtra, hay que cambiarla.</li>
+    <li><span class="chip publica">Pública</span> Puede verse en la página (por ejemplo, la del mapa), pero igual se restringe a nuestro dominio.</li>
+    <li><span class="chip config">Configuración</span> No es secreta: es un dato, como una dirección web o un "sí/no".</li>
+  </ul>
+  <h3>Las reglas de oro</h3>
+  <div class="caja peligro"><b>Nunca</b>
+    <ul>
+      <li><b>Nunca</b> mandes una llave por WhatsApp, email, mensaje o chat de ningún tipo. Tampoco a una inteligencia artificial.</li>
+      <li><b>Nunca</b> la subas a GitHub ni la escribas en el código. Las llaves van en un archivo llamado <code>.env</code> (que nunca se sube) o en la sección de variables de Render.</li>
+      <li><b>Nunca</b> saques una captura de pantalla donde se vea una llave.</li>
+      <li><b>Nunca</b> uses las llaves de producción para probar cosas.</li>
+    </ul>
+  </div>
+  <div class="caja ojo"><b>Dónde viven las llaves</b>
+    <ul>
+      <li><b>En la computadora de desarrollo:</b> en el archivo <code>backend/.env</code>. Hay un modelo, <code>backend/.env.example</code>, con todos los nombres y sin valores.</li>
+      <li><b>En internet (producción):</b> en Render, dentro de cada servicio, en la pestaña <b>Environment</b>. Ahí se cargan una por una con su nombre y su valor.</li>
+      <li><b>Una copia de respaldo:</b> en un gestor de contraseñas (Bitwarden, 1Password o similar), al que solo accede el equipo. Nunca en un documento suelto.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="nueva">
+  <h2><span class="seccion-num">21</span>Las cuentas de HayCancha</h2>
+  <p>Antes de las llaves, las cuentas. Cada servicio tiene su cuenta, idealmente creada con el email de HayCancha, con una contraseña fuerte y con verificación en dos pasos activada.</p>
+  <table>
+    <tr><th style="width:24%">Servicio</th><th style="width:40%">Para qué lo usamos</th><th>Dónde se entra</th></tr>
+    <tr><td>nic.ar</td><td>Donde está registrado el dominio <code>haycancha.com.ar</code>. Se renueva todos los años.</td><td><code>nic.ar</code> (con Clave Fiscal de ARCA)</td></tr>
+    <tr><td>Cloudflare</td><td>Maneja el DNS: le dice a internet a qué servidor ir cuando alguien escribe <code>haycancha.com.ar</code>.</td><td><code>dash.cloudflare.com</code></td></tr>
+    <tr><td>Render</td><td>Donde "vive" HayCancha: la página, el servidor y la tarea automática de cada minuto.</td><td><code>dashboard.render.com</code></td></tr>
+    <tr><td>Supabase</td><td>La base de datos, donde se guarda todo: complejos, reservas, pagos.</td><td><code>supabase.com/dashboard</code></td></tr>
+    <tr><td>Mercado Pago Developers</td><td>La "app" de HayCancha en Mercado Pago, con la que los complejos vinculan sus cuentas.</td><td><code>mercadopago.com.ar/developers/panel/app</code></td></tr>
+    <tr><td>Resend</td><td>Manda los emails (avisos al dueño e invitaciones).</td><td><code>resend.com</code></td></tr>
+    <tr><td>GitHub</td><td>Donde está guardado el código.</td><td><code>github.com/juanperdomo-9/HayCancha</code></td></tr>
+    <tr><td>Google Cloud</td><td>La llave del mapa en la página de cada complejo.</td><td><code>console.cloud.google.com</code></td></tr>
+    <tr><td>Proveedor de IA</td><td>El modelo que usa el asistente.</td><td>La consola del proveedor elegido</td></tr>
+  </table>
+  <div class="caja criollo"><b>El mapa de cómo se conectan</b>
+    <p>Un jugador escribe <code>haycancha.com.ar/el-potrero</code> → <b>Cloudflare</b> lo manda a <b>Render</b> → la página le pide los datos al servidor de HayCancha (<code>api.haycancha.com.ar</code>, también en Render) → el servidor los busca en <b>Supabase</b> → cuando el jugador paga, el servidor habla con <b>Mercado Pago</b> → cuando se confirma, el servidor le pide a <b>Resend</b> que mande el email al dueño.</p>
+  </div>
+</section>
+
+<section class="nueva">
+  <h2><span class="seccion-num">22</span>Cada llave, paso a paso</h2>
+  <p>Para cada una: qué es, dónde se consigue y qué pasa si se cambia. Los nombres en mayúsculas son exactamente los que hay que escribir en el <code>.env</code> o en Render.</p>
+
+  <h3>Mercado Pago</h3>
+  <p>Primero hay que crear <b>la app de HayCancha</b> en Mercado Pago Developers. Se hace una sola vez, con la cuenta de Mercado Pago de HayCancha:</p>
+  <ol class="pasos">
+    <li>Entrá a <code>mercadopago.com.ar/developers</code> e iniciá sesión.</li>
+    <li>Andá a <b>"Tus integraciones"</b> y tocá <b>"Crear aplicación"</b>.</li>
+    <li>Poné de nombre <b>HayCancha</b>. En tipo de solución elegí <b>"Pagos online"</b>, en producto <b>"Checkout Pro"</b> e indicá la plataforma (desarrollo propio).</li>
+    <li>Confirmá. Ya tenés la app, y adentro vas a encontrar todo lo que sigue.</li>
+  </ol>
+
+  <div class="llave">
+    <div class="cabeza"><code>MP_CLIENT_ID</code> y <code>MP_CLIENT_SECRET</code><span>Secreta (el secret)</span></div>
+    <div class="cuerpo">
+      <p><b>Qué es:</b> el "usuario y contraseña" de la app de HayCancha en Mercado Pago. Con esto, los complejos pueden vincular sus cuentas.</p>
+      <h4>Dónde se consigue</h4>
+      <ol class="pasos">
+        <li>En la app, andá a <b>Tus integraciones → Datos de integración → Producción → Credenciales de producción</b>.</li>
+        <li>Copiá el <b>Client ID</b> en <code>MP_CLIENT_ID</code> y el <b>Client Secret</b> en <code>MP_CLIENT_SECRET</code>.</li>
+      </ol>
+      <p><b>Si se cambia:</b> el Client Secret se puede renovar desde el mismo lugar. Después de renovarlo, hay que actualizarlo en Render. Los complejos ya vinculados no se enteran.</p>
+    </div>
+  </div>
+
+  <div class="llave">
+    <div class="cabeza"><code>MP_REDIRECT_URI</code> y el modo PKCE<span>Configuración</span></div>
+    <div class="cuerpo">
+      <p><b>Qué es:</b> la dirección a la que Mercado Pago devuelve al dueño después de autorizar. Tiene que ser exactamente <code>https://api.haycancha.com.ar/mercadopago/callback</code>.</p>
+      <h4>Dónde se configura</h4>
+      <ol class="pasos">
+        <li>En la app, andá a <b>Detalles de aplicación</b> y tocá <b>Editar</b>.</li>
+        <li>En <b>"URLs de redireccionamiento"</b> escribí la dirección de arriba, letra por letra.</li>
+        <li>En esa misma pantalla, <b>habilitá el flujo de código de autorización con PKCE</b>. Es una protección extra: sin ella, la vinculación falla.</li>
+        <li>Guardá.</li>
+      </ol>
+      <p>En Render, <code>MP_REDIRECT_URI</code> se puede dejar vacía: el sistema arma sola la misma dirección. Si se completa, tiene que ser idéntica.</p>
+    </div>
+  </div>
+
+  <div class="llave">
+    <div class="cabeza"><code>MP_WEBHOOK_SECRET</code><span>Secreta</span></div>
+    <div class="cuerpo">
+      <p><b>Qué es:</b> la llave con la que Mercado Pago "firma" cada aviso de pago. HayCancha revisa la firma y, si no coincide, lo descarta. Así nadie puede mandar un aviso falso de "ya pagué".</p>
+      <h4>Dónde se consigue</h4>
+      <ol class="pasos">
+        <li>En la app, andá a <b>Webhooks → Configurar notificaciones</b>.</li>
+        <li>En la pestaña <b>"Modo productivo"</b>, poné la dirección <code>https://api.haycancha.com.ar/webhooks/mercadopago</code>.</li>
+        <li>En eventos, marcá <b>"Pagos"</b>.</li>
+        <li>Tocá <b>"Guardar configuración"</b>. Mercado Pago genera la <b>clave secreta</b>: revelala y copiala en <code>MP_WEBHOOK_SECRET</code>.</li>
+      </ol>
+      <p>Ahí mismo está el botón <b>"Simular"</b>, que manda un aviso de prueba para ver que todo esté bien conectado.</p>
+      <p><b>Si se cambia:</b> con el botón <b>"Restablecer"</b> se genera una nueva. Hay que actualizarla en Render enseguida, porque mientras tanto los avisos se rechazan (Mercado Pago los reintenta, así que no se pierden).</p>
+    </div>
+  </div>
+
+  <div class="llave">
+    <div class="cabeza"><code>MP_TOKENS_DE_PRUEBA</code> y las cuentas de prueba<span>Configuración</span></div>
+    <div class="cuerpo">
+      <p><b>Qué es:</b> para probar pagos sin plata de verdad. Mercado Pago deja crear <b>cuentas de prueba</b>: un "vendedor" (hace de complejo) y un "comprador" (hace de jugador).</p>
+      <h4>Cómo se crean</h4>
+      <ol class="pasos">
+        <li>En la app, andá a <b>Cuentas de prueba</b> y tocá <b>"+ Crear cuenta de prueba"</b>.</li>
+        <li>Elegí el país (Argentina, no se puede cambiar después), una descripción ("Complejo de prueba"), el tipo (<b>Vendedor</b> o <b>Comprador</b>) y, si querés, plata ficticia.</li>
+        <li>Cada cuenta tiene un <b>usuario</b> y una <b>contraseña</b>. Si al entrar pide un código, es el de 6 dígitos que muestra el panel.</li>
+      </ol>
+      <p>Para probar, en el entorno de pruebas se pone <code>MP_TOKENS_DE_PRUEBA=true</code>, se vincula el complejo de prueba con la cuenta "vendedor" y se paga con la cuenta "comprador". En producción siempre va <code>false</code>.</p>
+      <p>Hay un máximo de 15 cuentas de prueba y no se pueden borrar, así que conviene reutilizarlas.</p>
+    </div>
+  </div>
+
+  <h3>Las llaves propias de HayCancha</h3>
+  <p>Estas no las da ningún servicio: <b>las generamos nosotros</b> con un comando, una sola vez por entorno.</p>
+
+  <div class="llave">
+    <div class="cabeza"><code>TOKEN_ENCRYPTION_KEY</code><span>Secreta · la más delicada</span></div>
+    <div class="cuerpo">
+      <p><b>Qué es:</b> la llave que encripta los permisos de Mercado Pago de cada complejo antes de guardarlos. Aunque alguien se robara la base de datos, sin esta llave no podría cobrar ni devolver plata en nombre de nadie.</p>
+      <h4>Cómo se genera</h4>
+      <pre>cd backend
+uv run python -m app.cli generar-clave</pre>
+      <p>Muestra una llave nueva. Se copia en <code>TOKEN_ENCRYPTION_KEY</code>.</p>
+      <div class="caja peligro"><b>Muy importante</b><p><b>Si esta llave se pierde o se cambia, todos los complejos tienen que volver a vincular Mercado Pago.</b> Guardala en el gestor de contraseñas el mismo día que la generás.</p></div>
+    </div>
+  </div>
+
+  <div class="llave">
+    <div class="cabeza"><code>JWT_SECRET</code><span>Secreta</span></div>
+    <div class="cuerpo">
+      <p><b>Qué es:</b> la llave que firma las sesiones (el "ya entré" de dueños y empleados) y los links para elegir contraseña. Tiene que tener al menos 32 caracteres al azar.</p>
+      <h4>Cómo se genera</h4>
+      <pre>python -c "import secrets; print(secrets.token_urlsafe(48))"</pre>
+      <p><b>Si se cambia:</b> todos tienen que volver a ingresar con su contraseña, y los links de invitación que estaban dando vueltas dejan de funcionar. No se pierde ningún dato.</p>
+    </div>
+  </div>
+
+  <h3>Emails (Resend)</h3>
+  <div class="llave">
+    <div class="cabeza"><code>EMAIL_API_KEY</code> y <code>EMAIL_FROM</code><span>Secreta (la API key)</span></div>
+    <div class="cuerpo">
+      <p><b>Qué es:</b> la llave para mandar emails con Resend, y la dirección que aparece como remitente (por ejemplo, <code>HayCancha &lt;avisos@mail.haycancha.com.ar&gt;</code>).</p>
+      <h4>Primero, el dominio</h4>
+      <ol class="pasos">
+        <li>En Resend, andá a <b>Domains</b> y agregá un subdominio, por ejemplo <code>mail.haycancha.com.ar</code>. Resend recomienda usar un subdominio y no el dominio principal.</li>
+        <li>Resend te muestra unos registros DNS (SPF, DKIM y MX). Copialos tal cual en <b>Cloudflare → tu dominio → DNS → Records</b>.</li>
+        <li>Volvé a Resend y verificá. Puede tardar un rato. Sin dominio verificado, no se puede mandar ningún email.</li>
+      </ol>
+      <h4>Después, la llave</h4>
+      <ol class="pasos">
+        <li>En Resend, andá a <b>API Keys</b> y creá una nueva, con permiso <b>"Sending access"</b> (solo enviar).</li>
+        <li>Copiala en <code>EMAIL_API_KEY</code>. Resend la muestra una sola vez: si no la copiaste, creá otra.</li>
+        <li>En <code>EMAIL_FROM</code> poné el remitente con el subdominio verificado.</li>
+      </ol>
+      <p><b>Si se cambia:</b> se crea una nueva, se actualiza en Render y se borra la vieja en Resend.</p>
+    </div>
+  </div>
+
+  <h3>Base de datos (Supabase)</h3>
+  <div class="llave">
+    <div class="cabeza"><code>DATABASE_URL</code> y <code>DATABASE_URL_ADMIN</code><span>Secretas</span></div>
+    <div class="cuerpo">
+      <p><b>Qué son:</b> las direcciones para conectarse a la base, con usuario y contraseña adentro. Son dos porque hay dos "personas" distintas en la base:</p>
+      <ul>
+        <li><code>DATABASE_URL</code>: la usa la app para todo lo del día a día. Se conecta como <b>app_user</b>, un usuario con permisos limitados que solo ve un complejo a la vez.</li>
+        <li><code>DATABASE_URL_ADMIN</code>: el dueño de la base. Solo para instalar actualizaciones de la base y para el panel de administración.</li>
+      </ul>
+      <h4>Dónde se consiguen</h4>
+      <ol class="pasos">
+        <li>En Supabase, abrí el proyecto (<code>produccion</code> o <code>pruebas</code>) y tocá el botón <b>"Connect"</b>, arriba.</li>
+        <li>Para <code>DATABASE_URL_ADMIN</code> copiá la del <b>pooler en modo sesión</b> (puerto 5432). Tiene esta forma: <code>postgresql://postgres.REF:CONTRASEÑA@HOST:5432/postgres</code>.</li>
+        <li>Para <code>DATABASE_URL</code> usá la del <b>pooler en modo transacción</b> (puerto 6543), pero cambiando el usuario <code>postgres.REF</code> por <code>app_user.REF</code> y poniendo una contraseña nueva que inventás vos.</li>
+        <li>Con eso cargado, se corre una vez <code>uv run python -m app.cli preparar-base</code>, que le asigna esa contraseña a app_user en la base.</li>
+      </ol>
+      <p>La contraseña de <code>postgres</code> es la que se elige al crear el proyecto de Supabase. Si se olvida, se puede cambiar desde la configuración de la base del proyecto.</p>
+      <p><b>Si se cambia:</b> se actualiza en Render y se reinicia el servidor. Si se cambia la de app_user, hay que volver a correr <code>preparar-base</code>.</p>
+    </div>
+  </div>
+
+  <h3>Direcciones y ajustes (no son secretos)</h3>
+  <table>
+    <tr><th style="width:30%">Variable</th><th style="width:34%">En producción va</th><th>Para qué</th></tr>
+    <tr><td><code>APP_BASE_URL</code></td><td><code>https://api.haycancha.com.ar</code></td><td>La dirección del servidor, para los avisos de Mercado Pago.</td></tr>
+    <tr><td><code>FRONTEND_URL</code></td><td><code>https://haycancha.com.ar</code></td><td>La dirección de la página, para volver después de pagar y para los links de los emails.</td></tr>
+    <tr><td><code>VITE_API_URL</code></td><td><code>https://api.haycancha.com.ar</code></td><td>Va en el servicio de la página (no en el del servidor): le dice a la página dónde está el servidor.</td></tr>
+    <tr><td><code>COOKIE_SEGURA</code></td><td><code>true</code></td><td>Que la sesión viaje solo por conexión segura (https).</td></tr>
+    <tr><td><code>PAGOS_SIMULADOS</code></td><td><code>false</code> (o no ponerla)</td><td>Solo para la computadora de desarrollo. Si alguien la prende en producción, el servidor no arranca, a propósito.</td></tr>
+    <tr><td><code>MP_TOKENS_DE_PRUEBA</code></td><td><code>false</code></td><td>Solo <code>true</code> en el entorno de pruebas (ver arriba).</td></tr>
+  </table>
+
+  <h3>El mapa y el asistente</h3>
+  <div class="llave">
+    <div class="cabeza"><code>VITE_GOOGLE_MAPS_KEY</code><span>Pública, pero restringida</span></div>
+    <div class="cuerpo">
+      <p><b>Qué es:</b> la llave del mapa que aparece en la página de cada complejo. Se ve en la página, por eso hay que <b>restringirla</b> para que solo funcione en nuestro dominio.</p>
+      <ol class="pasos">
+        <li>En Google Cloud, creá un proyecto "HayCancha".</li>
+        <li>En <b>APIs y servicios → Biblioteca</b>, buscá <b>"Maps Embed API"</b> y habilitala.</li>
+        <li>En <b>APIs y servicios → Credenciales</b>, tocá <b>"Crear credenciales" → "Clave de API"</b>.</li>
+        <li>Editá la clave: en <b>restricciones de aplicación</b> elegí <b>sitios web</b> y agregá <code>haycancha.com.ar/*</code>; en <b>restricciones de API</b> dejá solo Maps Embed API.</li>
+        <li>Cargala en el servicio de la página en Render, como <code>VITE_GOOGLE_MAPS_KEY</code>.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="llave">
+    <div class="cabeza"><code>LLM_API_KEY</code><span>Secreta</span></div>
+    <div class="cuerpo">
+      <p><b>Qué es:</b> la llave del proveedor de inteligencia artificial que usa el asistente. Se crea en la consola de ese proveedor, en su sección de <b>API Keys</b>. Conviene ponerle un límite de gasto mensual en esa misma consola.</p>
+      <p><b>Si se filtra:</b> alguien podría usar el asistente a nuestra costa. Se borra en la consola del proveedor, se crea una nueva y se actualiza en Render.</p>
+    </div>
+  </div>
+</section>
+
+<section class="nueva">
+  <h2><span class="seccion-num">23</span>Si una llave se filtra</h2>
+  <p>Si una llave secreta apareció donde no debía (un chat, una captura, GitHub), <b>no alcanza con borrar el mensaje</b>: hay que cambiarla. Primero se crea la nueva, después se carga en Render y recién ahí se borra la vieja.</p>
+  <table>
+    <tr><th style="width:26%">Llave</th><th style="width:37%">Qué hacer</th><th>Qué efecto tiene cambiarla</th></tr>
+    <tr><td><code>MP_CLIENT_SECRET</code></td><td>Renovarlo en Credenciales de producción de la app y actualizar Render.</td><td>Ninguno para los complejos.</td></tr>
+    <tr><td><code>MP_WEBHOOK_SECRET</code></td><td>"Restablecer" en Webhooks y actualizar Render enseguida.</td><td>Durante el cambio los avisos se rechazan, pero Mercado Pago los reintenta.</td></tr>
+    <tr><td><code>TOKEN_ENCRYPTION_KEY</code></td><td>Avisar al equipo técnico antes de tocar nada.</td><td>Todos los complejos vuelven a vincular Mercado Pago.</td></tr>
+    <tr><td><code>JWT_SECRET</code></td><td>Generar una nueva y actualizar Render.</td><td>Todos vuelven a ingresar; los links de invitación viejos dejan de andar.</td></tr>
+    <tr><td><code>EMAIL_API_KEY</code></td><td>Crear otra en Resend, actualizar Render y borrar la vieja.</td><td>Ninguno.</td></tr>
+    <tr><td><code>DATABASE_URL</code> / <code>_ADMIN</code></td><td>Cambiar la contraseña de la base (y de app_user con <code>preparar-base</code>) y actualizar Render.</td><td>El servidor se reinicia; unos segundos sin servicio.</td></tr>
+    <tr><td><code>LLM_API_KEY</code></td><td>Borrarla en la consola del proveedor, crear otra y actualizar Render.</td><td>Ninguno.</td></tr>
+  </table>
+  <div class="caja ojo"><b>Y las contraseñas de las cuentas</b>
+    <p>Si se filtra la contraseña de una cuenta (Mercado Pago, Render, Supabase, Cloudflare), cambiala enseguida y revisá que la verificación en dos pasos siga activada. Con esas cuentas se pueden ver o cambiar todas las llaves.</p>
+  </div>
+</section>
+
+<!-- ============ PARTE 6 ============ -->
+<div class="parte">
+  <div class="etiqueta">Parte 6</div>
+  <h1>Por dentro</h1>
+  <p>Para los curiosos: cómo está armado HayCancha y por qué es seguro. No hace falta para vender, pero ayuda mucho a explicar con confianza.</p>
+</div>
+
+<section>
+  <h2><span class="seccion-num">24</span>Las piezas del sistema</h2>
+  <div class="mapa">
+    <div class="pieza"><b>El celular del jugador</b><small>Abre haycancha.com.ar desde el navegador. No hay que instalar nada; también se puede agregar a la pantalla de inicio como una app.</small></div>
+    <div class="pieza oscura"><b>La página (frontend)</b><small>haycancha.com.ar, en Render. Es lo que se ve: botones, agenda, colores. No guarda datos: se los pide al servidor.</small></div>
+    <div class="pieza oscura"><b>El servidor (backend)</b><small>api.haycancha.com.ar, en Render. El cerebro: calcula precios y señas, decide qué está libre y habla con todos los demás.</small></div>
+    <div class="pieza"><b>La base de datos</b><small>En Supabase. El archivo de todo: complejos, canchas, reservas, pagos. Solo el servidor habla con ella.</small></div>
+    <div class="pieza"><b>Mercado Pago</b><small>Cobra, avisa cuando un pago se aprueba y devuelve la plata.</small></div>
+    <div class="pieza"><b>Resend</b><small>Manda los emails al dueño.</small></div>
+  </div>
+  <div class="caja criollo"><b>En criollo</b>
+    <p>La <b>página</b> es el salón de un restaurante: lo que ve el cliente. El <b>servidor</b> es la cocina: ahí se hace todo y el cliente no entra. La <b>base de datos</b> es la heladera: la única que abre la heladera es la cocina.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="seccion-num">25</span>Cómo se cuida cada complejo</h2>
+  <h3>Cada complejo en su cajón</h3>
+  <p>Todos los complejos comparten el mismo sistema, pero <b>cada uno tiene su propio cajón con llave</b>. Cuando el sistema trabaja para El Potrero, la base de datos solo le deja abrir el cajón de El Potrero. Aunque hubiera un error en el programa, la base no mostraría datos de otro complejo. Es una segunda cerradura, además de la del programa.</p>
+  <h3>Dos reservas nunca se pisan</h3>
+  <p>La regla "una cancha no puede tener dos reservas al mismo tiempo" no la controla solo el programa: <b>la controla la base de datos misma</b>. Si dos jugadores tocan "Pagar seña" en el mismo segundo por la última cancha, la base deja pasar a uno y al otro le dice "ese horario ya no está disponible". Vale también para turnos de distinta duración (uno de 90 minutos contra uno de 60) y para las reservas cargadas a mano.</p>
+  <h3>Los pagos no se pueden trucar</h3>
+  <ul>
+    <li><b>Solo Mercado Pago confirma un pago.</b> Ni el jugador, ni el asistente, ni una captura.</li>
+    <li>Cuando llega un aviso de pago, HayCancha <b>revisa la firma</b> (con <code>MP_WEBHOOK_SECRET</code>). Si no coincide, lo descarta.</li>
+    <li>Después <b>le pregunta a Mercado Pago directamente</b> cómo está ese pago, sin creer lo que decía el aviso.</li>
+    <li>Revisa que el pago esté aprobado, que sea de una reserva de ese complejo y que el monto y la moneda sean exactamente los de la seña. Si algo no cierra, no confirma.</li>
+    <li>Si el mismo aviso llega dos veces (pasa), el pago se registra una sola vez.</li>
+  </ul>
+  <h3>Las contraseñas</h3>
+  <p>Las contraseñas de dueños y empleados se guardan <b>transformadas</b> de una forma que no se puede revertir. Nadie, ni el equipo HayCancha, puede ver la contraseña de un dueño. Por eso, si alguien se la olvida, no se la "recordamos": le mandamos un link para elegir una nueva.</p>
+</section>
+
+<section>
+  <h2><span class="seccion-num">26</span>Las tareas automáticas</h2>
+  <p>Hay un "reloj" en Render que despierta al sistema <b>cada minuto</b> para hacer tareas solas:</p>
+  <table>
+    <tr><th style="width:30%">Cada cuánto</th><th>Qué hace</th></tr>
+    <tr><td>Cada minuto</td><td>Vence las reservas que no se pagaron a tiempo y libera esos turnos.</td></tr>
+    <tr><td>Cada hora</td><td>Renueva los permisos de Mercado Pago de los complejos que vencen en menos de 30 días.</td></tr>
+    <tr><td>Cada tanto</td><td>Reintenta las devoluciones que quedaron pendientes por falta de saldo.</td></tr>
+  </table>
+</section>
+
+<!-- ============ PARTE 7 ============ -->
+<div class="parte">
+  <div class="etiqueta">Parte 7</div>
+  <h1>Machete</h1>
+  <p>Una hoja para tener a mano. Si te acordás de esto, sabés lo más importante.</p>
+</div>
+
+<section class="machete">
+  <h2><span class="seccion-num">27</span>Las reglas que nunca se rompen</h2>
+  <ol class="pasos">
+    <li><b>Un turno solo se confirma cuando Mercado Pago aprueba el pago.</b> Nunca con capturas de comprobantes.</li>
+    <li><b>El asistente nunca confirma reservas ni pagos.</b></li>
+    <li><b>Los precios y las señas los calcula siempre el sistema</b>, nunca la pantalla del jugador.</li>
+    <li><b>Cada complejo cobra en su propia cuenta de Mercado Pago.</b> HayCancha no toca esa plata.</li>
+    <li><b>Un complejo nunca ve datos de otro.</b></li>
+    <li><b>Las llaves nunca se mandan por mensaje</b>, ni se suben a GitHub, ni se muestran en capturas.</li>
+    <li><b>Las reservas y los avisos no pasan por WhatsApp</b>: todo pasa en la página y por email.</li>
+    <li><b>Los dueños no se registran solos</b>: todo complejo entra por el alta del equipo HayCancha.</li>
+    <li><b>Nunca asumas que todo es fútbol.</b> Hay pádel, tenis, básquet, vóley y más.</li>
+  </ol>
+
+  <h2 style="margin-top:6mm"><span class="seccion-num">28</span>Links y datos para tener a mano</h2>
+  <table>
+    <tr><th style="width:38%">Qué</th><th>Dónde</th></tr>
+    <tr><td>Página principal</td><td><code>haycancha.com.ar</code></td></tr>
+    <tr><td>Página de un complejo</td><td><code>haycancha.com.ar/slug-del-complejo</code></td></tr>
+    <tr><td>Reserva de un jugador</td><td><code>haycancha.com.ar/slug/reserva/…</code> (el link que guarda el jugador)</td></tr>
+    <tr><td>Ingreso (dueños, empleados, equipo)</td><td><code>haycancha.com.ar/ingresar</code></td></tr>
+    <tr><td>Panel de un complejo</td><td><code>haycancha.com.ar/panel/slug-del-complejo</code></td></tr>
+    <tr><td>Administración (equipo HayCancha)</td><td><code>haycancha.com.ar/admin</code></td></tr>
+    <tr><td>Servidor</td><td><code>api.haycancha.com.ar</code></td></tr>
+    <tr><td>App de Mercado Pago</td><td><code>mercadopago.com.ar/developers/panel/app</code></td></tr>
+    <tr><td>Aviso de pagos (webhook)</td><td><code>https://api.haycancha.com.ar/webhooks/mercadopago</code></td></tr>
+    <tr><td>Regreso de la vinculación</td><td><code>https://api.haycancha.com.ar/mercadopago/callback</code></td></tr>
+  </table>
+  <h3>Los números por defecto</h3>
+  <table>
+    <tr><th style="width:38%">Qué</th><th>Valor</th></tr>
+    <tr><td>Seña</td><td>20% del turno (cada complejo la cambia)</td></tr>
+    <tr><td>Minutos para pagar</td><td>10</td></tr>
+    <tr><td>Política de cancelación</td><td>Sin valor por defecto: se acuerda con cada complejo</td></tr>
+    <tr><td>Días para adelante que se puede reservar</td><td>30</td></tr>
+    <tr><td>Reservas sin pagar por teléfono</td><td>2 al mismo tiempo</td></tr>
+    <tr><td>Cambios de horario por reserva</td><td>1</td></tr>
+    <tr><td>Link para elegir contraseña</td><td>Vence a los 7 días y sirve una vez</td></tr>
+    <tr><td>Permiso de Mercado Pago</td><td>180 días, se renueva solo</td></tr>
+    <tr><td>Comisión de HayCancha sobre las señas</td><td>0</td></tr>
+  </table>
+
+  <div class="fin">
+    <div class="titulo">¿Hay cancha? Hay cancha.</div>
+    <p>Si algo de esta guía no se entiende o quedó viejo, avisale al equipo y lo actualizamos.</p>
+    <p style="margin-top:4mm; font-size:9pt">HayCancha · haycancha.com.ar · Desarrollo web por jpweb.com.ar</p>
+  </div>
+</section>
+
+</body>
+</html>
