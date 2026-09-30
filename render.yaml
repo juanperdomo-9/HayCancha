@@ -2,6 +2,12 @@
 # En Render: New > Blueprint > este repo. Las variables marcadas `sync: false` se cargan a
 # mano en el panel de Render (nunca en este archivo): ver docs/puesta-en-linea.md.
 # Todo en Oregon, la misma región que el proyecto de Supabase.
+#
+# ETAPA 1 (sin dominio propio todavía): la página queda en haycancha-web.onrender.com y le
+# pasa a la API todo lo que llega a /api, así el navegador ve un solo sitio y la cookie de
+# sesión funciona (dos *.onrender.com distintos cuentan como sitios distintos).
+# ETAPA 2 (con haycancha.com.ar): descomentar `domains`, cambiar las URL marcadas con
+# "ETAPA 2" y sacar la regla /api/*. Ver docs/puesta-en-linea.md.
 
 services:
   # --- API (api.haycancha.com.ar) ---
@@ -21,8 +27,9 @@ services:
       uv run --frozen python -m app.cli preparar-base
     startCommand: uv run --frozen uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips="*"
     healthCheckPath: /health
-    domains:
-      - api.haycancha.com.ar
+    # ETAPA 2:
+    # domains:
+    #   - api.haycancha.com.ar
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.11
@@ -34,10 +41,11 @@ services:
         generateValue: true
       - key: COOKIE_SEGURA
         value: "true"
+      # ETAPA 2: https://api.haycancha.com.ar y https://haycancha.com.ar
       - key: APP_BASE_URL
-        value: https://api.haycancha.com.ar
+        value: https://haycancha-api.onrender.com
       - key: FRONTEND_URL
-        value: https://haycancha.com.ar
+        value: https://haycancha-web.onrender.com
       - key: SUPABASE_URL
         sync: false
       - key: SUPABASE_SECRET_KEY
@@ -56,8 +64,9 @@ services:
         value: "false"
       - key: EMAIL_API_KEY
         sync: false
-      - key: EMAIL_FROM
-        value: HayCancha <avisos@mail.haycancha.com.ar>
+      # ETAPA 2 (con el dominio verificado en Resend): agregar
+      # EMAIL_FROM = HayCancha <avisos@mail.haycancha.com.ar>. Mientras tanto se usa
+      # onboarding@resend.dev, que solo le manda emails a la cuenta de Resend.
 
   # --- Página (haycancha.com.ar) ---
   - type: web
@@ -66,51 +75,62 @@ services:
     rootDir: frontend
     buildCommand: npm ci && npm run build
     staticPublishPath: dist
-    domains:
-      - haycancha.com.ar
-      - www.haycancha.com.ar
+    # ETAPA 2:
+    # domains:
+    #   - haycancha.com.ar
+    #   - www.haycancha.com.ar
     routes:
+      # ETAPA 1: la página le pasa /api/* a la API (mismo sitio para la cookie de sesión).
+      # Si Render le dio otra dirección a la API (le agrega un sufijo si el nombre está
+      # tomado), hay que cambiarla acá.
+      - type: rewrite
+        source: /api/*
+        destination: https://haycancha-api.onrender.com/*
       # Las rutas las resuelve React (/el-potrero, /panel/..., /admin).
       - type: rewrite
         source: /*
         destination: /index.html
     envVars:
+      # ETAPA 2: https://api.haycancha.com.ar
       - key: VITE_API_URL
-        value: https://api.haycancha.com.ar
+        value: /api
       - key: VITE_GOOGLE_MAPS_KEY
         sync: false
 
-  # --- Tarea de cada minuto: vence reservas impagas, reintenta devoluciones y renueva
-  # los permisos de Mercado Pago. Usa las mismas variables que la API. ---
-  - type: cron
-    name: haycancha-tick
-    runtime: python
-    region: oregon
-    plan: starter
-    schedule: "* * * * *"
-    rootDir: backend
-    buildCommand: pip install uv && uv sync --frozen --no-dev
-    startCommand: uv run --frozen python -m app.jobs.tick
-    envVars:
-      - key: PYTHON_VERSION
-        value: 3.12.11
-      - key: DATABASE_URL
-        fromService: { type: web, name: haycancha-api, envVarKey: DATABASE_URL }
-      - key: DATABASE_URL_ADMIN
-        fromService: { type: web, name: haycancha-api, envVarKey: DATABASE_URL_ADMIN }
-      - key: JWT_SECRET
-        fromService: { type: web, name: haycancha-api, envVarKey: JWT_SECRET }
-      - key: FRONTEND_URL
-        value: https://haycancha.com.ar
-      - key: APP_BASE_URL
-        value: https://api.haycancha.com.ar
-      - key: TOKEN_ENCRYPTION_KEY
-        fromService: { type: web, name: haycancha-api, envVarKey: TOKEN_ENCRYPTION_KEY }
-      - key: MP_CLIENT_ID
-        fromService: { type: web, name: haycancha-api, envVarKey: MP_CLIENT_ID }
-      - key: MP_CLIENT_SECRET
-        fromService: { type: web, name: haycancha-api, envVarKey: MP_CLIENT_SECRET }
-      - key: EMAIL_API_KEY
-        fromService: { type: web, name: haycancha-api, envVarKey: EMAIL_API_KEY }
-      - key: EMAIL_FROM
-        value: HayCancha <avisos@mail.haycancha.com.ar>
+  # ETAPA 2: descomentar la tarea de cada minuto (no tiene plan gratis). En la etapa 1
+  # no hace falta: las reservas impagas se liberan solas al reservar o al ver la página.
+#   # --- Tarea de cada minuto: vence reservas impagas, reintenta devoluciones y renueva
+#   # los permisos de Mercado Pago. Usa las mismas variables que la API. ---
+#   - type: cron
+#     name: haycancha-tick
+#     runtime: python
+#     region: oregon
+#     plan: starter
+#     schedule: "* * * * *"
+#     rootDir: backend
+#     buildCommand: pip install uv && uv sync --frozen --no-dev
+#     startCommand: uv run --frozen python -m app.jobs.tick
+#     envVars:
+#       - key: PYTHON_VERSION
+#         value: 3.12.11
+#       - key: DATABASE_URL
+#         fromService: { type: web, name: haycancha-api, envVarKey: DATABASE_URL }
+#       - key: DATABASE_URL_ADMIN
+#         fromService: { type: web, name: haycancha-api, envVarKey: DATABASE_URL_ADMIN }
+#       - key: JWT_SECRET
+#         fromService: { type: web, name: haycancha-api, envVarKey: JWT_SECRET }
+#       # ETAPA 2: https://haycancha.com.ar y https://api.haycancha.com.ar
+#       - key: FRONTEND_URL
+#         value: https://haycancha-web.onrender.com
+#       - key: APP_BASE_URL
+#         value: https://haycancha-api.onrender.com
+#       - key: TOKEN_ENCRYPTION_KEY
+#         fromService: { type: web, name: haycancha-api, envVarKey: TOKEN_ENCRYPTION_KEY }
+#       - key: MP_CLIENT_ID
+#         fromService: { type: web, name: haycancha-api, envVarKey: MP_CLIENT_ID }
+#       - key: MP_CLIENT_SECRET
+#         fromService: { type: web, name: haycancha-api, envVarKey: MP_CLIENT_SECRET }
+#       - key: EMAIL_API_KEY
+#         fromService: { type: web, name: haycancha-api, envVarKey: EMAIL_API_KEY }
+#       - key: EMAIL_FROM
+#         value: HayCancha <avisos@mail.haycancha.com.ar>
