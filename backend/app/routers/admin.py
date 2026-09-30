@@ -5,6 +5,7 @@ configuración de un complejo se hace desde su propio panel (/panel/{slug})."""
 import uuid
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, status
+from pydantic import BaseModel, EmailStr
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -142,3 +143,22 @@ def link_para_el_dueno(
             correo.enviar, correo.invitacion(negocio, dueno.email, link=link, rol="dueno")
         )
         return esquemas.LinkDeInvitacion(link=link)
+
+
+class PruebaDeEmail(BaseModel):
+    para: EmailStr
+
+
+@router.post("/email-de-prueba")
+def email_de_prueba(datos: PruebaDeEmail, _: Superadmin) -> dict[str, bool]:
+    """Manda un email de prueba desde el servidor, para verificar la configuración de Resend.
+    Hasta verificar el dominio en Resend, solo llega a la cuenta de Resend."""
+    enviado = correo.enviar(
+        correo.Email(
+            para=[datos.para],
+            asunto="Prueba de HayCancha",
+            html="<p>Si leés esto, los emails de HayCancha salen bien desde el servidor.</p>",
+            texto="Si leés esto, los emails de HayCancha salen bien desde el servidor.",
+        )
+    )
+    return {"enviado": enviado}

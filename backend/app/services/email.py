@@ -69,7 +69,12 @@ def enviar(email: Email) -> bool:
         logger.warning("No se pudo mandar el email «%s»: %s", email.asunto, error)
         return False
     if respuesta.status_code >= 400:
-        logger.warning("Resend rechazó el email «%s» (%s)", email.asunto, respuesta.status_code)
+        logger.warning(
+            "Resend rechazó el email «%s» (%s): %s",
+            email.asunto,
+            respuesta.status_code,
+            respuesta.text[:300],
+        )
         return False
     return True
 
