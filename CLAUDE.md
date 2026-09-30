@@ -33,7 +33,7 @@ La interfaz es en español de Argentina, con voseo ("Reservá", "Elegí un horar
 - Python 3.12, FastAPI, Uvicorn
 - SQLAlchemy 2.x + psycopg 3, migraciones con Alembic
 - Pydantic v2 + pydantic-settings (configuración por variables de entorno)
-- SDK oficial de Mercado Pago para Python (`mercadopago`)
+- Mercado Pago por su API REST con `httpx` (decidido en la fase 2: el SDK oficial solo arma los mismos pedidos y es más difícil de probar)
 - Contraseñas: `argon2-cffi`. Sesiones: JWT (PyJWT) en cookie httpOnly
 - Encriptación de tokens de Mercado Pago: `cryptography` (Fernet)
 - Tests: pytest. Linter y formato: ruff
@@ -231,7 +231,11 @@ Si en el aviso falta alguno de los valores del manifest (por ejemplo, `x-request
 
 **Cancelación por parte del jugador:** desde la página de su reserva, confirmando con el teléfono que usó al reservar. La devolución de la seña sigue la política del complejo.
 
-**Abusos:** hay un tope de reservas pendientes de pago por teléfono al mismo tiempo, para que nadie trabe los turnos con reservas que no va a pagar.
+**Abusos:** hay un tope de reservas pendientes de pago al mismo tiempo por teléfono (2) y por conexión (4, con la IP transformada con HMAC, sin guardarla), para que nadie trabe los turnos con reservas que no va a pagar.
+
+**Cambio de horario del jugador:** desde la página de su reserva, confirmando con el teléfono, una sola vez y con la misma anticipación que la política de cancelación. La seña se mantiene; el saldo es el precio del turno nuevo menos la seña (nunca negativo).
+
+**Devoluciones:** el pago a devolver queda con `devolucion = 'pendiente'` en la misma transacción; si Mercado Pago no acepta el reembolso (por ejemplo, sin saldo en la cuenta del complejo), la tarea periódica lo reintenta cada 10 minutos. El webhook general `/webhooks/mercadopago` (el que se carga en el panel de Mercado Pago) busca el complejo por `user_id`.
 
 **Pagos simulados (solo desarrollo):** con `PAGOS_SIMULADOS=true`, un complejo sin Mercado Pago vinculado igual toma reservas online y la página de la reserva muestra "Simular pago aprobado", que pasa por el mismo servicio que el webhook. En producción esa variable no existe.
 
@@ -339,8 +343,9 @@ Hasta la puesta en línea, todo se desarrolla en local: la base es el Postgres d
 **Fase 2: seña con Mercado Pago**
 - [ ] App en Mercado Pago Developers y OAuth por complejo (el OAuth con PKCE, la pestaña Cobros y la renovación de tokens ya están; falta crear la app y cargar sus claves)
 - [x] Reserva `pendiente_pago` con vencimiento y job de vencimiento
-- [ ] Preferencia con vencimiento, sin efectivo y `binary_mode`
-- [ ] Webhook con firma, consulta del pago, idempotencia y reembolsos
+- [x] Preferencia con vencimiento, sin efectivo y `binary_mode`
+- [x] Webhook con firma, consulta del pago, idempotencia y reembolsos (con reintento de devoluciones pendientes)
+- [x] Cancelación y cambio de horario del jugador (una vez, con la anticipación de la política), y "¿Devolver la seña?" al cancelar desde el panel
 - [ ] Emails al dueño (reserva nueva) e invitaciones, con Resend
 - [ ] Pruebas completas con usuarios de prueba de Mercado Pago
 

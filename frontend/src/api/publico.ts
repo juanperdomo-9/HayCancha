@@ -129,6 +129,16 @@ export type ReservaPublica = {
   direccion: string | null
   barrio: string | null
   referencia: string | null
+  deporte_codigo: string
+  cancha_id: string
+  sena_pagada: boolean
+  cancelable_hasta: string
+  puede_cancelar: boolean
+  recupera_sena: boolean
+  puede_cambiar: boolean
+  ya_cambio_horario: boolean
+  devolucion: 'pendiente' | 'hecha' | null
+  monto_devuelto: string | null
 }
 
 const reservas = (slug: string) => `/publico/complejos/${encodeURIComponent(slug)}/reservas`
@@ -149,6 +159,31 @@ export function useReservaPublica(slug: string, id: string) {
     retry: false,
     // Mientras espera el pago, se consulta seguido hasta que se confirme.
     refetchInterval: (consulta) => (consulta.state.data?.estado === 'pendiente_pago' ? 3_000 : false),
+  })
+}
+
+/** El jugador cancela confirmando con su teléfono. La seña se devuelve según la política. */
+export function useCancelarReserva(slug: string, id: string) {
+  const cliente = useQueryClient()
+  return useMutation({
+    mutationFn: (telefono: string) => enviar<ReservaPublica>(`${reservas(slug)}/${encodeURIComponent(id)}/cancelar`, 'POST', { telefono }),
+    onSuccess: (reserva) => {
+      cliente.setQueryData(['reserva-publica', slug, id], reserva)
+      cliente.invalidateQueries({ queryKey: ['disponibilidad', slug] })
+    },
+  })
+}
+
+/** El jugador cambia el horario (una vez) confirmando con su teléfono. */
+export function useCambiarHorario(slug: string, id: string) {
+  const cliente = useQueryClient()
+  return useMutation({
+    mutationFn: (datos: { telefono: string; inicio: string }) =>
+      enviar<ReservaPublica>(`${reservas(slug)}/${encodeURIComponent(id)}/cambiar`, 'POST', datos),
+    onSuccess: (reserva) => {
+      cliente.setQueryData(['reserva-publica', slug, id], reserva)
+      cliente.invalidateQueries({ queryKey: ['disponibilidad', slug] })
+    },
   })
 }
 

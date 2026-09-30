@@ -35,6 +35,8 @@ export function DetalleReserva({ slug, reservaId, agenda, onListo }: Props) {
 function Detalle({ slug, r, agenda, onListo }: { slug: string; r: ReservaDetalle; agenda: Agenda | undefined; onListo: () => void }) {
   const cambiar = useCambiarReserva(slug)
   const cancelar = useCancelarReserva(slug)
+  // Si la seña se pagó online, al cancelar se devuelve salvo que el dueño lo destilde.
+  const [devolverSena, setDevolverSena] = useState(true)
   const [confirmarCancelacion, setConfirmarCancelacion] = useState(false)
   const [moviendo, setMoviendo] = useState(false)
   const activa = r.estado === 'confirmada' || r.estado === 'pendiente_pago'
@@ -104,8 +106,17 @@ function Detalle({ slug, r, agenda, onListo }: { slug: string; r: ReservaDetalle
             <dd>
               {plata(r.sena)}
               {r.sena_en_efectivo && ' (efectivo)'}
+              {r.sena_online && ' (Mercado Pago)'}
             </dd>
           </div>
+          {r.devolucion && (
+            <div className="flex justify-between">
+              <dt className="text-gris">Devolución de la seña</dt>
+              <dd className={r.devolucion === 'pendiente' ? 'font-semibold text-amber-700' : ''}>
+                {r.devolucion === 'hecha' ? 'Devuelta' : 'Pendiente (falta saldo en Mercado Pago; se reintenta sola)'}
+              </dd>
+            </div>
+          )}
           <div className="flex justify-between font-bold">
             <dt>{r.saldo_cobrado ? 'Saldo' : 'Falta cobrar en la cancha'}</dt>
             <dd>{r.saldo_cobrado ? 'Cobrado' : plata(r.saldo)}</dd>
@@ -158,12 +169,16 @@ function Detalle({ slug, r, agenda, onListo }: { slug: string; r: ReservaDetalle
         (confirmarCancelacion ? (
           <div className="grid gap-2 rounded-xl bg-red-50 p-4 ring-1 ring-red-200">
             <p className="text-sm text-red-900">
-              {r.estado === 'bloqueada'
-                ? 'El turno vuelve a quedar libre en tu página.'
-                : 'El turno se libera. Con el pago online (próximamente), la seña se devuelve según tu política de cancelación.'}
+              {r.estado === 'bloqueada' ? 'El turno vuelve a quedar libre en tu página.' : 'El turno se libera para otro jugador.'}
             </p>
+            {r.sena_online && (
+              <label className="flex items-center gap-2.5 text-sm font-semibold text-red-950">
+                <input type="checkbox" checked={devolverSena} onChange={(e) => setDevolverSena(e.target.checked)} className="size-4 accent-red-700" />
+                Devolver la seña de {plata(r.sena)}
+              </label>
+            )}
             <div className="flex gap-2">
-              <Boton variante="peligro" className="flex-1" cargando={cancelar.isPending} onClick={() => cancelar.mutate(r.id, { onSuccess: onListo })}>
+              <Boton variante="peligro" className="flex-1" cargando={cancelar.isPending} onClick={() => cancelar.mutate({ id: r.id, devolverSena }, { onSuccess: onListo })}>
                 {r.estado === 'bloqueada' ? 'Sí, desbloquear' : 'Sí, cancelar'}
               </Boton>
               <Boton variante="suave" className="flex-1" onClick={() => setConfirmarCancelacion(false)}>

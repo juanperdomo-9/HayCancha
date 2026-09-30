@@ -63,6 +63,8 @@ export type ReservaDetalle = Omit<ReservaEnAgenda, 'cliente'> & {
   hora_fin: string
   cliente: { nombre: string; telefono: string; email: string | null } | null
   creado_a: string
+  sena_online: boolean
+  devolucion: 'pendiente' | 'hecha' | null
 }
 
 /** Identifica un turno de una cancha (para elegir varios y bloquearlos juntos). */
@@ -138,7 +140,8 @@ export function useCambiarReserva(slug: string) {
 export function useCancelarReserva(slug: string) {
   const refrescar = useRefrescar(slug)
   return useMutation({
-    mutationFn: (id: string) => enviar<ReservaDetalle>(`${base(slug)}/reservas/${id}/cancelar`, 'POST'),
+    mutationFn: ({ id, devolverSena = true }: { id: string; devolverSena?: boolean }) =>
+      enviar<ReservaDetalle>(`${base(slug)}/reservas/${id}/cancelar`, 'POST', { devolver_sena: devolverSena }),
     onSuccess: refrescar,
   })
 }

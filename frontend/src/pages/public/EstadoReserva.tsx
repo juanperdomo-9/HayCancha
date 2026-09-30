@@ -5,6 +5,7 @@ import { Link, useParams } from 'react-router'
 
 import { ErrorApi, mensaje } from '../../api/client'
 import { type ReservaPublica, useReservaPublica, useSimularPago } from '../../api/publico'
+import { GestionReserva } from '../../components/complejo/GestionReserva'
 import { LogoComplejo } from '../../components/complejo/LogoComplejo'
 import { PieComplejo } from '../../components/PieDePagina'
 import { TemaComplejo } from '../../theme/TemaComplejo'
@@ -88,9 +89,7 @@ function Contenido({ r }: { r: ReservaPublica }) {
           El resto, <b className="text-tinta">{plata(r.saldo)}</b>, lo pagás en la cancha.
         </p>
         <GuardarLink />
-        <p className="mt-4 text-sm text-tenue">
-          Si no podés ir, cancelá con más de {r.horas_cancelacion} horas de anticipación y te devolvemos la seña.
-        </p>
+        <GestionReserva r={r} />
       </>
     )
   }
@@ -109,6 +108,15 @@ function Contenido({ r }: { r: ReservaPublica }) {
     <>
       <Pastilla color="bg-red-600">Cancelada</Pastilla>
       <Titulo>Esta reserva está cancelada</Titulo>
+      <p className="mx-auto max-w-[44ch] text-tenue">
+        {r.devolucion === 'hecha'
+          ? `Te devolvimos ${plata(r.monto_devuelto ?? r.sena)} en el mismo medio con el que pagaste. Según tu banco o tarjeta, puede tardar unos días en verse.`
+          : r.devolucion === 'pendiente'
+            ? `Estamos devolviéndote ${plata(r.monto_devuelto ?? r.sena)}. No tenés que hacer nada: te avisa Mercado Pago cuando salga.`
+            : r.sena_pagada
+              ? 'Se canceló fuera del plazo de la política del complejo, así que la seña quedó para el complejo.'
+              : 'El turno quedó libre para otro jugador.'}
+      </p>
     </>
   )
 }
