@@ -58,7 +58,7 @@ export function BuscadorIA() {
           {mensajes.map((m, i) => (
             <p
               key={i}
-              className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-[15px] ${m.rol === 'usuario' ? 'justify-self-end rounded-br-md bg-noche text-crema' : 'justify-self-start rounded-bl-md bg-cal ring-1 ring-linea'}`}
+              className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-[15px] whitespace-pre-line ${m.rol === 'usuario' ? 'justify-self-end rounded-br-md bg-noche text-crema' : 'justify-self-start rounded-bl-md bg-cal ring-1 ring-linea'}`}
             >
               {m.texto}
             </p>
