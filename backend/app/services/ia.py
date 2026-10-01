@@ -102,8 +102,13 @@ def responder(mensajes: list[dict[str, Any]], herramientas: list[dict[str, Any]]
         "model": settings.llm_modelo,
         "messages": mensajes,
         "temperature": 0.2,
-        "max_tokens": 500,
+        # Los modelos que razonan (gpt-oss) gastan parte de esto pensando: con poco margen
+        # pueden quedarse sin lugar y devolver una respuesta vacía.
+        "max_tokens": 1500,
     }
+    if "gpt-oss" in settings.llm_modelo:
+        # Buscar canchas no necesita pensar mucho: más rápido y gasta menos cupo.
+        cuerpo["reasoning_effort"] = "low"
     if herramientas:
         cuerpo["tools"] = herramientas
         cuerpo["tool_choice"] = "auto"

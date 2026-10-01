@@ -209,6 +209,9 @@ def conversar(session: Session, historial: list[dict[str, str]]) -> tuple[str, l
         # En la última vuelta, sin herramientas: tiene que contestar con lo que ya encontró.
         ultima = vuelta == MAX_VUELTAS - 1
         respuesta = ia.responder(mensajes, [] if ultima else herramientas)
+        if not respuesta.llamadas and not respuesta.texto:
+            # Vino vacía (le faltó lugar o se trabó): se reintenta una vez.
+            respuesta = ia.responder(mensajes, [] if ultima else herramientas)
         if not respuesta.llamadas:
             return respuesta.texto or "Contame qué deporte y cuándo querés jugar.", ultimos
         mensajes.append(respuesta.mensaje)
