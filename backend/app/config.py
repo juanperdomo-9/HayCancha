@@ -56,6 +56,11 @@ class Settings(BaseSettings):
     # true para vincular cuentas de prueba de Mercado Pago (devuelve credenciales TEST-).
     mp_tokens_de_prueba: bool = False
 
+    # Asistentes de IA (fase 3): API compatible con OpenAI. Hoy Groq (plan gratis).
+    llm_api_key: str = ""
+    llm_base_url: str = "https://api.groq.com/openai/v1"
+    llm_modelo: str = "openai/gpt-oss-120b"
+
     @property
     def mercadopago_configurado(self) -> bool:
         return bool(self.mp_client_id and self.mp_client_secret and self.token_encryption_key)

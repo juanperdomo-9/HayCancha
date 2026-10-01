@@ -1,7 +1,7 @@
 import { MessageCircle } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router'
+import { useParams, useSearchParams } from 'react-router'
 
 import { ErrorApi } from '../../api/client'
 import { type ComplejoDetalle, useComplejo, useDisponibilidad } from '../../api/publico'
@@ -39,8 +39,16 @@ export default function Complejo() {
 }
 
 function PaginaComplejo({ complejo }: { complejo: ComplejoDetalle }) {
-  const [deporte, setDeporte] = useState(complejo.deportes[0]?.codigo)
-  const [fecha, setFecha] = useState(complejo.hoy)
+  // Desde el buscador o un link se puede llegar con ?deporte=futbol5&fecha=2026-10-04.
+  const [parametros] = useSearchParams()
+  const [deporte, setDeporte] = useState(() => {
+    const pedido = parametros.get('deporte')
+    return complejo.deportes.some((d) => d.codigo === pedido) ? pedido! : complejo.deportes[0]?.codigo
+  })
+  const [fecha, setFecha] = useState(() => {
+    const pedida = parametros.get('fecha')
+    return pedida && /^\d{4}-\d{2}-\d{2}$/.test(pedida) && pedida >= complejo.hoy ? pedida : complejo.hoy
+  })
   const [inicio, setInicio] = useState<string | null>(null)
   const [canchaId, setCanchaId] = useState<string | null>(null)
   const [hojaAbierta, setHojaAbierta] = useState(false)

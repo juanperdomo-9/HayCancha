@@ -121,7 +121,7 @@ Nunca subir secretos al repo. Mantener actualizados `backend/.env.example` y `fr
 | `FRONTEND_URL` | URL pública del frontend (para `back_urls`) |
 | `EMAIL_API_KEY`, `EMAIL_FROM` | Envío de emails con Resend (avisos al dueño e invitaciones). Sin clave, los emails se muestran en el log. `EMAIL_FROM` con el dominio verificado: `HayCancha <avisos@mail.haycancha.com.ar>` |
 | `PAGOS_SIMULADOS` | Solo desarrollo: permite reservas online sin Mercado Pago, con un botón para simular el pago |
-| `LLM_API_KEY` | Solo fase 3 |
+| `LLM_API_KEY`, `LLM_BASE_URL`, `LLM_MODELO` | Asistentes de IA (fase 3): proveedor compatible con OpenAI. Hoy Groq gratis (`https://api.groq.com/openai/v1`, `openai/gpt-oss-120b`) |
 
 ## Multi-tenant: una sola app para todos los complejos
 
@@ -367,7 +367,7 @@ Hasta la puesta en línea, todo se desarrolla en local: la base es el Postgres d
 ## Decisiones abiertas
 
 Preguntá antes de asumir cualquiera de estas:
-- Modelo de IA y su costo por complejo
+- (Decidido) Modelo de IA: Groq, plan gratis, `openai/gpt-oss-120b`, por su API compatible con OpenAI con httpx (`app/services/ia.py`). Cuando haya muchos complejos, pasar a Claude cambiando `LLM_BASE_URL`, `LLM_MODELO` y `LLM_API_KEY`. El conocimiento de cada complejo va completo en el prompt (sin pgvector) mientras sea chico.
 
 ## Documentación de referencia
 

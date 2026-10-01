@@ -9,7 +9,17 @@ from sqlalchemy.orm import Session
 
 from app.config import get_settings
 from app.db import get_session
-from app.routers import admin, agenda, auth, cobros, panel, publico, reservas_online, webhooks
+from app.routers import (
+    admin,
+    agenda,
+    asistente,
+    auth,
+    cobros,
+    panel,
+    publico,
+    reservas_online,
+    webhooks,
+)
 
 app = FastAPI(title="HayCancha")
 app.include_router(publico.router)
@@ -19,6 +29,7 @@ app.include_router(panel.router)
 app.include_router(agenda.router)
 app.include_router(cobros.router)
 app.include_router(webhooks.router)
+app.include_router(asistente.router)
 app.include_router(admin.router)
 
 # Logos y portadas subidos desde el panel.

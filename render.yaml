@@ -64,6 +64,13 @@ services:
         value: "false"
       - key: EMAIL_API_KEY
         sync: false
+      # Asistentes de IA: Groq, plan gratis (console.groq.com > API Keys).
+      - key: LLM_API_KEY
+        sync: false
+      - key: LLM_BASE_URL
+        value: https://api.groq.com/openai/v1
+      - key: LLM_MODELO
+        value: openai/gpt-oss-120b
       # ETAPA 2 (con el dominio verificado en Resend): agregar
       # EMAIL_FROM = HayCancha <avisos@mail.haycancha.com.ar>. Mientras tanto se usa
       # onboarding@resend.dev, que solo le manda emails a la cuenta de Resend.

@@ -10,6 +10,7 @@ import { TemaComplejo } from '../../theme/TemaComplejo'
 import { useComplejos } from '../../api/publico'
 import { MapaDeCanchas } from '../../components/MapaLeaflet'
 import { BotonModo } from '../../components/BotonModo'
+import { BuscadorIA } from '../../components/BuscadorIA'
 
 const ENTRADA = [0.2, 0.8, 0.2, 1] as const
 
@@ -78,7 +79,7 @@ export default function Inicio() {
               transition={{ duration: 0.6, ease: ENTRADA, delay: 0.22 }}
               className="mt-8 flex flex-wrap gap-2.5"
             >
-              <a href="#complejos" className="rounded-full bg-cesped px-5 py-3 font-semibold text-white transition-transform hover:-translate-y-px">
+              <a href="#buscar" className="rounded-full bg-cesped px-5 py-3 font-semibold text-white transition-transform hover:-translate-y-px">
                 Buscar cancha
               </a>
               <a href="#duenos" className="rounded-full px-5 py-3 font-semibold ring-[1.5px] ring-noche transition-colors ring-inset hover:bg-noche hover:text-crema">
@@ -103,6 +104,14 @@ export default function Inicio() {
               Básquet · Vóley
             </p>
           </motion.div>
+        </section>
+
+        <section id="buscar" className="border-t border-linea">
+          <div className="mx-auto max-w-4xl px-4 py-16 sm:px-8 sm:py-20">
+            <h2 className="font-titulo text-[clamp(40px,6vw,64px)] leading-[.9] font-extrabold uppercase">Contanos qué buscás</h2>
+            <p className="mt-2 mb-6 max-w-[60ch] text-gris">Escribilo como se lo dirías a un amigo: el deporte, el día, la hora, la zona y cómo querés la cancha. Te mostramos los turnos libres de verdad.</p>
+            <BuscadorIA />
+          </div>
         </section>
 
         <section id="mapa" className="border-t border-linea">
