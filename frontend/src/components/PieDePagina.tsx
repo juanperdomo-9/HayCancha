@@ -53,7 +53,8 @@ export function PieHayCancha({ extra }: { extra?: ReactNode }) {
       <div className="border-t border-cal/10">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-5 text-[13px] text-cal/60 sm:px-8">
           <span>
-            © {ANIO} HayCancha · haycancha.com.ar
+            © {ANIO} HayCancha, un producto de{' '}
+            <BotonTurnia className="font-semibold text-cal/85 underline decoration-cal/30 underline-offset-3 hover:text-cal hover:decoration-cal">Turnia</BotonTurnia>
           </span>
           {extra}
           <Credito />
