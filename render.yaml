@@ -94,6 +94,10 @@ services:
       # ETAPA 2: https://api.haycancha.com.ar
       - key: VITE_API_URL
         value: /api
+      # La dirección pública de la página (vista previa al compartir el link).
+      # ETAPA 2: https://haycancha.com.ar
+      - key: VITE_SITE_URL
+        value: https://haycancha-web.onrender.com
       - key: VITE_GOOGLE_MAPS_KEY
         sync: false
 

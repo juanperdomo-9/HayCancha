@@ -5,12 +5,29 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#F1E9D8" />
-    <meta name="description" content="Reservá cancha en segundos: horarios libres de verdad y seña con Mercado Pago." />
+    <meta name="description" content="Mirá los horarios libres de verdad y pagá la seña con Mercado Pago. Fútbol, pádel, tenis y más, sin llamar a nadie." />
+    <!-- Vista previa al compartir el link (WhatsApp, Instagram, Facebook). VITE_SITE_URL es la
+         dirección pública de la página (render.yaml): las redes piden la imagen con URL completa. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="HayCancha" />
+    <meta property="og:locale" content="es_AR" />
+    <meta property="og:title" content="HayCancha · Reservá tu cancha online" />
+    <meta property="og:description" content="Mirá los horarios libres de verdad y pagá la seña con Mercado Pago. Fútbol, pádel, tenis y más, sin llamar a nadie." />
+    <meta property="og:url" content="%VITE_SITE_URL%/" />
+    <meta property="og:image" content="%VITE_SITE_URL%/compartir.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="¿Hay cancha? Horarios libres y seña con Mercado Pago" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="HayCancha · Reservá tu cancha online" />
+    <meta name="twitter:description" content="Mirá los horarios libres de verdad y pagá la seña con Mercado Pago. Fútbol, pádel, tenis y más, sin llamar a nadie." />
+    <meta name="twitter:image" content="%VITE_SITE_URL%/compartir.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Instrument+Sans:wght@400..700&display=swap" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500..900&display=swap" />
-    <title>HayCancha</title>
+    <title>HayCancha · Reservá tu cancha online</title>
     <script>
       // Modo claro u oscuro antes de pintar (ver src/theme/modo.ts).
       try {
