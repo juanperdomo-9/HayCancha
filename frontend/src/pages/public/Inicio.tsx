@@ -38,11 +38,31 @@ const PARA_DUENOS = [
 export default function Inicio() {
   return (
     <div className="min-h-dvh bg-crema text-noche">
-      <header className="mx-auto flex max-w-6xl items-center justify-between px-4 py-5 sm:px-8">
-        <Link to="/" aria-label="HayCancha, inicio">
-          <LogoHayCancha className="text-[27px]" />
-        </Link>
-        <BotonModo className="text-noche ring-1 ring-linea hover:bg-crema-oscuro" />
+      <header className="sticky top-0 z-30 border-b border-linea/70 bg-crema/85 backdrop-blur-md">
+        <div className="mx-auto flex h-16 max-w-6xl items-center gap-2 px-4 sm:px-8">
+          <Link to="/" aria-label="HayCancha, inicio" className="flex items-center">
+            <LogoHayCancha className="text-[24px]" />
+          </Link>
+          <nav aria-label="Secciones" className="ml-6 hidden items-center gap-1 text-[15px] font-semibold lg:flex">
+            {[
+              ['#buscar', 'Buscar'],
+              ['#mapa', 'Mapa'],
+              ['#complejos', 'Complejos'],
+              ['#duenos', 'Para complejos'],
+            ].map(([destino, texto]) => (
+              <a key={destino} href={destino} className="rounded-full px-3.5 py-2 text-noche/75 transition-colors hover:bg-crema-oscuro hover:text-noche">
+                {texto}
+              </a>
+            ))}
+          </nav>
+          <div className="ml-auto flex items-center gap-2">
+            <BotonModo className="text-noche ring-1 ring-linea hover:bg-crema-oscuro" />
+            <a href="#buscar" className="flex h-9 items-center rounded-full bg-cesped px-4 text-sm font-semibold text-white transition-colors hover:bg-cesped/90">
+              <span className="sm:hidden">Buscar</span>
+              <span className="hidden sm:inline">Buscar cancha</span>
+            </a>
+          </div>
+        </div>
       </header>
 
       <main>

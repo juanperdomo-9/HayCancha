@@ -67,6 +67,10 @@
   html[data-tema='oscuro'] {
     color-scheme: dark;
   }
+  /* El navbar de la página principal queda fijo: los links a #secciones no quedan tapados. */
+  html {
+    scroll-padding-top: 4.5rem;
+  }
   @media (prefers-reduced-motion: no-preference) {
     html {
       scroll-behavior: smooth;
