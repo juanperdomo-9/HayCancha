@@ -290,7 +290,7 @@ Si en el aviso falta alguno de los valores del manifest (por ejemplo, `x-request
 **Marca HayCancha: "Cal y césped".** Se usa en la página principal, el panel de superadmin y el marco del panel de los dueños.
 - Colores: crema `#F1E9D8` (fondo), crema oscuro `#E6DAC2`, césped `#1E7A3E` (acento), noche `#14231A` (texto y bloques oscuros), cal `#F6F1E6`, verde claro `#57C986` (acento sobre fondos oscuros).
 - Tipografías: Big Shoulders Display para títulos (mayúsculas, estilo cartel de estadio), Instrument Sans para el texto, Archivo condensada para nombres y números de turnos.
-- Logo: una cancha vista desde arriba (rectángulo verde con líneas de cal) y el nombre "HAYCANCHA" con "HAY" en verde.
+- Logo: una burbuja de chat verde césped con "¿?" en cal (la pregunta que se manda en el grupo); el punto del "?" es una pelota verde claro, de cualquier deporte. Al lado, "HAYCANCHA" con "HAY" en verde. En tamaños chicos (favicon, ícono del celular) va solo la burbuja con el "?". Colores fijos, igual en modo claro y oscuro (`components/marca/LogoHayCancha.tsx`, `public/favicon.svg`, `public/apple-touch-icon.png`).
 - Evitar lo genérico: nada de gradientes violetas, emojis como íconos ni todo centrado y redondeado igual. Animaciones con propósito (elegir turno, pasar al pago, confirmar) y respetando `prefers-reduced-motion`.
 - Referencia visual: `maquetas/maquetas-haycancha.html`.
 
