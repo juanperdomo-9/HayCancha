@@ -21,7 +21,7 @@ from app.services.disponibilidad import ahora, disponibilidad, zona_del_negocio
 
 DIAS_RESERVABLES = 30
 MAX_RESULTADOS = 12
-MAX_VUELTAS = 4
+MAX_VUELTAS = 5
 ZONA_POR_DEFECTO = "America/Argentina/Buenos_Aires"
 DIAS = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
 
@@ -171,12 +171,17 @@ def _sistema(hoy: date, deportes: list[tuple[str, str]], zonas: list[str]) -> st
         "- Para saber si hay cancha, usá SIEMPRE la herramienta buscar_turnos. Nunca inventes "
         "turnos, precios ni complejos.\n"
         "- Si no dicen el día, es hoy. Si dicen una hora ('a las 19'), buscá con hora_desde y "
-        "hora_hasta iguales. Si no hay nada justo a esa hora, buscá un rango más amplio "
-        "(por ejemplo de 17 a 22) y ofrecé las alternativas.\n"
+        "hora_hasta iguales. 'A la tarde' es de 14 a 19 y 'a la noche', de 19 a 23.\n"
+        "- Si una búsqueda da 0 resultados, ANTES de responder volvé a buscar ampliando: "
+        "primero 2 horas antes y después; si sigue sin haber, sin el filtro de zona o de "
+        "características; si sigue sin haber, el día siguiente. Ofrecé lo que encuentres "
+        "aclarando qué cambiaste.\n"
         "- Si piden algo de la cancha (techada, sintético), pasalo en caracteristicas.\n"
-        "- Los resultados se le muestran al jugador como tarjetas con un botón para reservar: "
-        "vos respondé en 1 a 3 oraciones, sin repetir la lista completa.\n"
-        "- No podés reservar ni confirmar nada: para reservar, el jugador toca la tarjeta.\n"
+        "- Los resultados se le muestran al jugador como tarjetas: vos respondé en 1 o 2 "
+        "oraciones de texto plano, sin repetir la lista, sin precios y SIN formato: nada de "
+        "asteriscos, negritas, listas, emojis ni links.\n"
+        "- No podés reservar ni confirmar nada. Para reservar, el jugador toca la tarjeta: "
+        "decí 'tocá la tarjeta para reservar', nunca 'confirmar'.\n"
         "- Si te preguntan algo que no es buscar cancha, contestá corto y volvé a la búsqueda."
     )
 
@@ -199,8 +204,10 @@ def conversar(session: Session, historial: list[dict[str, str]]) -> tuple[str, l
 
     herramientas = _herramientas(deportes)
     ultimos: list[Resultado] = []
-    for _ in range(MAX_VUELTAS):
-        respuesta = ia.responder(mensajes, herramientas)
+    for vuelta in range(MAX_VUELTAS):
+        # En la última vuelta, sin herramientas: tiene que contestar con lo que ya encontró.
+        ultima = vuelta == MAX_VUELTAS - 1
+        respuesta = ia.responder(mensajes, [] if ultima else herramientas)
         if not respuesta.llamadas:
             return respuesta.texto or "No te entendí bien, ¿me lo decís de otra forma?", ultimos
         mensajes.append(respuesta.mensaje)

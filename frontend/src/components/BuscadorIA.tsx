@@ -29,7 +29,8 @@ export function BuscadorIA() {
     setTexto('')
     buscar.mutate(nuevos, {
       onSuccess: (r) => {
-        setMensajes([...nuevos, { rol: 'asistente', texto: r.respuesta }])
+        // Por si el modelo igual usa formato (negritas con asteriscos), se muestra texto plano.
+        setMensajes([...nuevos, { rol: 'asistente', texto: r.respuesta.replace(/\*\*|__|`/g, '') }])
         setResultados(r.resultados)
       },
     })
