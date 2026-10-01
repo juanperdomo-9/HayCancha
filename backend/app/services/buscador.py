@@ -7,11 +7,11 @@ búsqueda, y las tarjetas que ve el jugador salen de esos resultados.
 """
 
 import unicodedata
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.db import sesion_de_negocio
@@ -53,6 +53,11 @@ def _raiz(palabra: str) -> str:
     return palabra[:-1] if len(palabra) > 4 else palabra
 
 
+def _es_deporte(pedido: str, codigo: str, nombre: str) -> bool:
+    buscado = _normal(pedido).replace(" ", "")
+    return buscado in _normal(codigo) or buscado in _normal(nombre).replace(" ", "")
+
+
 def _hora(valor: Any) -> time | None:
     try:
         return datetime.strptime(str(valor).strip()[:5], "%H:%M").time()
@@ -89,7 +94,7 @@ def buscar_turnos(
                 .distinct()
             ).all()
             for codigo, nombre in deportes:
-                if deporte and codigo != deporte:
+                if deporte and not _es_deporte(deporte, codigo, nombre):
                     continue
                 for turno in disponibilidad(s, negocio, codigo, fecha):
                     if turno.inicio <= ahora():
@@ -123,111 +128,103 @@ def buscar_turnos(
     return resultados[:MAX_RESULTADOS]
 
 
-def _herramientas(deportes: list[tuple[str, str]]) -> list[dict[str, Any]]:
+def _herramientas() -> list[dict[str, Any]]:
     return [
         ia.herramienta(
             "buscar_turnos",
-            "Busca turnos libres en los complejos de HayCancha. Usala siempre antes de decir "
-            "si hay o no hay cancha. Todos los filtros son opcionales salvo la fecha.",
+            "Turnos libres en los complejos. Todo es opcional.",
             {
                 "type": "object",
                 "properties": {
-                    "fecha": {"type": "string", "description": "Día, en formato AAAA-MM-DD."},
-                    "deporte": {
-                        "type": "string",
-                        "enum": [codigo for codigo, _ in deportes],
-                        "description": "Código del deporte: "
-                        + ", ".join(f"{c} ({n})" for c, n in deportes),
-                    },
-                    "hora_desde": {"type": "string", "description": "Hora mínima, HH:MM."},
-                    "hora_hasta": {"type": "string", "description": "Hora máxima, HH:MM."},
-                    "zona": {
-                        "type": "string",
-                        "description": "Ciudad o barrio, por ejemplo 'La Plata'.",
-                    },
-                    "caracteristicas": {
-                        "type": "array",
-                        "items": {"type": "string"},
-                        "description": "Palabras que tiene que tener la cancha: techada, "
-                        "sintético, blindex, parquet, cemento…",
-                    },
+                    "fecha": {"type": "string", "description": "AAAA-MM-DD (por defecto hoy)"},
+                    "deporte": {"type": "string", "description": "futbol5, futbol, padel…"},
+                    "hora_desde": {"type": "string", "description": "HH:MM"},
+                    "hora_hasta": {"type": "string", "description": "HH:MM"},
+                    "zona": {"type": "string", "description": "ciudad o barrio"},
+                    "caracteristicas": {"type": "array", "items": {"type": "string"},
+                                        "description": "techada, sintético, blindex…"},
                 },
-                "required": ["fecha"],
             },
         )
-    ]
+    ]  # fmt: skip
 
 
-def _sistema(hoy: date, deportes: list[tuple[str, str]], zonas: list[str]) -> str:
-    manana = hoy + timedelta(days=1)
+def _catalogo(session: Session) -> str:
+    """Los complejos visibles con sus deportes y el precio más bajo: así el asistente
+    contesta '¿qué complejos hay?' o '¿cuánto sale?' sin buscar."""
+    from app.models import Horario
+    from app.routers.publico import negocios_visibles
+
+    lineas = []
+    for negocio in session.scalars(negocios_visibles().order_by(Negocio.nombre).limit(30)):
+        with sesion_de_negocio(negocio.id) as s:
+            filas = s.execute(
+                select(Deporte.nombre, func.min(Horario.precio))
+                .join(Recurso, Recurso.deporte_id == Deporte.id)
+                .join(Horario, Horario.recurso_id == Recurso.id)
+                .where(Recurso.negocio_id == negocio.id, Recurso.activo)
+                .group_by(Deporte.nombre)
+            ).all()
+        if filas:
+            deportes = ", ".join(f"{n} desde ${int(p)}" for n, p in filas)
+            lineas.append(f"- {negocio.nombre} ({negocio.barrio or 'sin barrio'}): {deportes}")
+    return "\n".join(lineas) or "- Todavía no hay complejos."
+
+
+def _sistema(hoy: date, catalogo: str) -> str:
     return (
-        "Sos el buscador de HayCancha, una web para reservar canchas en Argentina. Hablás en "
-        "español rioplatense, con voseo, cálido y breve.\n"
-        f"Hoy es {DIAS[hoy.weekday()]} {hoy.isoformat()} (mañana es {manana.isoformat()}). "
-        f"Se puede buscar hasta {DIAS_RESERVABLES} días para adelante.\n"
-        "Deportes: " + ", ".join(f"{n} ({c})" for c, n in deportes) + ".\n"
-        "Zonas con complejos: " + (", ".join(zonas) or "ninguna todavía") + ".\n\n"
-        "Cómo trabajás:\n"
-        "- Para saber si hay cancha, usá SIEMPRE la herramienta buscar_turnos. Nunca inventes "
-        "turnos, precios ni complejos.\n"
-        "- Si no dicen el día, es hoy. Si dicen una hora ('a las 19'), buscá con hora_desde y "
-        "hora_hasta iguales. 'A la tarde' es de 14 a 19 y 'a la noche', de 19 a 23.\n"
-        "- Si una búsqueda da 0 resultados, ANTES de responder volvé a buscar ampliando: "
-        "primero 2 horas antes y después; si sigue sin haber, sin el filtro de zona o de "
-        "características; si sigue sin haber, el día siguiente. Ofrecé lo que encuentres "
-        "aclarando qué cambiaste.\n"
-        "- Si piden algo de la cancha (techada, sintético), pasalo en caracteristicas.\n"
-        "- Los resultados se le muestran al jugador como tarjetas: vos respondé en 1 o 2 "
-        "oraciones de texto plano, sin repetir la lista, sin precios y SIN formato: nada de "
-        "asteriscos, negritas, listas, emojis ni links.\n"
-        "- No podés reservar ni confirmar nada. Para reservar, el jugador toca la tarjeta: "
-        "decí 'tocá la tarjeta para reservar', nunca 'confirmar'.\n"
-        "- Si te preguntan algo que no es buscar cancha, contestá corto y volvé a la búsqueda."
+        "Sos el buscador de HayCancha (reservas de canchas en Argentina). Español rioplatense, "
+        f"con voseo, cálido y breve. Hoy es {DIAS[hoy.weekday()]} {hoy.isoformat()}.\n"
+        f"Complejos:\n{catalogo}\n"
+        "Reglas:\n"
+        "- Sé flexible: no pidas datos. Si falta el día, es hoy; si falta la hora, cualquier "
+        "hora; si falta la zona, todas. 'Fútbol' sin número es cualquier fútbol. 'A la tarde' "
+        "es 14 a 19 y 'a la noche', 19 a 23.\n"
+        "- Para decir si hay cancha, usá buscar_turnos. No inventes turnos.\n"
+        "- Si da 0, buscá de nuevo más amplio (otras horas, sin zona o características, o el "
+        "día siguiente) y decí qué cambiaste.\n"
+        "- Las preguntas generales (qué complejos hay, precios) contestalas con la lista.\n"
+        "- Los turnos se muestran como tarjetas: respondé en 1 o 2 oraciones de texto plano, "
+        "sin asteriscos, listas ni emojis. Para reservar: 'tocá la tarjeta'. Nunca digas "
+        "'confirmar'."
     )
 
 
 def conversar(session: Session, historial: list[dict[str, str]]) -> tuple[str, list[Resultado]]:
     """Responde el último mensaje del jugador. `historial` son mensajes {rol, texto}."""
-    from app.routers.publico import negocios_visibles
-
-    deportes = [tuple(fila) for fila in session.execute(
-        select(Deporte.codigo, Deporte.nombre).order_by(Deporte.nombre)
-    ).all()]  # fmt: skip
-    zonas = sorted({n.barrio for n in session.scalars(negocios_visibles()) if n.barrio})
     from zoneinfo import ZoneInfo
 
     hoy = datetime.now(ZoneInfo(ZONA_POR_DEFECTO)).date()
-    mensajes: list[dict[str, Any]] = [{"role": "system", "content": _sistema(hoy, deportes, zonas)}]
+    mensajes: list[dict[str, Any]] = [
+        {"role": "system", "content": _sistema(hoy, _catalogo(session))}
+    ]
     for m in historial:
         mensajes.append({"role": "user" if m["rol"] == "usuario" else "assistant",
                          "content": m["texto"]})  # fmt: skip
 
-    herramientas = _herramientas(deportes)
+    herramientas = _herramientas()
     ultimos: list[Resultado] = []
     for vuelta in range(MAX_VUELTAS):
         # En la última vuelta, sin herramientas: tiene que contestar con lo que ya encontró.
         ultima = vuelta == MAX_VUELTAS - 1
         respuesta = ia.responder(mensajes, [] if ultima else herramientas)
         if not respuesta.llamadas:
-            return respuesta.texto or "No te entendí bien, ¿me lo decís de otra forma?", ultimos
+            return respuesta.texto or "Contame qué deporte y cuándo querés jugar.", ultimos
         mensajes.append(respuesta.mensaje)
         for llamada in respuesta.llamadas:
             if llamada.nombre != "buscar_turnos":
-                mensajes.append(ia.resultado_de_herramienta(llamada, {"error": "No existe"}))
+                mensajes.append(ia.resultado_de_herramienta(llamada, "No existe esa herramienta"))
                 continue
-            ultimos = _ejecutar_busqueda(session, hoy, llamada.argumentos)
-            mensajes.append(
-                ia.resultado_de_herramienta(
-                    llamada,
-                    {"cantidad": len(ultimos), "turnos": [_para_el_modelo(r) for r in ultimos]},
-                )
-            )
+            encontrados = _ejecutar_busqueda(session, hoy, llamada.argumentos)
+            if encontrados:
+                ultimos = encontrados
+            mensajes.append(ia.resultado_de_herramienta(llamada, _resumen(encontrados)))
     return "Te dejo lo que encontré.", ultimos
 
 
 def _ejecutar_busqueda(session: Session, hoy: date, argumentos: dict[str, Any]) -> list[Resultado]:
     try:
-        fecha = date.fromisoformat(str(argumentos.get("fecha", hoy.isoformat()))[:10])
+        fecha = date.fromisoformat(str(argumentos.get("fecha") or hoy.isoformat())[:10])
     except ValueError:
         fecha = hoy
     if not hoy <= fecha < hoy + timedelta(days=DIAS_RESERVABLES):
@@ -244,8 +241,14 @@ def _ejecutar_busqueda(session: Session, hoy: date, argumentos: dict[str, Any]) 
     )
 
 
-def _para_el_modelo(r: Resultado) -> dict[str, Any]:
-    datos = asdict(r)
-    datos.pop("slug")
-    datos.pop("deporte_codigo")
-    return datos
+def _resumen(resultados: list[Resultado]) -> str:
+    """Lo que ve el modelo de una búsqueda: corto, para gastar pocos tokens."""
+    if not resultados:
+        return "0 turnos libres."
+    lineas = [
+        f"{r.complejo} ({r.barrio or ''}) · {r.deporte} · {r.cancha}"
+        f"{f' ({r.caracteristicas})' if r.caracteristicas else ''} · {r.fecha} {r.hora} · "
+        f"${int(float(r.precio))}"
+        for r in resultados[:8]
+    ]
+    return f"{len(resultados)} turnos libres:\n" + "\n".join(lineas)

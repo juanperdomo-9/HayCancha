@@ -11,6 +11,7 @@ herramientas que le pasa cada asistente, y ninguna confirma nada.
 
 import json
 import logging
+import time
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -69,6 +70,29 @@ def _http() -> httpx.Client:
     return httpx.Client(timeout=45)
 
 
+# Segundos que vale la pena esperar si el proveedor pide reintentar (el jugador espera).
+ESPERA_MAXIMA = 12
+
+
+def _segundos(valor: str | None) -> float | None:
+    try:
+        return float(valor) if valor is not None else None
+    except ValueError:
+        return None
+
+
+def _pedir(settings, cuerpo: dict[str, Any]) -> httpx.Response:
+    try:
+        with _http() as http:
+            return http.post(
+                f"{settings.llm_base_url.rstrip('/')}/chat/completions",
+                headers={"Authorization": f"Bearer {settings.llm_api_key}"},
+                json=cuerpo,
+            )
+    except httpx.HTTPError as error:
+        raise ErrorDeIA(f"El proveedor no respondió: {error}") from error
+
+
 def responder(mensajes: list[dict[str, Any]], herramientas: list[dict[str, Any]]) -> Respuesta:
     """Un turno del modelo: devuelve texto y/o pedidos de herramientas."""
     settings = get_settings()
@@ -78,20 +102,18 @@ def responder(mensajes: list[dict[str, Any]], herramientas: list[dict[str, Any]]
         "model": settings.llm_modelo,
         "messages": mensajes,
         "temperature": 0.2,
-        "max_tokens": 1200,
+        "max_tokens": 500,
     }
     if herramientas:
         cuerpo["tools"] = herramientas
         cuerpo["tool_choice"] = "auto"
-    try:
-        with _http() as http:
-            r = http.post(
-                f"{settings.llm_base_url.rstrip('/')}/chat/completions",
-                headers={"Authorization": f"Bearer {settings.llm_api_key}"},
-                json=cuerpo,
-            )
-    except httpx.HTTPError as error:
-        raise ErrorDeIA(f"El proveedor no respondió: {error}") from error
+    r = _pedir(settings, cuerpo)
+    if r.status_code == 429:
+        # Límite por minuto del plan: si pide esperar poco, se espera y se reintenta una vez.
+        espera = _segundos(r.headers.get("retry-after"))
+        if espera is not None and espera <= ESPERA_MAXIMA:
+            time.sleep(espera + 0.5)
+            r = _pedir(settings, cuerpo)
     if r.status_code == 429:
         raise CupoAgotado("Límite del plan alcanzado")
     if r.status_code >= 400:
