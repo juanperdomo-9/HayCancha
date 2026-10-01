@@ -1,4 +1,4 @@
-import { CalendarDays, Clock, CreditCard, Palette, Shield, SquareStack, Users, Wallet } from 'lucide-react'
+import { Bot, CalendarDays, Clock, CreditCard, Palette, Shield, SquareStack, Users, Wallet } from 'lucide-react'
 import { Link, Navigate, NavLink, Outlet, useNavigate, useParams } from 'react-router'
 
 import { ErrorApi, mensaje } from '../../api/client'
@@ -28,6 +28,7 @@ const SECCIONES = [
   { ruta: 'marca', nombre: 'Tu página', icono: Palette, soloDueno: true },
   { ruta: 'equipo', nombre: 'Equipo', icono: Users, soloDueno: true },
   { ruta: 'cobros', nombre: 'Cobros', icono: CreditCard, soloDueno: true },
+  { ruta: 'asistente', nombre: 'Asistente', icono: Bot, soloDueno: true },
 ]
 
 function PanelDelComplejo({ slug, yo }: { slug: string; yo: UsuarioSesion }) {

@@ -30,6 +30,7 @@ app.include_router(agenda.router)
 app.include_router(cobros.router)
 app.include_router(webhooks.router)
 app.include_router(asistente.router)
+app.include_router(asistente.router_panel)
 app.include_router(admin.router)
 
 # Logos y portadas subidos desde el panel.

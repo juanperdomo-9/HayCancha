@@ -100,7 +100,14 @@ def _pendientes(session: Session, negocio: Negocio, *condiciones) -> int:
 def reservar_online(
     slug: str, datos: esquemas.NuevaReserva, request: Request, session: SesionPublica
 ) -> esquemas.ReservaCreada:
-    negocio = buscar_negocio(session, slug)
+    return crear_reserva_online(buscar_negocio(session, slug), datos, _conexion(request))
+
+
+def crear_reserva_online(
+    negocio: Negocio, datos: esquemas.NuevaReserva, conexion: str, origen: str = "web"
+) -> esquemas.ReservaCreada:
+    """La reserva pendiente de pago. La usan la página y el asistente del complejo (con
+    los mismos topes y validaciones). Lanza HTTPException con el motivo si no se puede."""
     proveedor = proveedor_para(negocio)
     if proveedor is None:
         raise HTTPException(
@@ -118,7 +125,6 @@ def reservar_online(
             f"Se puede reservar hasta {DIAS_RESERVABLES} días para adelante.",
         )
 
-    conexion = _conexion(request)
     telefono = normalizar_telefono(datos.telefono)
     with sesion_de_negocio(negocio.id) as s:
         if (
@@ -137,7 +143,7 @@ def reservar_online(
                 inicio=datos.inicio,
                 recurso_id=datos.recurso_id,
                 cliente=DatosCliente(datos.nombre, datos.telefono, datos.email),
-                origen="web",
+                origen=origen,
                 estado="pendiente_pago",
                 vence_a=ahora() + timedelta(minutes=negocio.minutos_para_pagar),
             )
@@ -177,7 +183,7 @@ def _buscar(
         .where(
             clave,
             Reserva.negocio_id == negocio.id,
-            Reserva.origen == "web",
+            Reserva.origen.in_(("web", "bot")),
         )
         .with_for_update()
     )

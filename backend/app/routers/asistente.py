@@ -8,15 +8,19 @@ mensaje amable y la página sigue funcionando.
 
 import logging
 import threading
+import uuid
 from collections import defaultdict
-from datetime import date
+from datetime import date, datetime
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field, StringConstraints
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.db import get_session
+from app.db import get_session, sesion_de_negocio
+from app.dependencias import PanelDeConfiguracion
+from app.models import ConsultaSinRespuesta
 from app.routers.reservas_online import _conexion
 from app.services import buscador, ia
 
@@ -106,3 +110,108 @@ def buscar(datos: Conversacion, request: Request, session: SesionPublica) -> Res
         respuesta=texto,
         resultados=[ResultadoBusqueda(**vars(r)) for r in resultados],
     )
+
+
+# --- Asistente de cada complejo ---
+
+
+class TurnoDelAsistente(ResultadoBusqueda):
+    pass
+
+
+class RespuestaDelComplejo(BaseModel):
+    respuesta: str
+    turnos: list[TurnoDelAsistente]
+    # Si dejó una reserva pendiente: el link de la reserva y el de pago.
+    reserva: dict[str, str | None] | None
+
+
+@router.post("/complejos/{slug}")
+def charlar_con_el_complejo(
+    slug: str, datos: Conversacion, request: Request, session: SesionPublica
+) -> RespuestaDelComplejo:
+    from app.routers.publico import buscar_negocio
+    from app.routers.reservas_online import crear_reserva_online
+    from app.schemas.reserva_online import NuevaReserva
+    from app.services import asistente_complejo
+
+    negocio = buscar_negocio(session, slug)
+    if datos.mensajes[-1].rol != "usuario":
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Falta tu mensaje.")
+    if sum(1 for m in datos.mensajes if m.rol == "usuario") > MAX_MENSAJES_POR_CONVERSACION:
+        raise HTTPException(
+            status.HTTP_429_TOO_MANY_REQUESTS, "Esta charla ya es muy larga. Empezá una nueva."
+        )
+    if not negocio.asistente_activo or not ia.disponible():
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, NO_DISPONIBLE_COMPLEJO)
+    conexion = _conexion(request)
+    if not _contar(conexion):
+        raise HTTPException(
+            status.HTTP_429_TOO_MANY_REQUESTS, "Llegaste al límite de mensajes por hoy."
+        )
+
+    def reservar(a: dict) -> asistente_complejo.Reservado:
+        nueva = NuevaReserva(
+            deporte=str(a.get("deporte") or ""),
+            inicio=asistente_complejo.inicio_del_turno(negocio, a.get("fecha"), a.get("hora")),
+            nombre=str(a.get("nombre") or ""),
+            telefono=str(a.get("telefono") or ""),
+        )
+        creada = crear_reserva_online(negocio, nueva, conexion, origen="bot")
+        return asistente_complejo.Reservado(link=creada.link, url_pago=creada.url_pago)
+
+    historial = [m.model_dump() for m in datos.mensajes[-10:]]
+    try:
+        texto, turnos, reserva = asistente_complejo.conversar(session, negocio, historial, reservar)
+    except ia.ErrorDeIA as error:
+        logger.warning("Asistente de %s sin IA: %s", slug, error)
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, NO_DISPONIBLE_COMPLEJO) from error
+    return RespuestaDelComplejo(
+        respuesta=texto.replace("**", ""),
+        turnos=[TurnoDelAsistente(**vars(t)) for t in turnos],
+        reserva={"link": reserva.link, "url_pago": reserva.url_pago} if reserva else None,
+    )
+
+
+NO_DISPONIBLE_COMPLEJO = "El asistente se tomó un descanso. Podés elegir tu turno en la página."
+
+
+# --- Panel: preguntas que el asistente no supo contestar ---
+
+router_panel = APIRouter(prefix="/panel/{slug}/asistente", tags=["asistente"])
+
+
+class ConsultaPendiente(BaseModel):
+    id: uuid.UUID
+    pregunta: str
+    creado_a: datetime
+
+
+@router_panel.get("/consultas")
+def consultas_sin_respuesta(panel: PanelDeConfiguracion) -> list[ConsultaPendiente]:
+    with sesion_de_negocio(panel.negocio_id) as s:
+        filas = s.scalars(
+            select(ConsultaSinRespuesta)
+            .where(
+                ConsultaSinRespuesta.negocio_id == panel.negocio_id,
+                ConsultaSinRespuesta.resuelta.is_(False),
+            )
+            .order_by(ConsultaSinRespuesta.creado_a.desc())
+            .limit(100)
+        )
+        return [ConsultaPendiente(id=c.id, pregunta=c.pregunta, creado_a=c.creado_a) for c in filas]
+
+
+@router_panel.post("/consultas/{consulta_id}/resolver", status_code=status.HTTP_204_NO_CONTENT)
+def resolver_consulta(consulta_id: uuid.UUID, panel: PanelDeConfiguracion) -> None:
+    with sesion_de_negocio(panel.negocio_id) as s:
+        consulta = s.scalar(
+            select(ConsultaSinRespuesta).where(
+                ConsultaSinRespuesta.id == consulta_id,
+                ConsultaSinRespuesta.negocio_id == panel.negocio_id,
+            )
+        )
+        if consulta is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "No encontramos esa pregunta.")
+        consulta.resuelta = True
+        s.commit()

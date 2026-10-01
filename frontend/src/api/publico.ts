@@ -30,6 +30,7 @@ export type DeporteDelComplejo = Deporte & {
 }
 
 export type ComplejoDetalle = {
+  asistente: { nombre: string; bienvenida: string } | null
   slug: string
   nombre: string
   barrio: string | null

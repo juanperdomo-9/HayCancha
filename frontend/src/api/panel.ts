@@ -30,6 +30,10 @@ export type Configuracion = {
   whatsapp: string | null
   latitud: number | null
   longitud: number | null
+  asistente_activo: boolean
+  asistente_nombre: string | null
+  asistente_bienvenida: string | null
+  asistente_conocimiento: string | null
   servicios: string[]
   logo_url: string | null
   portada_url: string | null

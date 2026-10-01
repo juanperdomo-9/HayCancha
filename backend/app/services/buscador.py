@@ -7,6 +7,7 @@ búsqueda, y las tarjetas que ve el jugador salen de esos resultados.
 """
 
 import unicodedata
+import uuid
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
 from typing import Any
@@ -74,6 +75,7 @@ def buscar_turnos(
     hora_hasta: time | None = None,
     zona: str | None = None,
     caracteristicas: list[str] | None = None,
+    negocio_id: uuid.UUID | None = None,
 ) -> list[Resultado]:
     """Turnos libres de los complejos visibles que cumplen todos los filtros."""
     from app.routers.publico import negocios_visibles
@@ -81,7 +83,10 @@ def buscar_turnos(
     requeridas = [_raiz(c) for c in caracteristicas or [] if c and c.strip()]
     zona_n = _normal(zona).strip()
     resultados: list[Resultado] = []
-    for negocio in session.scalars(negocios_visibles().order_by(Negocio.nombre)):
+    consulta = negocios_visibles().order_by(Negocio.nombre)
+    if negocio_id is not None:
+        consulta = consulta.where(Negocio.id == negocio_id)
+    for negocio in session.scalars(consulta):
         donde = _normal(" ".join(filter(None, [negocio.barrio, negocio.direccion, negocio.nombre])))
         if zona_n and zona_n not in donde:
             continue

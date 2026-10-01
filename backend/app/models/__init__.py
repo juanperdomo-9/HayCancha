@@ -1,5 +1,6 @@
 from app.models.base import Base
 from app.models.cliente import Cliente
+from app.models.consulta import ConsultaSinRespuesta
 from app.models.deporte import Deporte
 from app.models.horario import Horario
 from app.models.negocio import Negocio
@@ -12,6 +13,7 @@ __all__ = [
     "ESTADOS_QUE_OCUPAN",
     "Base",
     "Cliente",
+    "ConsultaSinRespuesta",
     "Deporte",
     "Horario",
     "Negocio",

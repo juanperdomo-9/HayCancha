@@ -1,7 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import ARRAY, CheckConstraint, DateTime, Double, Numeric, String, text
+from sqlalchemy import ARRAY, CheckConstraint, DateTime, Double, Numeric, String, Text, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base, CreadoA, UuidPk
@@ -54,6 +54,11 @@ class Negocio(Base):
     # WhatsApp para consultas (opcional): si está, la página muestra "Consultar por WhatsApp".
     whatsapp: Mapped[str | None] = mapped_column(String)
     # Ubicación para el mapa de la página principal (la marca el dueño o el equipo).
+    # Asistente de IA del complejo (fase 3).
+    asistente_activo: Mapped[bool] = mapped_column(server_default=text("true"))
+    asistente_nombre: Mapped[str | None] = mapped_column(String)
+    asistente_bienvenida: Mapped[str | None] = mapped_column(String)
+    asistente_conocimiento: Mapped[str | None] = mapped_column(Text)
     latitud: Mapped[float | None] = mapped_column(Double)
     longitud: Mapped[float | None] = mapped_column(Double)
     mp_user_id: Mapped[str | None] = mapped_column(String)

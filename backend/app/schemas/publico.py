@@ -52,6 +52,8 @@ class ComplejoDetalle(BaseModel):
     direccion: str | None
     referencia: str | None
     whatsapp: str | None
+    # Asistente de IA del complejo: None si está apagado o no hay proveedor configurado.
+    asistente: dict[str, str] | None = None
     servicios: list[str]
     logo_url: str | None
     portada_url: str | None

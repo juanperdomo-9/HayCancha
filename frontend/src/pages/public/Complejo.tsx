@@ -17,6 +17,7 @@ import { TemaComplejo } from '../../theme/TemaComplejo'
 import { DIAS_CORTOS, desdeIso, plata } from '../../utils/formato'
 import NoEncontrado from './NoEncontrado'
 import { BotonModo } from '../../components/BotonModo'
+import { ChatComplejo } from '../../components/complejo/ChatComplejo'
 
 const ENTRADA = [0.2, 0.8, 0.2, 1] as const
 const DIAS_EN_LA_TIRA = 14
@@ -258,6 +259,7 @@ function PaginaComplejo({ complejo }: { complejo: ComplejoDetalle }) {
       </section>
 
       <PieComplejo nombre={complejo.nombre} direccion={complejo.direccion} barrio={complejo.barrio} referencia={complejo.referencia} />
+      {complejo.asistente && <ChatComplejo slug={complejo.slug} nombre={complejo.asistente.nombre} bienvenida={complejo.asistente.bienvenida} />}
 
       {/* En el celular, la reserva sube como una hoja desde abajo. */}
       <AnimatePresence>

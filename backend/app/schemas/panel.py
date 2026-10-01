@@ -59,6 +59,10 @@ class Configuracion(BaseModel):
     whatsapp: str | None
     latitud: float | None
     longitud: float | None
+    asistente_activo: bool
+    asistente_nombre: str | None
+    asistente_bienvenida: str | None
+    asistente_conocimiento: str | None
     servicios: list[str]
     logo_url: str | None
     portada_url: str | None
@@ -80,6 +84,16 @@ class CambiosDeConfiguracion(BaseModel):
     # El pin del mapa. Argentina está entre -56 y -21 de latitud y -74 y -53 de longitud.
     latitud: Annotated[float, Field(ge=-56, le=-21)] | None = None
     longitud: Annotated[float, Field(ge=-74, le=-53)] | None = None
+    asistente_activo: bool | None = None
+    asistente_nombre: (
+        Annotated[str, StringConstraints(strip_whitespace=True, max_length=40)] | None
+    ) = None
+    asistente_bienvenida: (
+        Annotated[str, StringConstraints(strip_whitespace=True, max_length=200)] | None
+    ) = None
+    asistente_conocimiento: (
+        Annotated[str, StringConstraints(strip_whitespace=True, max_length=6000)] | None
+    ) = None
     servicios: list[Texto] | None = None
     color_primario: Color | None = None
     color_secundario: Color | None = None
