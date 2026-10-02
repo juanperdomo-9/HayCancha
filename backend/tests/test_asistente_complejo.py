@@ -30,6 +30,7 @@ def guion(monkeypatch, llamadas: list[tuple[str, dict]]) -> None:
         return httpx.Response(200, json={"choices": [{"message": mensaje}]})
 
     monkeypatch.setattr(get_settings(), "llm_api_key", "gsk_prueba")
+    monkeypatch.setattr(get_settings(), "asistentes_de_complejo", True)
     monkeypatch.setattr(ia, "_http", lambda: httpx.Client(transport=httpx.MockTransport(api)))
 
 

@@ -60,6 +60,8 @@ class Settings(BaseSettings):
     llm_api_key: str = ""
     llm_base_url: str = "https://api.groq.com/openai/v1"
     llm_modelo: str = "openai/gpt-oss-120b"
+    # El asistente de cada complejo, suspendido por ahora (el buscador de la home sigue).
+    asistentes_de_complejo: bool = False
 
     @property
     def mercadopago_configurado(self) -> bool:

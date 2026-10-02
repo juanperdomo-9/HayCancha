@@ -18,6 +18,7 @@ from pydantic import BaseModel, Field, StringConstraints
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.config import get_settings
 from app.db import get_session, sesion_de_negocio
 from app.dependencias import PanelDeConfiguracion
 from app.models import ConsultaSinRespuesta
@@ -142,7 +143,11 @@ def charlar_con_el_complejo(
         raise HTTPException(
             status.HTTP_429_TOO_MANY_REQUESTS, "Esta charla ya es muy larga. Empezá una nueva."
         )
-    if not negocio.asistente_activo or not ia.disponible():
+    if (
+        not get_settings().asistentes_de_complejo
+        or not negocio.asistente_activo
+        or not ia.disponible()
+    ):
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, NO_DISPONIBLE_COMPLEJO)
     conexion = _conexion(request)
     if not _contar(conexion):

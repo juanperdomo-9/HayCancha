@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.config import get_settings
 from app.db import get_session, sesion_de_negocio
 from app.models import Deporte, Horario, Negocio, Recurso
 from app.schemas import publico as esquemas
@@ -143,7 +144,7 @@ def ver_complejo(slug: str, session: SesionPublica) -> esquemas.ComplejoDetalle:
             "bienvenida": negocio.asistente_bienvenida
             or f"¡Hola! Soy el asistente de {negocio.nombre}. ¿En qué te ayudo?",
         }
-        if negocio.asistente_activo and ia.disponible()
+        if get_settings().asistentes_de_complejo and negocio.asistente_activo and ia.disponible()
         else None,
         servicios=negocio.servicios,
         logo_url=negocio.logo_url,
