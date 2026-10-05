@@ -26,6 +26,12 @@ export function GestionReserva({ r }: { r: ReservaPublica }) {
             : 'Si cancelás, el turno se libera para otro jugador.'}
       </p>
       {r.ya_cambio_horario && <p className="mt-1 text-sm text-tenue">Esta reserva ya cambió de horario una vez.</p>}
+      {r.estado === 'confirmada' && !r.puede_cambiar && !r.ya_cambio_horario && (
+        <p className="mt-1 text-sm text-tenue">
+          El horario se puede cambiar una vez y hasta {r.horas_cancelacion} {r.horas_cancelacion === 1 ? 'hora' : 'horas'} antes del turno: para este ya no
+          llegamos.
+        </p>
+      )}
       {modo === 'nada' && (
         <div className="mt-3 flex flex-wrap gap-2">
           {r.puede_cambiar && (
