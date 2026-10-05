@@ -3,6 +3,8 @@ import { AnimatePresence, motion } from 'motion/react'
 import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router'
 
+import { VIA_HAYCANCHA } from '../utils/llegada'
+
 import { mensaje } from '../api/client'
 import { type MensajeDelChat, type ResultadoBusqueda, useBuscarConIA } from '../api/asistente'
 import { fechaLarga, plata } from '../utils/formato'
@@ -76,7 +78,7 @@ export function BuscadorIA() {
             {resultados.map((r) => (
               <li key={`${r.slug}-${r.cancha}-${r.fecha}-${r.hora}`}>
                 <Link
-                  to={`/${r.slug}?deporte=${r.deporte_codigo}&fecha=${r.fecha}`}
+                  to={`/${r.slug}?deporte=${r.deporte_codigo}&fecha=${r.fecha}&${VIA_HAYCANCHA}`}
                   className="grid gap-1 rounded-2xl bg-superficie p-4 ring-1 ring-linea transition hover:-translate-y-px hover:ring-noche"
                 >
                   <span className="flex items-baseline justify-between gap-2">

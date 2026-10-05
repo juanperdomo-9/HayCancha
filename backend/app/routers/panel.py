@@ -17,7 +17,9 @@ from app.services import email
 from app.services.archivos import ArchivoInvalido, borrar_imagen, guardar_imagen
 from app.services.auth import Usuario as UsuarioAuth
 from app.services.auth import link_de_invitacion
+from app.services.disponibilidad import hoy_en_el_negocio
 from app.services.horarios import FranjaNueva, HorariosInvalidos, validar_franjas
+from app.services.metricas import metricas_del_mes
 
 router = APIRouter(prefix="/panel/{slug}", tags=["panel"])
 
@@ -40,6 +42,39 @@ def ver_panel(panel: PanelActual) -> esquemas.PanelResumen:
         color_secundario=n.color_secundario,
         logo_url=n.logo_url,
         rol=panel.usuario.rol,
+        plan_pro=n.plan == PLAN_PRO,
+    )
+
+
+# --- Resultados del mes (Plan Pro) ---
+
+PLAN_PRO = "pro"
+
+
+@router.get("/resultados")
+def ver_resultados(panel: PanelDeConfiguracion, mes: str | None = None) -> esquemas.Resultados:
+    """Métricas de un mes ("2026-10"; sin mes, el actual). Solo con el Plan Pro."""
+    negocio = panel.negocio
+    if negocio.plan != PLAN_PRO:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            "Los resultados son parte del Plan Pro. Pedíselo a HayCancha.",
+        )
+    hoy = hoy_en_el_negocio(negocio)
+    try:
+        anio, numero = (int(x) for x in mes.split("-")) if mes else (hoy.year, hoy.month)
+        if not 1 <= numero <= 12 or not 2020 <= anio <= hoy.year + 1:
+            raise ValueError
+    except ValueError as error:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Mes inválido.") from error
+    with sesion_de_negocio(panel.negocio_id) as s:
+        m = metricas_del_mes(s, negocio, anio, numero)
+    return esquemas.Resultados(
+        mes=m.mes,
+        actual=esquemas.NumerosDelMes(**vars(m.actual)),
+        anterior=esquemas.NumerosDelMes(**vars(m.anterior)),
+        ocupacion_por_dia=m.ocupacion_por_dia,
+        horarios_top=[esquemas.HorarioPedido(hora=h, reservas=n) for h, n in m.horarios_top],
     )
 
 

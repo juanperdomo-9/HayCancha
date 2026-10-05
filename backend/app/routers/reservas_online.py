@@ -155,6 +155,7 @@ def crear_reserva_online(
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(error)) from error
 
         reserva.conexion = conexion
+        reserva.llegada = datos.llegada
         reserva.codigo = nuevo_codigo(negocio, reserva)
         cancha = s.get(Recurso, reserva.recurso_id).nombre
         try:

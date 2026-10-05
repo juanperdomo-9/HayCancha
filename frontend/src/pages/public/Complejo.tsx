@@ -16,6 +16,7 @@ import { TiraDeFechas } from '../../components/complejo/TiraDeFechas'
 import { PieComplejo } from '../../components/PieDePagina'
 import { TemaComplejo } from '../../theme/TemaComplejo'
 import { DIAS_CORTOS, desdeIso, plata } from '../../utils/formato'
+import { recordarLlegada } from '../../utils/llegada'
 import NoEncontrado from './NoEncontrado'
 import { BotonModo } from '../../components/BotonModo'
 import { ChatComplejo } from '../../components/complejo/ChatComplejo'
@@ -43,6 +44,7 @@ export default function Complejo() {
 function PaginaComplejo({ complejo }: { complejo: ComplejoDetalle }) {
   // Desde el buscador o un link se puede llegar con ?deporte=futbol5&fecha=2026-10-04.
   const [parametros] = useSearchParams()
+  useEffect(() => recordarLlegada(complejo.slug, parametros), [complejo.slug, parametros])
   const [deporte, setDeporte] = useState(() => {
     const pedido = parametros.get('deporte')
     return complejo.deportes.some((d) => d.codigo === pedido) ? pedido! : complejo.deportes[0]?.codigo

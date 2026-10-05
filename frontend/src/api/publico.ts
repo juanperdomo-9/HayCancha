@@ -133,6 +133,7 @@ export type NuevaReserva = {
   nombre: string
   telefono: string
   email?: string
+  llegada?: 'haycancha' | 'directo'
 }
 
 export type ReservaPublica = {

@@ -130,6 +130,16 @@ function FilaComplejo({ complejo: c }: { complejo: ComplejoAdmin }) {
             ))}
           </select>
         </label>
+        <label className="flex items-center gap-2 self-end pb-1.5 text-sm font-semibold">
+          <input
+            type="checkbox"
+            checked={c.plan === 'pro'}
+            disabled={cambiar.isPending}
+            onChange={(e) => cambiar.mutate({ id: c.id, plan: e.target.checked ? 'pro' : null })}
+            className="size-4 accent-[#1E7A3E]"
+          />
+          Plan Pro
+        </label>
       </div>
       <div className="flex flex-wrap gap-2">
         <Link to={`/panel/${c.slug}/canchas`} className="inline-flex items-center gap-2 rounded-xl bg-noche px-3.5 py-2 text-sm font-semibold text-crema hover:bg-noche/90">

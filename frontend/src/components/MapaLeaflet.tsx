@@ -6,6 +6,7 @@ import { Link } from 'react-router'
 
 import { type ComplejoResumen, useComplejosConLugar } from '../api/publico'
 import { plata } from '../utils/formato'
+import { VIA_HAYCANCHA } from '../utils/llegada'
 
 // Mapas de OpenStreetMap (gratis, sin clave; piden la atribución).
 const CAPAS = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
@@ -131,7 +132,7 @@ export function MapaDeCanchas({ complejos }: { complejos: ComplejoResumen[] }) {
         : apagado
           ? '<span style="color:#9a3412">Sin lugar en ese horario</span><br>'
           : ''
-      const destino = conLugar ? `/${c.slug}?deporte=${conLugar.deporte_codigo}&fecha=${conLugar.fecha}` : `/${c.slug}`
+      const destino = conLugar ? `/${c.slug}?deporte=${conLugar.deporte_codigo}&fecha=${conLugar.fecha}&${VIA_HAYCANCHA}` : `/${c.slug}?${VIA_HAYCANCHA}`
       div.innerHTML = `<b style="font-size:15px">${escapar(c.nombre)}</b><br><span style="color:#5d6660">${escapar(c.barrio ?? '')}</span><br><span style="font-size:12px">${c.deportes.map((d) => escapar(d.nombre)).join(' · ')}</span><br>${detalle}<a href="${destino}" style="display:inline-block;margin-top:6px;font-weight:700;color:#1E7A3E">${conLugar ? 'Reservar →' : 'Ver horarios →'}</a>`
       L.marker(punto, { icon: pin(apagado ? '#9AA39C' : c.color_primario, iniciales(c.nombre)), title: c.nombre, opacity: apagado ? 0.55 : 1, zIndexOffset: apagado ? -100 : 0 })
         .bindPopup(div)
@@ -205,7 +206,7 @@ export function MapaDeCanchas({ complejos }: { complejos: ComplejoResumen[] }) {
             return (
               <li key={c.slug}>
                 <Link
-                  to={l ? `/${c.slug}?deporte=${l.deporte_codigo}&fecha=${l.fecha}` : `/${c.slug}`}
+                  to={l ? `/${c.slug}?deporte=${l.deporte_codigo}&fecha=${l.fecha}&${VIA_HAYCANCHA}` : `/${c.slug}?${VIA_HAYCANCHA}`}
                   className="flex items-center justify-between gap-3 rounded-xl bg-cal px-3.5 py-2.5 ring-1 ring-linea hover:ring-noche"
                 >
                   <span className="min-w-0">

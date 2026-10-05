@@ -16,6 +16,8 @@ class NuevaReserva(BaseModel):
     nombre: Annotated[str, StringConstraints(strip_whitespace=True, min_length=2, max_length=120)]
     telefono: Annotated[str, StringConstraints(strip_whitespace=True, min_length=6, max_length=40)]
     email: EmailStr | None = None
+    # Si llegó desde la página principal de HayCancha (para las métricas del complejo).
+    llegada: Literal["haycancha", "directo"] = "directo"
 
 
 class ReservaCreada(BaseModel):

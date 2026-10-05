@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 
+import { VIA_HAYCANCHA } from '../../utils/llegada'
+
 import { type ComplejoResumen, type Deporte, useComplejos } from '../../api/publico'
 import { TemaComplejo } from '../../theme/TemaComplejo'
 import { diaRelativo } from '../../utils/formato'
@@ -66,7 +68,7 @@ function TarjetaComplejo({ complejo }: { complejo: ComplejoResumen }) {
   return (
     <TemaComplejo color={complejo.color_primario} secundario={complejo.color_secundario} className="h-full">
       <Link
-        to={`/${complejo.slug}`}
+        to={`/${complejo.slug}?${VIA_HAYCANCHA}`}
         className="group flex h-full flex-col overflow-hidden rounded-[18px] bg-cal transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_44px_-26px_rgba(30,25,10,.45)]"
       >
         <PortadaComplejo

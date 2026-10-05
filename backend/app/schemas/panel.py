@@ -110,6 +110,8 @@ class PanelResumen(BaseModel):
     color_secundario: str | None
     logo_url: str | None
     rol: Rol
+    # Si tiene el Plan Pro (métricas del mes). Lo habilita HayCancha desde el superadmin.
+    plan_pro: bool = False
 
 
 # --- Canchas y horarios ---
@@ -238,3 +240,28 @@ class CambiosDeComplejo(BaseModel):
 class FotoDelPanel(BaseModel):
     id: uuid.UUID
     url: str
+
+
+class NumerosDelMes(BaseModel):
+    reservas: int
+    facturacion: Decimal
+    senas_online: Decimal
+    ocupacion: int
+    sin_intervencion: int
+    a_mano: int
+    de_haycancha: int
+    facturacion_haycancha: Decimal
+    faltas: int
+
+
+class HorarioPedido(BaseModel):
+    hora: str
+    reservas: int
+
+
+class Resultados(BaseModel):
+    mes: str
+    actual: NumerosDelMes
+    anterior: NumerosDelMes
+    ocupacion_por_dia: list[int]
+    horarios_top: list[HorarioPedido]

@@ -2,6 +2,8 @@ import { X } from 'lucide-react'
 import { type FormEvent, useId, useState } from 'react'
 import { useNavigate } from 'react-router'
 
+import { llegadaDe } from '../../utils/llegada'
+
 import { mensaje } from '../../api/client'
 import { type CanchaLibre, type DeporteDelComplejo, type Turno, useCrearReserva } from '../../api/publico'
 import { fechaLarga, plata } from '../../utils/formato'
@@ -51,6 +53,7 @@ export function ReservaEnCurso({ slug, turno, fecha, deporte, cancha, canchaEleg
         nombre: datos.nombre.trim(),
         telefono: datos.telefono.trim(),
         email: datos.email.trim() || undefined,
+        llegada: llegadaDe(slug),
       },
       {
         onSuccess: ({ url_pago, link }) => {

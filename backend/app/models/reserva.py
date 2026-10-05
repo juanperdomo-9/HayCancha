@@ -96,5 +96,8 @@ class Reserva(Base):
     # para el tope de reservas sin pagar sin guardar la IP.
     conexion: Mapped[str | None] = mapped_column(String)
     origen: Mapped[str] = mapped_column(String)
+    # De dónde vino el jugador que reservó online: "haycancha" (página principal) o
+    # "directo" (link del complejo). Solo para las métricas (migración 0014).
+    llegada: Mapped[str | None] = mapped_column(String)
     creado_por: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("usuarios.id"))
     creado_a: Mapped[CreadoA]

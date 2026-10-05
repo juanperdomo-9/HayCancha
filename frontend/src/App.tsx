@@ -7,6 +7,7 @@ import Admin from './pages/admin/Admin'
 import Agenda from './pages/panel/Agenda'
 import Canchas from './pages/panel/Canchas'
 import Asistente from './pages/panel/Asistente'
+import Resultados from './pages/panel/Resultados'
 import Cobros from './pages/panel/Cobros'
 import Equipo from './pages/panel/Equipo'
 import Horarios from './pages/panel/Horarios'
@@ -37,6 +38,7 @@ export default function App() {
         <Route path="equipo" element={<Equipo />} />
         <Route path="cobros" element={<Cobros />} />
         <Route path="asistente" element={<Asistente />} />
+        <Route path="resultados" element={<Resultados />} />
       </Route>
       <Route path="/admin/*" element={<Admin />} />
       {import.meta.env.DEV && (

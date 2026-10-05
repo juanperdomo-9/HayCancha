@@ -1,4 +1,4 @@
-import { Bot, CalendarDays, Clock, CreditCard, Palette, Shield, SquareStack, Users, Wallet } from 'lucide-react'
+import { BarChart3, Bot, CalendarDays, Clock, CreditCard, Palette, Shield, SquareStack, Users, Wallet } from 'lucide-react'
 import { Link, Navigate, NavLink, Outlet, useNavigate, useParams } from 'react-router'
 
 import { ErrorApi, mensaje } from '../../api/client'
@@ -22,6 +22,7 @@ export default function Panel() {
 
 const SECCIONES = [
   { ruta: '', nombre: 'Agenda', icono: CalendarDays, soloDueno: false },
+  { ruta: 'resultados', nombre: 'Resultados', icono: BarChart3, soloDueno: true },
   { ruta: 'canchas', nombre: 'Canchas', icono: SquareStack, soloDueno: true },
   { ruta: 'horarios', nombre: 'Horarios y precios', icono: Clock, soloDueno: true },
   { ruta: 'reservas', nombre: 'Seña y cancelación', icono: Wallet, soloDueno: true },

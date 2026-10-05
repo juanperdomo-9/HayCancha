@@ -20,6 +20,7 @@ export type PanelResumen = {
   color_secundario: string | null
   logo_url: string | null
   rol: Rol
+  plan_pro: boolean
 }
 
 export type Configuracion = {
@@ -296,7 +297,7 @@ export function useAltaDeComplejo() {
 export function useCambiarComplejo() {
   const cliente = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, ...cambios }: { id: string; estado_cuenta?: ComplejoAdmin['estado_cuenta']; activo?: boolean }) =>
+    mutationFn: ({ id, ...cambios }: { id: string; estado_cuenta?: ComplejoAdmin['estado_cuenta']; activo?: boolean; plan?: string | null }) =>
       enviar<ComplejoAdmin>(`/admin/complejos/${id}`, 'PATCH', cambios),
     onSuccess: () => cliente.invalidateQueries({ queryKey: ['admin', 'complejos'] }),
   })
@@ -328,3 +329,33 @@ function useCambiarFotos<T>(slug: string, hacer: (valor: T) => Promise<FotoDelPa
 export const useSubirFoto = (slug: string) => useCambiarFotos(slug, async (archivo: File) => subirArchivo<FotoDelPanel[]>(`${base(slug)}/fotos`, await achicarImagen(archivo, 1600)))
 export const useQuitarFoto = (slug: string) => useCambiarFotos(slug, (id: string) => pedir<FotoDelPanel[]>(`${base(slug)}/fotos/${id}`, { method: 'DELETE' }))
 export const useOrdenarFotos = (slug: string) => useCambiarFotos(slug, (ids: string[]) => enviar<FotoDelPanel[]>(`${base(slug)}/fotos/orden`, 'PUT', ids))
+
+// --- Resultados del mes (Plan Pro) ---
+
+export type NumerosDelMes = {
+  reservas: number
+  facturacion: string
+  senas_online: string
+  ocupacion: number
+  sin_intervencion: number
+  a_mano: number
+  de_haycancha: number
+  facturacion_haycancha: string
+  faltas: number
+}
+
+export type Resultados = {
+  mes: string
+  actual: NumerosDelMes
+  anterior: NumerosDelMes
+  ocupacion_por_dia: number[]
+  horarios_top: { hora: string; reservas: number }[]
+}
+
+export function useResultados(slug: string, mes: string) {
+  return useQuery({
+    queryKey: ['panel', slug, 'resultados', mes],
+    queryFn: () => pedir<Resultados>(`${base(slug)}/resultados?mes=${mes}`),
+    retry: false,
+  })
+}
