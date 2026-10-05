@@ -6,7 +6,7 @@ import { useParams, useSearchParams } from 'react-router'
 import { ErrorApi } from '../../api/client'
 import { type ComplejoDetalle, useComplejo, useDisponibilidad } from '../../api/publico'
 import { ElegirCancha } from '../../components/complejo/ElegirCancha'
-import { GaleriaFotos } from '../../components/complejo/GaleriaFotos'
+import { BotonVerFotos, GaleriaFotos, VisorDeFotos } from '../../components/complejo/GaleriaFotos'
 import { GrillaTurnos } from '../../components/complejo/GrillaTurnos'
 import { LogoComplejo } from '../../components/complejo/LogoComplejo'
 import { MapaComplejo } from '../../components/complejo/MapaComplejo'
@@ -44,6 +44,7 @@ export default function Complejo() {
 function PaginaComplejo({ complejo }: { complejo: ComplejoDetalle }) {
   // Desde el buscador o un link se puede llegar con ?deporte=futbol5&fecha=2026-10-04.
   const [parametros] = useSearchParams()
+  const [foto, setFoto] = useState<number | null>(null)
   useEffect(() => recordarLlegada(complejo.slug, parametros), [complejo.slug, parametros])
   const [deporte, setDeporte] = useState(() => {
     const pedido = parametros.get('deporte')
@@ -126,6 +127,11 @@ function PaginaComplejo({ complejo }: { complejo: ComplejoDetalle }) {
               ))}
             </ul>
           </motion.div>
+          {complejo.fotos.length > 0 && (
+            <div className="w-full sm:ml-auto sm:w-auto sm:self-end">
+              <BotonVerFotos cantidad={complejo.fotos.length} onAbrir={() => setFoto(0)} />
+            </div>
+          )}
         </div>
       </section>
 
@@ -213,7 +219,8 @@ function PaginaComplejo({ complejo }: { complejo: ComplejoDetalle }) {
         </aside>
       </main>
 
-      <GaleriaFotos fotos={complejo.fotos} nombre={complejo.nombre} />
+      <GaleriaFotos fotos={complejo.fotos} nombre={complejo.nombre} onAbrir={setFoto} />
+      <VisorDeFotos fotos={complejo.fotos} nombre={complejo.nombre} indice={foto} onCambiar={setFoto} onCerrar={() => setFoto(null)} />
 
       <section
         id="info"
