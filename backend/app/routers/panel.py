@@ -11,7 +11,7 @@ from starlette.concurrency import run_in_threadpool
 
 from app.db import sesion_de_negocio
 from app.dependencias import PanelActual, PanelDeConfiguracion
-from app.models import Deporte, Horario, Negocio, Recurso, Usuario
+from app.models import Deporte, Foto, Horario, Negocio, Recurso, Usuario
 from app.schemas import panel as esquemas
 from app.services import email
 from app.services.archivos import ArchivoInvalido, borrar_imagen, guardar_imagen
@@ -102,6 +102,72 @@ def quitar_imagen(
         s.refresh(negocio)
         borrar_imagen(anterior)
         return _configuracion(negocio)
+
+
+# --- Galería de fotos ---
+
+MAX_FOTOS = 12
+
+
+def _fotos(s, negocio_id: uuid.UUID) -> list[esquemas.FotoDelPanel]:
+    filas = s.scalars(
+        select(Foto).where(Foto.negocio_id == negocio_id).order_by(Foto.orden, Foto.creado_a)
+    )
+    return [esquemas.FotoDelPanel(id=f.id, url=f.url) for f in filas]
+
+
+@router.get("/fotos")
+def ver_fotos(panel: PanelDeConfiguracion) -> list[esquemas.FotoDelPanel]:
+    with sesion_de_negocio(panel.negocio_id) as s:
+        return _fotos(s, panel.negocio_id)
+
+
+@router.post("/fotos")
+async def subir_foto(
+    archivo: UploadFile, panel: PanelDeConfiguracion
+) -> list[esquemas.FotoDelPanel]:
+    with sesion_de_negocio(panel.negocio_id) as s:
+        cantidad = s.scalar(select(func.count()).where(Foto.negocio_id == panel.negocio_id))
+    if cantidad >= MAX_FOTOS:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            f"Ya tenés {MAX_FOTOS} fotos. Sacá alguna para subir otra.",
+        )
+    try:
+        url = await run_in_threadpool(
+            guardar_imagen, panel.negocio_id, "foto", await archivo.read()
+        )
+    except ArchivoInvalido as error:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(error)) from error
+    with sesion_de_negocio(panel.negocio_id) as s:
+        ultimo = s.scalar(select(func.max(Foto.orden)).where(Foto.negocio_id == panel.negocio_id))
+        s.add(Foto(negocio_id=panel.negocio_id, url=url, orden=(ultimo or 0) + 1))
+        s.commit()
+        return _fotos(s, panel.negocio_id)
+
+
+@router.delete("/fotos/{foto_id}")
+def quitar_foto(foto_id: uuid.UUID, panel: PanelDeConfiguracion) -> list[esquemas.FotoDelPanel]:
+    with sesion_de_negocio(panel.negocio_id) as s:
+        foto = s.scalar(select(Foto).where(Foto.id == foto_id, Foto.negocio_id == panel.negocio_id))
+        if foto is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "No encontramos esa foto.")
+        url = foto.url
+        s.delete(foto)
+        s.commit()
+        borrar_imagen(url)
+        return _fotos(s, panel.negocio_id)
+
+
+@router.put("/fotos/orden")
+def ordenar_fotos(ids: list[uuid.UUID], panel: PanelDeConfiguracion) -> list[esquemas.FotoDelPanel]:
+    """Recibe los ids en el orden nuevo (los que no vengan quedan al final)."""
+    posicion = {foto_id: i for i, foto_id in enumerate(ids)}
+    with sesion_de_negocio(panel.negocio_id) as s:
+        for foto in s.scalars(select(Foto).where(Foto.negocio_id == panel.negocio_id)):
+            foto.orden = posicion.get(foto.id, len(ids) + foto.orden)
+        s.commit()
+        return _fotos(s, panel.negocio_id)
 
 
 # --- Canchas ---

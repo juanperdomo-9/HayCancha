@@ -76,6 +76,7 @@ def buscar_turnos(
     zona: str | None = None,
     caracteristicas: list[str] | None = None,
     negocio_id: uuid.UUID | None = None,
+    limite: int | None = MAX_RESULTADOS,
 ) -> list[Resultado]:
     """Turnos libres de los complejos visibles que cumplen todos los filtros."""
     from app.routers.publico import negocios_visibles
@@ -130,7 +131,7 @@ def buscar_turnos(
                             )
                         )
     resultados.sort(key=lambda r: (r.hora, r.complejo, r.cancha))
-    return resultados[:MAX_RESULTADOS]
+    return resultados[:limite]
 
 
 def _herramientas() -> list[dict[str, Any]]:

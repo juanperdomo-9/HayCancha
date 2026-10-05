@@ -6,6 +6,7 @@ import { useParams, useSearchParams } from 'react-router'
 import { ErrorApi } from '../../api/client'
 import { type ComplejoDetalle, useComplejo, useDisponibilidad } from '../../api/publico'
 import { ElegirCancha } from '../../components/complejo/ElegirCancha'
+import { GaleriaFotos } from '../../components/complejo/GaleriaFotos'
 import { GrillaTurnos } from '../../components/complejo/GrillaTurnos'
 import { LogoComplejo } from '../../components/complejo/LogoComplejo'
 import { MapaComplejo } from '../../components/complejo/MapaComplejo'
@@ -209,6 +210,8 @@ function PaginaComplejo({ complejo }: { complejo: ComplejoDetalle }) {
           )}
         </aside>
       </main>
+
+      <GaleriaFotos fotos={complejo.fotos} nombre={complejo.nombre} />
 
       <section
         id="info"

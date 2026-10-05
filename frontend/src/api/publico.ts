@@ -19,6 +19,35 @@ export type ComplejoResumen = {
   deportes: Deporte[]
   hoy: string
   proximo_turno: { fecha: string; hora: string } | null
+  caracteristicas: string[]
+}
+
+/** Mapa general: complejos con lugar en el día y la hora elegidos. */
+export type ComplejoConLugar = {
+  slug: string
+  fecha: string
+  deporte_codigo: string
+  hora: string
+  canchas: number
+  horas: string[]
+  precio_desde: string
+}
+
+export type FiltroDeLugar = { fecha: string; hora: string | null; deporte: string | null; caracteristicas: string[] }
+
+export function useComplejosConLugar(filtro: FiltroDeLugar | null) {
+  return useQuery({
+    queryKey: ['libres', filtro],
+    enabled: filtro !== null,
+    placeholderData: keepPreviousData,
+    queryFn: () => {
+      const q = new URLSearchParams({ fecha: filtro!.fecha })
+      if (filtro!.hora) q.set('hora', filtro!.hora)
+      if (filtro!.deporte) q.set('deporte', filtro!.deporte)
+      for (const c of filtro!.caracteristicas) q.append('caracteristicas', c)
+      return pedir<ComplejoConLugar[]>(`/publico/libres?${q}`)
+    },
+  })
 }
 
 export type Cancha = { id: string; nombre: string; caracteristicas: string | null }
@@ -30,6 +59,7 @@ export type DeporteDelComplejo = Deporte & {
 }
 
 export type ComplejoDetalle = {
+  fotos: string[]
   asistente: { nombre: string; bienvenida: string } | null
   slug: string
   nombre: string

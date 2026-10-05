@@ -151,3 +151,22 @@ def test_limite_de_mensajes_por_dia(ciudad, monkeypatch) -> None:
     ip = f"7.7.7.{uuid.uuid4().int % 250}"
     assert charlar("fútbol mañana", ip=ip).status_code == 200
     assert charlar("y pádel?", ip=ip).status_code == 429
+
+
+def test_mapa_filtra_complejos_con_lugar_a_esa_hora(ciudad, admin) -> None:
+    slug = admin.get(Negocio, ciudad["techado"]).slug
+    cliente = TestClient(app)
+    libres = cliente.get(
+        "/publico/libres",
+        params={
+            "fecha": ciudad["manana"].isoformat(),
+            "hora": "19:00",
+            "deporte": "futbol5",
+            "caracteristicas": ["techado"],
+        },  # fmt: skip
+    ).json()
+    mio = next(c for c in libres if c["slug"] == slug)
+    assert (mio["hora"], mio["canchas"], mio["horas"]) == ("19:00", 1, ["19:00"])
+    assert not any(c for c in libres if c["slug"].startswith("al-aire"))
+    resumen = next(c for c in cliente.get("/publico/complejos").json() if c["slug"] == slug)
+    assert resumen["caracteristicas"] == ["Sintético", "Techada"]

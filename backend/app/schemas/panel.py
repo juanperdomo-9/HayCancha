@@ -233,3 +233,8 @@ class CambiosDeComplejo(BaseModel):
     estado_cuenta: Literal["al_dia", "atrasado", "suspendido"] | None = None
     activo: bool | None = None
     plan: TextoOpcional | None = None
+
+
+class FotoDelPanel(BaseModel):
+    id: uuid.UUID
+    url: str

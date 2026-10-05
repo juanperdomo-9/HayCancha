@@ -372,3 +372,22 @@ def test_suspender_saca_al_complejo_de_la_pagina(escenario, admin: Session) -> N
     cambio = cliente.patch(f"/admin/complejos/{negocio_id}", json={"estado_cuenta": "suspendido"})
     assert cambio.json()["estado_cuenta"] == "suspendido"
     assert TestClient(app).get(f"/publico/complejos/{escenario['a']}").status_code == 404
+
+
+def test_galeria_de_fotos(escenario) -> None:
+    png = b"\x89PNG\r\n\x1a\n" + b"0" * 100
+    dueno = entrar(escenario["dueno_a"])
+    fotos = f"/panel/{escenario['a']}/fotos"
+    for nombre in ("a.png", "b.png"):
+        respuesta = dueno.post(fotos, files={"archivo": (nombre, png, "image/png")})
+        assert respuesta.status_code == 200
+    primera, segunda = respuesta.json()
+    dadas_vuelta = dueno.put(f"{fotos}/orden", json=[segunda["id"], primera["id"]]).json()
+    assert [f["id"] for f in dadas_vuelta] == [segunda["id"], primera["id"]]
+    publico = dueno.get(f"/publico/complejos/{escenario['a']}").json()
+    assert publico["fotos"] == [segunda["url"], primera["url"]]
+    # Ni el empleado ni el dueño de otro complejo la tocan.
+    assert entrar(escenario["empleado_a"]).delete(f"{fotos}/{primera['id']}").status_code == 403
+    ajeno = entrar(escenario["dueno_b"]).delete(f"/panel/{escenario['b']}/fotos/{primera['id']}")
+    assert ajeno.status_code == 404
+    assert [f["id"] for f in dueno.delete(f"{fotos}/{primera['id']}").json()] == [segunda["id"]]

@@ -2,6 +2,7 @@ from app.models.base import Base
 from app.models.cliente import Cliente
 from app.models.consulta import ConsultaSinRespuesta
 from app.models.deporte import Deporte
+from app.models.foto import Foto
 from app.models.horario import Horario
 from app.models.negocio import Negocio
 from app.models.pago import Pago
@@ -15,6 +16,7 @@ __all__ = [
     "Cliente",
     "ConsultaSinRespuesta",
     "Deporte",
+    "Foto",
     "Horario",
     "Negocio",
     "Pago",

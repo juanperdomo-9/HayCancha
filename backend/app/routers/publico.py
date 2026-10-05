@@ -1,7 +1,10 @@
 """Rutas públicas: sin login. Las usan la página principal y la página de cada complejo."""
 
+import re
+import unicodedata
 import uuid
-from datetime import date, timedelta
+from datetime import date, datetime, time, timedelta
+from decimal import Decimal
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -10,7 +13,7 @@ from sqlalchemy.orm import Session
 
 from app.config import get_settings
 from app.db import get_session, sesion_de_negocio
-from app.models import Deporte, Horario, Negocio, Recurso
+from app.models import Deporte, Foto, Horario, Negocio, Recurso
 from app.schemas import publico as esquemas
 from app.services import ia
 from app.services.cobros import proveedor_para
@@ -100,6 +103,7 @@ def listar_complejos(
             # Un complejo recién dado de alta, sin canchas, todavía no se muestra.
             if not deportes or (deporte and all(d.codigo != deporte for d in deportes)):
                 continue
+            caracteristicas = caracteristicas_de(deportes)
             codigos = [deporte] if deporte else [d.codigo for d in deportes]
             proximo = proximo_turno_libre(s, negocio, codigos)
         zona = zona_del_negocio(negocio)
@@ -116,6 +120,7 @@ def listar_complejos(
                 hoy=hoy_en_el_negocio(negocio),
                 latitud=negocio.latitud,
                 longitud=negocio.longitud,
+                caracteristicas=caracteristicas,
                 proximo_turno=esquemas.ProximoTurno(
                     fecha=proximo.inicio.astimezone(zona).date(),
                     hora=proximo.inicio.astimezone(zona).strftime("%H:%M"),
@@ -132,6 +137,13 @@ def ver_complejo(slug: str, session: SesionPublica) -> esquemas.ComplejoDetalle:
     negocio = buscar_negocio(session, slug)
     with sesion_de_negocio(negocio.id) as s:
         deportes = deportes_del_negocio(s, negocio.id)
+        fotos = list(
+            s.scalars(
+                select(Foto.url)
+                .where(Foto.negocio_id == negocio.id)
+                .order_by(Foto.orden, Foto.creado_a)
+            )
+        )
     return esquemas.ComplejoDetalle(
         slug=negocio.slug,
         nombre=negocio.nombre,
@@ -159,7 +171,74 @@ def ver_complejo(slug: str, session: SesionPublica) -> esquemas.ComplejoDetalle:
         minutos_para_pagar=negocio.minutos_para_pagar,
         reservas_online=proveedor_para(negocio) is not None,
         deportes=deportes,
+        fotos=fotos,
     )
+
+
+def caracteristicas_de(deportes: list[esquemas.DeporteDelComplejo]) -> list[str]:
+    """Las características de las canchas ("techada, sintético") como lista sin repetir."""
+    vistas: dict[str, str] = {}
+    for deporte in deportes:
+        for cancha in deporte.canchas:
+            for parte in re.split(r"[,;/]|\by\b", cancha.caracteristicas or ""):
+                parte = parte.strip()
+                clave = "".join(
+                    c
+                    for c in unicodedata.normalize("NFD", parte.lower())
+                    if unicodedata.category(c) != "Mn"
+                )
+                if parte and clave not in vistas:
+                    vistas[clave] = parte[:1].upper() + parte[1:]
+    return list(vistas.values())
+
+
+@router.get("/libres")
+def complejos_con_lugar(
+    session: SesionPublica,
+    fecha: date,
+    hora: time | None = None,
+    deporte: str | None = None,
+    caracteristicas: Annotated[list[str] | None, Query()] = None,
+) -> list[esquemas.ComplejoConLugar]:
+    """Mapa general: qué complejos tienen lugar ese día (y desde esa hora, dentro de la
+    hora siguiente), con cuántas canchas libres en el primer horario que encaja."""
+    from app.services.buscador import buscar_turnos
+
+    hoy = date.today()
+    if not hoy - timedelta(days=1) <= fecha <= hoy + timedelta(days=DIAS_RESERVABLES):
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Elegí una fecha más cercana.")
+    hasta = None
+    if hora is not None:
+        fin = datetime.combine(fecha, hora) + timedelta(minutes=59)
+        hasta = fin.time() if fin.date() == fecha else time(23, 59)
+    turnos = buscar_turnos(
+        session,
+        fecha=fecha,
+        deporte=deporte,
+        hora_desde=hora,
+        hora_hasta=hasta,
+        caracteristicas=caracteristicas,
+        limite=None,
+    )
+    por_complejo: dict[str, list] = {}
+    for turno in turnos:
+        por_complejo.setdefault(turno.slug, []).append(turno)
+    resultado = []
+    for slug, lista in por_complejo.items():
+        primera = min(t.hora for t in lista)
+        en_la_primera = [t for t in lista if t.hora == primera]
+        resultado.append(
+            esquemas.ComplejoConLugar(
+                slug=slug,
+                fecha=fecha,
+                deporte_codigo=en_la_primera[0].deporte_codigo,
+                hora=primera,
+                canchas=len(en_la_primera),
+                horas=sorted({t.hora for t in lista})[:4],
+                precio_desde=min(Decimal(t.precio) for t in lista),
+            )
+        )
+    return resultado
 
 
 @router.get("/complejos/{slug}/disponibilidad")

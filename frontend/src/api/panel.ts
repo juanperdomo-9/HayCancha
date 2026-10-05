@@ -305,3 +305,24 @@ export function useLinkDelDueno() {
     mutationFn: (negocioId: string) => enviar<{ link: string }>(`/admin/complejos/${negocioId}/invitacion`, 'POST'),
   })
 }
+
+// --- Galería de fotos ---
+
+export const MAX_FOTOS = 12
+export type FotoDelPanel = { id: string; url: string }
+
+export function useFotos(slug: string) {
+  return useQuery({ queryKey: ['panel', slug, 'fotos'], queryFn: () => pedir<FotoDelPanel[]>(`${base(slug)}/fotos`) })
+}
+
+function useCambiarFotos<T>(slug: string, hacer: (valor: T) => Promise<FotoDelPanel[]>) {
+  const cliente = useQueryClient()
+  return useMutation({
+    mutationFn: hacer,
+    onSuccess: (fotos) => cliente.setQueryData(['panel', slug, 'fotos'], fotos),
+  })
+}
+
+export const useSubirFoto = (slug: string) => useCambiarFotos(slug, (archivo: File) => subirArchivo<FotoDelPanel[]>(`${base(slug)}/fotos`, archivo))
+export const useQuitarFoto = (slug: string) => useCambiarFotos(slug, (id: string) => pedir<FotoDelPanel[]>(`${base(slug)}/fotos/${id}`, { method: 'DELETE' }))
+export const useOrdenarFotos = (slug: string) => useCambiarFotos(slug, (ids: string[]) => enviar<FotoDelPanel[]>(`${base(slug)}/fotos/orden`, 'PUT', ids))

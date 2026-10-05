@@ -4,7 +4,8 @@ import L from 'leaflet'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router'
 
-import type { ComplejoResumen } from '../api/publico'
+import { type ComplejoResumen, useComplejosConLugar } from '../api/publico'
+import { plata } from '../utils/formato'
 
 // Mapas de OpenStreetMap (gratis, sin clave; piden la atribución).
 const CAPAS = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
@@ -47,15 +48,71 @@ function useMapa(contenedor: React.RefObject<HTMLDivElement | null>) {
 
 const normalizar = (t: string) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 
-/** Página principal: todos los complejos en un mapa, con un buscador. */
+// Para comparar "techada" con "techado": sin tildes y sin la última letra.
+const raiz = (t: string) => {
+  const n = normalizar(t.trim())
+  return n.length > 4 ? n.slice(0, -1) : n
+}
+
+const HORAS = Array.from({ length: 17 }, (_, i) => `${String(i + 7).padStart(2, '0')}:00`)
+
+function diasParaElegir(hoy: string) {
+  if (!hoy) return []
+  const base = new Date(`${hoy}T12:00:00`)
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(base)
+    d.setDate(base.getDate() + i)
+    const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    const nombre = i === 0 ? 'Hoy' : i === 1 ? 'Mañana' : d.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric' })
+    return { iso, nombre: nombre[0].toUpperCase() + nombre.slice(1) }
+  })
+}
+
+const escapar = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;')
+
+/** Página principal: todos los complejos en un mapa, con buscador y filtros por día, hora,
+ * deporte y características. Con un día elegido, se apagan los que no tienen lugar. */
 export function MapaDeCanchas({ complejos }: { complejos: ComplejoResumen[] }) {
   const contenedor = useRef<HTMLDivElement>(null)
   const mapa = useMapa(contenedor)
   const [busqueda, setBusqueda] = useState('')
+  const [fecha, setFecha] = useState('')
+  const [hora, setHora] = useState('')
+  const [deporte, setDeporte] = useState('')
+  const [elegidas, setElegidas] = useState<string[]>([])
+
+  const hoy = complejos[0]?.hoy ?? ''
+  const dias = useMemo(() => diasParaElegir(hoy), [hoy])
+  const deportes = useMemo(() => {
+    const todos = new Map<string, string>()
+    for (const c of complejos) for (const d of c.deportes) todos.set(d.codigo, d.nombre)
+    return [...todos].map(([codigo, nombre]) => ({ codigo, nombre }))
+  }, [complejos])
+  const caracteristicas = useMemo(() => {
+    const cuenta = new Map<string, { texto: string; veces: number }>()
+    for (const c of complejos)
+      for (const t of c.caracteristicas ?? []) {
+        const item = cuenta.get(raiz(t)) ?? { texto: t, veces: 0 }
+        item.veces += 1
+        cuenta.set(raiz(t), item)
+      }
+    return [...cuenta.values()].sort((a, b) => b.veces - a.veces).slice(0, 8).map((x) => x.texto)
+  }, [complejos])
+
+  const libres = useComplejosConLugar(fecha ? { fecha, hora: hora || null, deporte: deporte || null, caracteristicas: elegidas } : null)
+  const lugar = useMemo(() => new Map((libres.data ?? []).map((l) => [l.slug, l])), [libres.data])
+
   const encontrados = useMemo(() => {
     const q = normalizar(busqueda.trim())
-    return complejos.filter((c) => !q || normalizar([c.nombre, c.barrio ?? '', ...c.deportes.map((d) => d.nombre)].join(' ')).includes(q))
-  }, [complejos, busqueda])
+    return complejos.filter((c) => {
+      if (q && !normalizar([c.nombre, c.barrio ?? '', ...c.deportes.map((d) => d.nombre)].join(' ')).includes(q)) return false
+      if (deporte && !c.deportes.some((d) => d.codigo === deporte)) return false
+      const suyas = (c.caracteristicas ?? []).map(raiz)
+      return elegidas.every((e) => suyas.some((s) => s.includes(raiz(e))))
+    })
+  }, [complejos, busqueda, deporte, elegidas])
+  const filtrandoLugar = fecha !== '' && libres.data !== undefined
+  const visibles = filtrandoLugar ? encontrados.filter((c) => lugar.has(c.slug)) : encontrados
 
   useEffect(() => {
     const m = mapa.current
@@ -65,10 +122,18 @@ export function MapaDeCanchas({ complejos }: { complejos: ComplejoResumen[] }) {
     for (const c of encontrados) {
       if (c.latitud == null || c.longitud == null) continue
       const punto: L.LatLngTuple = [c.latitud, c.longitud]
-      puntos.push(punto)
+      const conLugar = lugar.get(c.slug)
+      const apagado = filtrandoLugar && !conLugar
+      if (!apagado) puntos.push(punto)
       const div = document.createElement('div')
-      div.innerHTML = `<b style="font-size:15px">${c.nombre.replace(/</g, '&lt;')}</b><br><span style="color:#5d6660">${(c.barrio ?? '').replace(/</g, '&lt;')}</span><br><span style="font-size:12px">${c.deportes.map((d) => d.nombre).join(' · ')}</span><br><a href="/${c.slug}" style="display:inline-block;margin-top:6px;font-weight:700;color:#1E7A3E">Ver horarios →</a>`
-      L.marker(punto, { icon: pin(c.color_primario, iniciales(c.nombre)), title: c.nombre })
+      const detalle = conLugar
+        ? `<b style="color:#1E7A3E">${conLugar.canchas === 1 ? '1 cancha libre' : `${conLugar.canchas} canchas libres`} a las ${conLugar.hora}</b><br>`
+        : apagado
+          ? '<span style="color:#9a3412">Sin lugar en ese horario</span><br>'
+          : ''
+      const destino = conLugar ? `/${c.slug}?deporte=${conLugar.deporte_codigo}&fecha=${conLugar.fecha}` : `/${c.slug}`
+      div.innerHTML = `<b style="font-size:15px">${escapar(c.nombre)}</b><br><span style="color:#5d6660">${escapar(c.barrio ?? '')}</span><br><span style="font-size:12px">${c.deportes.map((d) => escapar(d.nombre)).join(' · ')}</span><br>${detalle}<a href="${destino}" style="display:inline-block;margin-top:6px;font-weight:700;color:#1E7A3E">${conLugar ? 'Reservar →' : 'Ver horarios →'}</a>`
+      L.marker(punto, { icon: pin(apagado ? '#9AA39C' : c.color_primario, iniciales(c.nombre)), title: c.nombre, opacity: apagado ? 0.55 : 1, zIndexOffset: apagado ? -100 : 0 })
         .bindPopup(div)
         .addTo(capa)
     }
@@ -77,35 +142,88 @@ export function MapaDeCanchas({ complejos }: { complejos: ComplejoResumen[] }) {
     return () => {
       capa.remove()
     }
-  }, [encontrados, mapa])
+  }, [encontrados, lugar, filtrandoLugar, mapa])
 
+  const campo = 'w-full rounded-xl border-[1.5px] border-linea bg-superficie px-3 py-2.5 text-[16px] focus:border-cesped focus:outline-none'
+  const alternar = (t: string) => setElegidas((e) => (e.includes(t) ? e.filter((x) => x !== t) : [...e, t]))
   return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
-      <div ref={contenedor} className="z-0 aspect-[4/3] w-full overflow-hidden rounded-2xl border border-linea lg:aspect-auto lg:min-h-[460px]" />
+    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
+      <div ref={contenedor} className="z-0 aspect-[4/3] w-full overflow-hidden rounded-2xl border border-linea lg:aspect-auto lg:min-h-[520px]" />
       <div className="grid content-start gap-3">
-        <label className="grid gap-1.5">
-          <span className="text-[13px] font-semibold">Buscar complejo</span>
-          <input
-            type="search"
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
-            placeholder="Nombre, barrio o deporte"
-            className="w-full rounded-xl border-[1.5px] border-linea bg-superficie px-3.5 py-2.5 text-[16px] focus:border-cesped focus:outline-none"
-          />
-        </label>
-        <ul className="grid max-h-[380px] gap-2 overflow-y-auto">
-          {encontrados.map((c) => (
-            <li key={c.slug}>
-              <Link to={`/${c.slug}`} className="flex items-center justify-between gap-3 rounded-xl bg-cal px-3.5 py-2.5 ring-1 ring-linea hover:ring-noche">
-                <span className="min-w-0">
-                  <b className="block truncate">{c.nombre}</b>
-                  <span className="text-sm text-gris">{[c.barrio, ...c.deportes.map((d) => d.nombre)].filter(Boolean).join(' · ')}</span>
-                </span>
-                <span aria-hidden="true">→</span>
-              </Link>
-            </li>
-          ))}
-          {encontrados.length === 0 && <li className="text-sm text-gris">No encontramos complejos con esa búsqueda.</li>}
+        <input type="search" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} placeholder="Nombre, barrio o deporte" aria-label="Buscar complejo" className={campo} />
+        <div className="grid grid-cols-2 gap-2">
+          <select value={fecha} onChange={(e) => setFecha(e.target.value)} aria-label="Día" className={campo}>
+            <option value="">Cualquier día</option>
+            {dias.map((d) => (
+              <option key={d.iso} value={d.iso}>
+                {d.nombre}
+              </option>
+            ))}
+          </select>
+          <select value={hora} onChange={(e) => setHora(e.target.value)} aria-label="Hora" disabled={!fecha} className={`${campo} disabled:opacity-50`}>
+            <option value="">{fecha ? 'Cualquier hora' : 'Elegí el día'}</option>
+            {HORAS.map((h) => (
+              <option key={h} value={h}>
+                {h}
+              </option>
+            ))}
+          </select>
+        </div>
+        {deportes.length > 1 && (
+          <select value={deporte} onChange={(e) => setDeporte(e.target.value)} aria-label="Deporte" className={campo}>
+            <option value="">Todos los deportes</option>
+            {deportes.map((d) => (
+              <option key={d.codigo} value={d.codigo}>
+                {d.nombre}
+              </option>
+            ))}
+          </select>
+        )}
+        {caracteristicas.length > 0 && (
+          <div className="flex flex-wrap gap-1.5" role="group" aria-label="Características">
+            {caracteristicas.map((t) => (
+              <button
+                key={t}
+                type="button"
+                aria-pressed={elegidas.includes(t)}
+                onClick={() => alternar(t)}
+                className={`rounded-full px-3 py-1.5 text-[13.5px] font-semibold ring-1 transition-colors ${elegidas.includes(t) ? 'bg-noche text-cal ring-noche' : 'bg-cal ring-linea hover:ring-noche'}`}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+        )}
+        {fecha && (
+          <p className="text-[13px] text-gris" aria-live="polite">
+            {libres.isFetching ? 'Buscando lugar…' : `${visibles.length} ${visibles.length === 1 ? 'complejo tiene' : 'complejos tienen'} lugar${hora ? ` desde las ${hora}` : ''}.`}
+          </p>
+        )}
+        <ul className="grid max-h-[360px] gap-2 overflow-y-auto">
+          {visibles.map((c) => {
+            const l = lugar.get(c.slug)
+            return (
+              <li key={c.slug}>
+                <Link
+                  to={l ? `/${c.slug}?deporte=${l.deporte_codigo}&fecha=${l.fecha}` : `/${c.slug}`}
+                  className="flex items-center justify-between gap-3 rounded-xl bg-cal px-3.5 py-2.5 ring-1 ring-linea hover:ring-noche"
+                >
+                  <span className="min-w-0">
+                    <b className="block truncate">{c.nombre}</b>
+                    <span className="text-sm text-gris">
+                      {l
+                        ? `${l.horas.join(' · ')} · desde ${plata(l.precio_desde)}`
+                        : [c.barrio, ...c.deportes.map((d) => d.nombre)].filter(Boolean).join(' · ')}
+                    </span>
+                  </span>
+                  <span aria-hidden="true">→</span>
+                </Link>
+              </li>
+            )
+          })}
+          {visibles.length === 0 && !libres.isFetching && (
+            <li className="text-sm text-gris">{fecha ? 'No hay lugar con esos filtros. Probá otra hora o sacá algún filtro.' : 'No encontramos complejos con esa búsqueda.'}</li>
+          )}
         </ul>
       </div>
     </div>

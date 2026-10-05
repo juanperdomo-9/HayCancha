@@ -31,6 +31,20 @@ class ComplejoResumen(BaseModel):
     proximo_turno: ProximoTurno | None
     latitud: float | None
     longitud: float | None
+    # Lo que tienen sus canchas ("Techada", "Sintético"), para filtrar en el mapa.
+    caracteristicas: list[str] = []
+
+
+class ComplejoConLugar(BaseModel):
+    """Un complejo con canchas libres en el día y la hora que se buscó (mapa general)."""
+
+    slug: str
+    fecha: date
+    deporte_codigo: str
+    hora: str
+    canchas: int
+    horas: list[str]
+    precio_desde: Decimal
 
 
 class Cancha(BaseModel):
@@ -68,6 +82,7 @@ class ComplejoDetalle(BaseModel):
     # Si ya puede cobrar la seña online (Mercado Pago vinculado).
     reservas_online: bool
     deportes: list[DeporteDelComplejo]
+    fotos: list[str] = []
 
 
 class CanchaLibre(Cancha):

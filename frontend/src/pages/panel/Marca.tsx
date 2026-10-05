@@ -9,6 +9,7 @@ import { PortadaComplejo } from '../../components/complejo/PortadaComplejo'
 import { Aviso, Boton, Campo, Tarjeta } from '../../components/ui/Formulario'
 import { TemaComplejo } from '../../theme/TemaComplejo'
 import { EncabezadoSeccion } from './EncabezadoSeccion'
+import { GaleriaDelPanel } from './GaleriaDelPanel'
 import { ElegirUbicacion } from '../../components/MapaLeaflet'
 
 const SERVICIOS_COMUNES = ['Vestuarios', 'Duchas', 'Estacionamiento', 'Bufé', 'Parrilla', 'Wi-Fi', 'Alquiler de pelotas', 'Alquiler de paletas']
@@ -178,6 +179,7 @@ function FormularioMarca({ slug, c }: { slug: string; c: Configuracion }) {
               </div>
             </div>
           </Tarjeta>
+          <GaleriaDelPanel slug={slug} />
           <div className="grid gap-3">
             {guardar.error && <Aviso>{mensaje(guardar.error)}</Aviso>}
             {ok && <Aviso tipo="ok">Guardado. Ya se ve en tu página.</Aviso>}
