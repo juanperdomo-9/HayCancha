@@ -104,7 +104,10 @@ export function ReservaEnCurso({ slug, turno, fecha, deporte, cancha, canchaEleg
       <dl className="mb-4 grid gap-2 border-y border-borde py-3.5 tabular-nums">
         <div className="flex justify-between gap-3">
           <dt className="text-tenue">Turno de {turno.duracion_min} min</dt>
-          <dd>{plata(cancha.precio)}</dd>
+          <dd className="text-right">
+            {plata(cancha.precio)}
+            {cancha.precio_efectivo && <span className="block text-[13px] text-tenue">{plata(cancha.precio_efectivo)} en efectivo</span>}
+          </dd>
         </div>
         <div className="flex justify-between gap-3 text-[17px] font-bold">
           <dt>Seña para reservar</dt>
@@ -112,7 +115,12 @@ export function ReservaEnCurso({ slug, turno, fecha, deporte, cancha, canchaEleg
         </div>
         <div className="flex justify-between gap-3">
           <dt className="text-tenue">En la cancha pagás</dt>
-          <dd>{plata(saldo)}</dd>
+          <dd className="text-right">
+            {plata(saldo)}
+            {cancha.precio_efectivo && (
+              <span className="block text-[13px] text-tenue">{plata(Math.max(0, Number(cancha.precio_efectivo) - Number(cancha.sena)))} en efectivo</span>
+            )}
+          </dd>
         </div>
       </dl>
 

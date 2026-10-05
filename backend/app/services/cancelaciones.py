@@ -109,7 +109,7 @@ def reprogramar(
         try:
             with session.begin_nested():
                 reserva.recurso_id, reserva.inicio, reserva.fin = cancha.id, turno.inicio, turno.fin
-                reserva.precio = turno.precio
+                reserva.precio, reserva.precio_efectivo = turno.precio, turno.precio_efectivo
                 session.flush()
             return
         except IntegrityError as error:

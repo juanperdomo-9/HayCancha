@@ -65,6 +65,7 @@ export type Franja = {
   hasta: string
   duracion_turno_min: number
   precio: string
+  precio_efectivo?: string | null
 }
 
 export type Integrante = { id: string; email: string; rol: Rol; activo: boolean; clave_definida: boolean }

@@ -39,6 +39,13 @@ class ResumenDelDia:
     saldo_por_cobrar: Decimal = CERO
 
 
+def saldo_efectivo(reserva: Reserva) -> Decimal | None:
+    """Lo que falta si el saldo se paga en efectivo (None si no hay precio en efectivo)."""
+    if reserva.precio_efectivo is None:
+        return None
+    return max(CERO, reserva.precio_efectivo - reserva.sena)
+
+
 def saldo(reserva: Reserva) -> Decimal:
     # Si el turno quedó más barato que la seña (un cambio de horario), no queda nada por cobrar.
     return max(CERO, (reserva.precio or CERO) - reserva.sena)

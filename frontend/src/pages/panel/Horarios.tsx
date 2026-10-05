@@ -127,7 +127,7 @@ function FormularioHorarios({
   function enviar() {
     setOk(null)
     guardar.mutate(
-      { canchas: elegidas, franjas: franjas.map(({ clave: _clave, ...f }) => ({ ...f, precio: f.precio || '0' })) },
+      { canchas: elegidas, franjas: franjas.map(({ clave: _clave, ...f }) => ({ ...f, precio: f.precio || '0', precio_efectivo: f.precio_efectivo || null })) },
       {
         onSuccess: (r) =>
           setOk(`Listo: ${r.franjas} ${r.franjas === 1 ? 'franja guardada' : 'franjas guardadas'} en ${r.canchas} ${r.canchas === 1 ? 'cancha' : 'canchas'}.`),
@@ -231,11 +231,29 @@ function FormularioHorarios({
                         />
                       </span>
                     </label>
+                    <label className="flex items-center gap-1.5" title="Opcional: si el saldo se paga en efectivo. La seña sale siempre del precio normal.">
+                      en efectivo
+                      <span className="flex items-center rounded-lg border-[1.5px] border-linea bg-superficie">
+                        <span className="pl-2 text-gris">$</span>
+                        <input
+                          type="number"
+                          min={0}
+                          step={500}
+                          inputMode="numeric"
+                          placeholder="opcional"
+                          value={franja.precio_efectivo ? Number(franja.precio_efectivo) : ''}
+                          onChange={(e) => cambiar(franja.clave, { precio_efectivo: e.target.value })}
+                          className="w-28 rounded-lg px-1.5 py-1.5 text-[15px] tabular-nums outline-none"
+                          aria-label="Precio si paga el saldo en efectivo (opcional)"
+                        />
+                      </span>
+                    </label>
                   </div>
                   <div className="flex items-center justify-between gap-3 lg:justify-end">
                     <span className="text-[13px] text-gris">
                       {turnos} {turnos === 1 ? 'turno' : 'turnos'}
                       {franja.precio ? ` de ${plata(franja.precio)}` : ''}
+                      {franja.precio_efectivo ? ` (${plata(franja.precio_efectivo)} en efectivo)` : ''}
                     </span>
                     <button
                       type="button"

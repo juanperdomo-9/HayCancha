@@ -83,7 +83,7 @@ export type ComplejoDetalle = {
   deportes: DeporteDelComplejo[]
 }
 
-export type CanchaLibre = Cancha & { precio: string; sena: string }
+export type CanchaLibre = Cancha & { precio: string; sena: string; precio_efectivo: string | null }
 
 export type Turno = {
   inicio: string
@@ -155,6 +155,8 @@ export type ReservaPublica = {
   precio: string
   sena: string
   saldo: string
+  precio_efectivo: string | null
+  saldo_efectivo: string | null
   vence_a: string | null
   url_pago: string | null
   pago_simulado: boolean

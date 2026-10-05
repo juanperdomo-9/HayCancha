@@ -47,6 +47,9 @@ class ReservaPublica(BaseModel):
     precio: Decimal
     sena: Decimal
     saldo: Decimal
+    # Si el complejo cobra menos en efectivo: el precio y lo que falta pagando así.
+    precio_efectivo: Decimal | None = None
+    saldo_efectivo: Decimal | None = None
     vence_a: datetime | None
     url_pago: str | None
     pago_simulado: bool

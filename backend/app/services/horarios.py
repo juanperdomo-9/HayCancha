@@ -21,6 +21,7 @@ class FranjaNueva:
     hasta: time
     duracion_turno_min: int
     precio: Decimal
+    precio_efectivo: Decimal | None = None
 
 
 def _minutos(hora: time) -> int:
@@ -55,6 +56,8 @@ def validar_franjas(franjas: Sequence[FranjaNueva]) -> None:
             )
         if franja.precio < 0:
             raise HorariosInvalidos("El precio no puede ser negativo.")
+        if franja.precio_efectivo is not None and not 0 <= franja.precio_efectivo <= franja.precio:
+            raise HorariosInvalidos("El precio en efectivo tiene que ser igual o menor al normal.")
         for dia in set(franja.dias):
             inicio = dia * MINUTOS_DIA + _minutos(franja.desde)
             fin = inicio + largo

@@ -88,6 +88,7 @@ class ComplejoDetalle(BaseModel):
 class CanchaLibre(Cancha):
     precio: Decimal
     sena: Decimal
+    precio_efectivo: Decimal | None = None
 
 
 class Turno(BaseModel):

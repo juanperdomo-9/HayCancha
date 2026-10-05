@@ -16,7 +16,13 @@ from app.db import sesion_de_negocio
 from app.dependencias import PanelActual
 from app.models import Cliente, Deporte, Negocio, Recurso, Reserva
 from app.schemas import agenda as esquemas
-from app.services.agenda import agenda_del_dia, minutos_para_pagar, resumen, saldo
+from app.services.agenda import (
+    agenda_del_dia,
+    minutos_para_pagar,
+    resumen,
+    saldo,
+    saldo_efectivo,
+)
 from app.services.cancelaciones import cancelar
 from app.services.cobros import devolucion_de, devolver, pago_aprobado_de, proveedor_para
 from app.services.disponibilidad import ahora, hoy_en_el_negocio, zona_del_negocio
@@ -91,6 +97,8 @@ def ver_agenda(panel: PanelActual, fecha: date | None = None) -> esquemas.Agenda
                                 sena_en_efectivo=t.reserva.sena_en_efectivo,
                                 saldo=saldo(t.reserva),
                                 saldo_cobrado=t.reserva.saldo_cobrado,
+                                saldo_efectivo=saldo_efectivo(t.reserva),
+                                saldo_en_efectivo=t.reserva.saldo_en_efectivo,
                                 origen=t.reserva.origen,
                                 asistencia=t.reserva.asistencia,
                                 motivo_bloqueo=t.reserva.motivo_bloqueo,
@@ -165,6 +173,8 @@ def _detalle(s: Session, negocio: Negocio, reserva: Reserva) -> esquemas.Reserva
         sena_en_efectivo=reserva.sena_en_efectivo,
         saldo=saldo(reserva),
         saldo_cobrado=reserva.saldo_cobrado,
+        saldo_efectivo=saldo_efectivo(reserva),
+        saldo_en_efectivo=reserva.saldo_en_efectivo,
         asistencia=reserva.asistencia,
         origen=reserva.origen,
         motivo_bloqueo=reserva.motivo_bloqueo,
@@ -286,7 +296,7 @@ def mover_reserva(
             )
         esperar_turno_para_reservar(s, panel.negocio_id)
         reserva.recurso_id, reserva.inicio, reserva.fin = cancha.id, turno.inicio, turno.fin
-        reserva.precio = turno.precio
+        reserva.precio, reserva.precio_efectivo = turno.precio, turno.precio_efectivo
         try:
             s.commit()
         except IntegrityError as error:

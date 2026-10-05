@@ -146,6 +146,7 @@ class Franja(BaseModel):
     hasta: time
     duracion_turno_min: Annotated[int, Field(gt=0, le=600)]
     precio: Annotated[Decimal, Field(ge=0, max_digits=12, decimal_places=2)]
+    precio_efectivo: Annotated[Decimal, Field(ge=0, max_digits=12, decimal_places=2)] | None = None
 
 
 class HorariosDeCanchas(BaseModel):

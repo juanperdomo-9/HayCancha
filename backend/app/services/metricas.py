@@ -85,6 +85,8 @@ def _numeros(
     horas: Counter = Counter()
     for r in reservas:
         precio = r.precio or CERO
+        if r.saldo_cobrado and r.saldo_en_efectivo and r.precio_efectivo is not None:
+            precio = r.precio_efectivo
         n.facturacion += precio
         if r.origen == "panel":
             n.a_mano += 1

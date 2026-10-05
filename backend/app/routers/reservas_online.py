@@ -22,7 +22,7 @@ from app.models import Cliente, Deporte, Negocio, Recurso, Reserva
 from app.routers.publico import DIAS_RESERVABLES, buscar_negocio
 from app.schemas import reserva_online as esquemas
 from app.services import avisos
-from app.services.agenda import saldo
+from app.services.agenda import saldo, saldo_efectivo
 from app.services.cancelaciones import (
     CambioNoPermitido,
     a_tiempo,
@@ -239,6 +239,8 @@ def _publica(s: Session, negocio: Negocio, reserva: Reserva) -> esquemas.Reserva
         precio=reserva.precio,
         sena=reserva.sena,
         saldo=saldo(reserva),
+        precio_efectivo=reserva.precio_efectivo,
+        saldo_efectivo=saldo_efectivo(reserva),
         vence_a=reserva.vence_a if pendiente else None,
         url_pago=reserva.url_pago if pendiente else None,
         pago_simulado=pendiente and proveedor is not None and proveedor.simulado,

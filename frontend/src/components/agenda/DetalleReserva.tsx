@@ -119,7 +119,10 @@ function Detalle({ slug, r, agenda, onListo }: { slug: string; r: ReservaDetalle
           )}
           <div className="flex justify-between font-bold">
             <dt>{r.saldo_cobrado ? 'Saldo' : 'Falta cobrar en la cancha'}</dt>
-            <dd>{r.saldo_cobrado ? 'Cobrado' : plata(r.saldo)}</dd>
+            <dd className="text-right">
+              {r.saldo_cobrado ? (r.saldo_en_efectivo ? 'Cobrado en efectivo' : 'Cobrado') : plata(r.saldo)}
+              {!r.saldo_cobrado && r.saldo_efectivo && <span className="block text-[13px] font-normal text-gris">{plata(r.saldo_efectivo)} en efectivo</span>}
+            </dd>
           </div>
         </dl>
       )}
@@ -146,13 +149,24 @@ function Detalle({ slug, r, agenda, onListo }: { slug: string; r: ReservaDetalle
               </button>
             ))}
           </div>
-          <Boton
-            variante={r.saldo_cobrado ? 'suave' : 'principal'}
-            cargando={cambiar.isPending}
-            onClick={() => cambiar.mutate({ id: r.id, saldo_cobrado: !r.saldo_cobrado })}
-          >
-            {r.saldo_cobrado ? 'Marcar saldo como no cobrado' : `Cobré ${plata(r.saldo)} en la cancha`}
-          </Boton>
+          {r.saldo_cobrado || !r.saldo_efectivo ? (
+            <Boton
+              variante={r.saldo_cobrado ? 'suave' : 'principal'}
+              cargando={cambiar.isPending}
+              onClick={() => cambiar.mutate({ id: r.id, saldo_cobrado: !r.saldo_cobrado, saldo_en_efectivo: false })}
+            >
+              {r.saldo_cobrado ? 'Marcar saldo como no cobrado' : `Cobré ${plata(r.saldo)} en la cancha`}
+            </Boton>
+          ) : (
+            <div className="grid grid-cols-2 gap-2">
+              <Boton cargando={cambiar.isPending} onClick={() => cambiar.mutate({ id: r.id, saldo_cobrado: true, saldo_en_efectivo: true })}>
+                Cobré {plata(r.saldo_efectivo)} en efectivo
+              </Boton>
+              <Boton variante="suave" cargando={cambiar.isPending} onClick={() => cambiar.mutate({ id: r.id, saldo_cobrado: true, saldo_en_efectivo: false })}>
+                Cobré {plata(r.saldo)} con otro medio
+              </Boton>
+            </div>
+          )}
         </div>
       )}
 

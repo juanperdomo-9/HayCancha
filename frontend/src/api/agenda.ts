@@ -16,6 +16,8 @@ export type ReservaEnAgenda = {
   sena_en_efectivo: boolean
   saldo: string
   saldo_cobrado: boolean
+  saldo_efectivo: string | null
+  saldo_en_efectivo: boolean
   origen: Origen
   asistencia: 'vino' | 'no_vino' | null
   motivo_bloqueo: string | null
@@ -131,7 +133,7 @@ export function useCargarReserva(slug: string) {
 export function useCambiarReserva(slug: string) {
   const refrescar = useRefrescar(slug)
   return useMutation({
-    mutationFn: ({ id, ...cambios }: { id: string; asistencia?: 'vino' | 'no_vino' | null; saldo_cobrado?: boolean }) =>
+    mutationFn: ({ id, ...cambios }: { id: string; asistencia?: 'vino' | 'no_vino' | null; saldo_cobrado?: boolean; saldo_en_efectivo?: boolean }) =>
       enviar<ReservaDetalle>(`${base(slug)}/reservas/${id}`, 'PATCH', cambios),
     onSuccess: refrescar,
   })

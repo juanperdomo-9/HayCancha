@@ -20,6 +20,9 @@ class ReservaEnAgenda(BaseModel):
     sena_en_efectivo: bool
     saldo: Decimal
     saldo_cobrado: bool
+    # Si el complejo tiene precio en efectivo: lo que falta pagando así, y si se cobró así.
+    saldo_efectivo: Decimal | None = None
+    saldo_en_efectivo: bool = False
     origen: Origen
     asistencia: Literal["vino", "no_vino"] | None
     motivo_bloqueo: str | None
@@ -92,6 +95,9 @@ class ReservaDetalle(BaseModel):
     sena_en_efectivo: bool
     saldo: Decimal
     saldo_cobrado: bool
+    # Si el complejo tiene precio en efectivo: lo que falta pagando así, y si se cobró así.
+    saldo_efectivo: Decimal | None = None
+    saldo_en_efectivo: bool = False
     asistencia: Literal["vino", "no_vino"] | None
     origen: Origen
     motivo_bloqueo: str | None
@@ -118,6 +124,7 @@ class ReservaManual(BaseModel):
 class CambiosDeReserva(BaseModel):
     asistencia: Literal["vino", "no_vino"] | None = None
     saldo_cobrado: bool | None = None
+    saldo_en_efectivo: bool | None = None
 
 
 class Cancelacion(BaseModel):

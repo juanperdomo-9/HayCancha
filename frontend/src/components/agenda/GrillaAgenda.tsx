@@ -129,7 +129,7 @@ function Celda({ turno, modoBloqueo, seleccionado, onLibre, onOcupado }: { turno
         <b className="truncate">{r.cliente}</b>
         <Icono className="ml-auto size-3 flex-none opacity-60" aria-label={r.origen === 'web' ? 'Reservó por la web' : 'Cargada a mano'} />
       </span>
-      <span className="text-crema/75">{r.saldo_cobrado ? 'Pagó todo' : `Falta ${plata(r.saldo)}`}</span>
+      <span className="text-crema/75">{r.saldo_cobrado ? 'Pagó todo' : `Falta ${plata(r.saldo)}${r.saldo_efectivo ? ` · ${plata(r.saldo_efectivo)} ef.` : ''}`}</span>
       {r.asistencia && (
         <span className={`flex items-center gap-0.5 text-[11px] font-semibold ${r.asistencia === 'vino' ? 'text-cesped-claro' : 'text-red-300'}`}>
           {r.asistencia === 'vino' ? <Check className="size-3" aria-hidden="true" /> : <X className="size-3" aria-hidden="true" />}

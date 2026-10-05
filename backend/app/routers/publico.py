@@ -279,6 +279,7 @@ def ver_disponibilidad(
                             caracteristicas=c.recurso.caracteristicas,
                             precio=c.precio,
                             sena=c.sena,
+                            precio_efectivo=c.precio_efectivo,
                         )
                         for c in t.libres
                     ],

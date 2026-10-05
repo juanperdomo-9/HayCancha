@@ -34,6 +34,10 @@ class Horario(Base):
         CheckConstraint("dia_semana BETWEEN 0 AND 6", name="dia_semana_valido"),
         CheckConstraint("duracion_turno_min > 0", name="duracion_positiva"),
         CheckConstraint("precio >= 0", name="precio_no_negativo"),
+        CheckConstraint(
+            "precio_efectivo IS NULL OR (precio_efectivo >= 0 AND precio_efectivo <= precio)",
+            name="precio_efectivo_valido",
+        ),
         Index("ix_horarios_recurso_dia", "recurso_id", "dia_semana"),
     )
 
@@ -45,3 +49,5 @@ class Horario(Base):
     hasta: Mapped[time]
     duracion_turno_min: Mapped[int]
     precio: Mapped[Decimal] = mapped_column(Numeric(12, 2))
+    # Si el saldo se paga en efectivo (opcional, más barato). La seña sale del precio normal.
+    precio_efectivo: Mapped[Decimal | None] = mapped_column(Numeric(12, 2))

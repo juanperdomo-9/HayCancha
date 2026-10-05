@@ -307,13 +307,18 @@ def ver_horarios(cancha_id: uuid.UUID, panel: PanelDeConfiguracion) -> list[esqu
         ).all()
     agrupadas: dict[tuple, list[int]] = {}
     for h in filas:
-        clave = (h.desde, h.hasta, h.duracion_turno_min, h.precio)
+        clave = (h.desde, h.hasta, h.duracion_turno_min, h.precio, h.precio_efectivo)
         agrupadas.setdefault(clave, []).append(h.dia_semana)
     return [
         esquemas.Franja(
-            dias=sorted(dias), desde=desde, hasta=hasta, duracion_turno_min=duracion, precio=precio
+            dias=sorted(dias),
+            desde=desde,
+            hasta=hasta,
+            duracion_turno_min=duracion,
+            precio=precio,
+            precio_efectivo=efectivo,
         )
-        for (desde, hasta, duracion, precio), dias in agrupadas.items()
+        for (desde, hasta, duracion, precio, efectivo), dias in agrupadas.items()
     ]
 
 
@@ -356,6 +361,7 @@ def guardar_horarios(
                             hasta=franja.hasta,
                             duracion_turno_min=franja.duracion_turno_min,
                             precio=franja.precio,
+                            precio_efectivo=franja.precio_efectivo,
                         )
                     )
     return {"canchas": len(canchas), "franjas": len(franjas)}

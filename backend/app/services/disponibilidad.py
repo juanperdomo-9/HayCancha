@@ -20,6 +20,7 @@ class CanchaLibre:
     recurso: Recurso
     precio: Decimal
     sena: Decimal
+    precio_efectivo: Decimal | None = None
 
 
 @dataclass
@@ -141,7 +142,10 @@ def disponibilidad(
         if not ocupada:
             grupo.libres.append(
                 CanchaLibre(
-                    por_id[turno.recurso_id], turno.precio, calcular_sena(negocio, turno.precio)
+                    por_id[turno.recurso_id],
+                    turno.precio,
+                    calcular_sena(negocio, turno.precio),
+                    turno.precio_efectivo,
                 )
             )
 

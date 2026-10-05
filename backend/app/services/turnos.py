@@ -29,6 +29,7 @@ class Turno:
     inicio: datetime
     fin: datetime
     precio: Decimal
+    precio_efectivo: Decimal | None = None
 
 
 def turnos_del_dia(
@@ -43,7 +44,13 @@ def turnos_del_dia(
             fin_franja += timedelta(days=1)  # termina al día siguiente (o a medianoche)
         duracion = timedelta(minutes=franja.duracion_turno_min)
         while inicio + duracion <= fin_franja:
-            yield Turno(franja.recurso_id, inicio, inicio + duracion, franja.precio)
+            yield Turno(
+                franja.recurso_id,
+                inicio,
+                inicio + duracion,
+                franja.precio,
+                getattr(franja, "precio_efectivo", None),
+            )
             inicio += duracion
 
 

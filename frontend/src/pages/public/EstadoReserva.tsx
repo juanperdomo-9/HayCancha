@@ -60,7 +60,7 @@ function Pagina({ reserva: r }: { reserva: ReservaPublica }) {
               ['Día', fechaLarga(r.fecha)],
               ['Horario', `${r.hora} a ${r.hora_fin}`],
               ['Seña', plata(r.sena)],
-              ['En la cancha', plata(r.saldo)],
+              ['En la cancha', r.saldo_efectivo ? `${plata(r.saldo)} (${plata(r.saldo_efectivo)} en efectivo)` : plata(r.saldo)],
             ].map(([dt, dd]) => (
               <div key={dt} className="contents">
                 <dt className="text-sm text-tenue">{dt}</dt>
@@ -88,7 +88,8 @@ function Contenido({ r }: { r: ReservaPublica }) {
         <Pastilla color="bg-complejo">Confirmado</Pastilla>
         <Titulo>¡Listo, {r.jugador}! El turno es tuyo</Titulo>
         <p className="mx-auto max-w-[42ch] text-tenue">
-          El resto, <b className="text-tinta">{plata(r.saldo)}</b>, lo pagás en la cancha.
+          El resto, <b className="text-tinta">{plata(r.saldo)}</b>, lo pagás en la cancha
+          {r.saldo_efectivo ? <> (o <b className="text-tinta">{plata(r.saldo_efectivo)}</b> si pagás en efectivo)</> : ''}.
         </p>
         <GuardarLink link={r.link} complejo={r.complejo} />
         <GestionReserva r={r} />

@@ -82,6 +82,9 @@ class Reserva(Base):
     sena: Mapped[Decimal] = mapped_column(Numeric(12, 2), server_default="0")
     sena_en_efectivo: Mapped[bool] = mapped_column(server_default=text("false"))
     saldo_cobrado: Mapped[bool] = mapped_column(server_default=text("false"))
+    # Precio si el saldo se paga en efectivo (copia de la franja) y si así se cobró.
+    precio_efectivo: Mapped[Decimal | None] = mapped_column(Numeric(12, 2))
+    saldo_en_efectivo: Mapped[bool] = mapped_column(server_default=text("false"))
     asistencia: Mapped[str | None] = mapped_column(String)
     motivo_bloqueo: Mapped[str | None] = mapped_column(String)
     vence_a: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
