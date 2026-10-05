@@ -263,5 +263,7 @@ def test_pagos_simulados_no_arranca_en_produccion(monkeypatch) -> None:
 
     monkeypatch.setenv("PAGOS_SIMULADOS", "true")
     monkeypatch.setenv("COOKIE_SEGURA", "true")
+    assert Settings().pagos_simulados  # web de pruebas, sin Mercado Pago: se permite
+    monkeypatch.setenv("MP_CLIENT_ID", "123")
     with pytest.raises(ValidationError, match="PAGOS_SIMULADOS"):
         Settings()

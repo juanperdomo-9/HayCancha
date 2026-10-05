@@ -78,9 +78,13 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def _sin_pagos_simulados_en_produccion(self) -> "Settings":
-        # Con cookie segura estamos en https (producción): ahí nunca se simulan pagos.
-        if self.pagos_simulados and self.cookie_segura:
-            raise ValueError("PAGOS_SIMULADOS no se puede usar en producción (COOKIE_SEGURA=true).")
+        # Se permiten en la web de pruebas mientras no haya Mercado Pago. Con la app de
+        # Mercado Pago cargada (cobro real) no arranca: así no se olvida sacarlos.
+        if self.pagos_simulados and self.mp_client_id:
+            raise ValueError(
+                "PAGOS_SIMULADOS no se puede usar con Mercado Pago configurado (MP_CLIENT_ID). "
+                "Sacá PAGOS_SIMULADOS."
+            )
         return self
 
 
