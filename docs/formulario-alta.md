@@ -14,7 +14,7 @@ de alta de `/admin` sigue este mismo orden. Entre corchetes, el campo donde se g
 3. ¿Cómo querés que sea la dirección de tu página? `haycancha.com.ar/_____`
    (en minúsculas y con guiones, por ejemplo `el-potrero`). [`slug`]
 4. ¿Qué servicios tiene el complejo? (elegí todos los que correspondan)
-   Vestuarios · Duchas · Estacionamiento · Bufé · Parrilla · Wi-Fi · Alquiler de pelotas
+   Vestuarios · Duchas · Estacionamiento · Buffet · Parrilla · Wi-Fi · Alquiler de pelotas
    o paletas · Otro: ____ [`servicios`]
 5. Tu nombre, teléfono y email. Con ese email vas a entrar al panel. [`usuarios` rol `dueno`]
 

@@ -519,7 +519,7 @@ const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;'
 const K = (n, c) => ({ n, c });
 const COMPLEJOS = [
   { slug: 'el-potrero', nombre: 'El Potrero', corto: 'POTRERO', barrio: 'Villa Urquiza', direccion: 'Av. Triunvirato 4820', color: '#1F8A4C', iniciales: 'EP', forma: 'escudo',
-    horario: 'Todos los días de 9 a 24 h', servicios: ['Vestuarios con duchas', 'Estacionamiento', 'Bufé', 'Parrilla', 'Pecheras'],
+    horario: 'Todos los días de 9 a 24 h', servicios: ['Vestuarios con duchas', 'Estacionamiento', 'Buffet', 'Parrilla', 'Pecheras'],
     sena: { tipo: 'porcentaje', valor: 30 }, cancelacion: 24, minutos: 10,
     deportes: [
       { codigo: 'futbol7', nombre: 'Fútbol 7', corto: 'F7', dur: 60, precio: 78000, desde: 9, hasta: 24, canchas: [K('Cancha 1', 'Sintético'), K('Cancha 2', 'Sintético'), K('Cancha 3', 'Sintético, techada'), K('Cancha 4', 'Sintético, techada')] },
@@ -531,7 +531,7 @@ const COMPLEJOS = [
     deportes: [
       { codigo: 'padel', nombre: 'Pádel', corto: 'PÁD', dur: 90, precio: 38000, desde: 8, hasta: 24, canchas: [K('Pádel 1', 'Blindex, techada'), K('Pádel 2', 'Blindex, techada'), K('Pádel 3', 'Blindex, techada'), K('Pádel 4', 'Blindex'), K('Pádel 5', 'Muro')] } ] },
   { slug: 'solar', nombre: 'Solar Fútbol & Pádel', corto: 'SOLAR', barrio: 'Caballito', direccion: 'Río de Janeiro 950', color: '#F2C200', iniciales: 'S', forma: 'cuadrado',
-    horario: 'Todos los días de 10 a 24 h', servicios: ['Vestuarios', 'Bufé', 'Wi-Fi', 'Bicicletero'],
+    horario: 'Todos los días de 10 a 24 h', servicios: ['Vestuarios', 'Buffet', 'Wi-Fi', 'Bicicletero'],
     sena: { tipo: 'fija', valor: 15000 }, cancelacion: 24, minutos: 10,
     deportes: [
       { codigo: 'futbol5', nombre: 'Fútbol 5', corto: 'F5', dur: 60, precio: 50000, desde: 10, hasta: 24, canchas: [K('Cancha A', 'Sintético'), K('Cancha B', 'Sintético'), K('Cancha C', 'Sintético, techada')] },
@@ -548,7 +548,7 @@ const COMPLEJOS = [
       { codigo: 'basquet', nombre: 'Básquet', corto: 'BÁSQ', dur: 60, precio: 45000, desde: 10, hasta: 23, canchas: [K('Cancha 1', 'Parquet, techada'), K('Cancha 2', 'Parquet, techada')] },
       { codigo: 'voley', nombre: 'Vóley', corto: 'VÓL', dur: 60, precio: 40000, desde: 10, hasta: 23, canchas: [K('Cancha de vóley', 'Techada')] } ] },
   { slug: 'garage-futbol-5', nombre: 'Garage Fútbol 5', corto: 'GARAGE', barrio: 'Almagro', direccion: 'Bulnes 780', color: '#D42A3C', iniciales: 'G5', forma: 'escudo',
-    horario: 'Todos los días de 12 a 24 h', servicios: ['Vestuarios', 'Bufé', 'Pantalla para ver partidos'],
+    horario: 'Todos los días de 12 a 24 h', servicios: ['Vestuarios', 'Buffet', 'Pantalla para ver partidos'],
     sena: { tipo: 'porcentaje', valor: 30 }, cancelacion: 24, minutos: 10,
     deportes: [
       { codigo: 'futbol5', nombre: 'Fútbol 5', corto: 'F5', dur: 60, precio: 50000, desde: 12, hasta: 24, canchas: [K('Cancha 1', 'Sintético, techada'), K('Cancha 2', 'Sintético, techada'), K('Cancha 3', 'Sintético')] } ] },

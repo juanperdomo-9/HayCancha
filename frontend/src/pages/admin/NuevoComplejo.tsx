@@ -6,7 +6,7 @@ import { type AltaDeComplejo, useAltaDeComplejo } from '../../api/panel'
 import { ElegirUbicacion } from '../../components/MapaLeaflet'
 import { Aviso, Boton, Campo, CopiarLink, Tarjeta } from '../../components/ui/Formulario'
 
-const SERVICIOS = ['Vestuarios', 'Duchas', 'Estacionamiento', 'Bufé', 'Parrilla', 'Wi-Fi', 'Alquiler de pelotas', 'Alquiler de paletas']
+const SERVICIOS = ['Vestuarios', 'Duchas', 'Estacionamiento', 'Buffet', 'Parrilla', 'Wi-Fi', 'Alquiler de pelotas', 'Alquiler de paletas']
 
 /** "Pádel Norte & Co." -> "padel-norte-co" (igual que sugerir_slug en el backend). */
 function sugerirSlug(nombre: string): string {

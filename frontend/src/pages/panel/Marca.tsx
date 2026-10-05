@@ -12,7 +12,7 @@ import { EncabezadoSeccion } from './EncabezadoSeccion'
 import { GaleriaDelPanel } from './GaleriaDelPanel'
 import { ElegirUbicacion } from '../../components/MapaLeaflet'
 
-const SERVICIOS_COMUNES = ['Vestuarios', 'Duchas', 'Estacionamiento', 'Bufé', 'Parrilla', 'Wi-Fi', 'Alquiler de pelotas', 'Alquiler de paletas']
+const SERVICIOS_COMUNES = ['Vestuarios', 'Duchas', 'Estacionamiento', 'Buffet', 'Parrilla', 'Wi-Fi', 'Alquiler de pelotas', 'Alquiler de paletas']
 
 export default function Marca() {
   const { slug = '' } = useParams()
