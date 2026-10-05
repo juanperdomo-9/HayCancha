@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
+import { achicarImagen } from '../utils/achicarImagen'
 import { ErrorApi, enviar, pedir, subirArchivo } from './client'
 
 /** Sesión, panel de cada complejo y /admin. Espeja app/schemas/panel.py. */
@@ -195,7 +196,8 @@ export function useQuitarImagen(slug: string, tipo: 'logo' | 'portada') {
 export function useSubirImagen(slug: string, tipo: 'logo' | 'portada') {
   const cliente = useQueryClient()
   return useMutation({
-    mutationFn: (archivo: File) => subirArchivo<Configuracion>(`${base(slug)}/marca/${tipo}`, archivo),
+    mutationFn: async (archivo: File) =>
+      subirArchivo<Configuracion>(`${base(slug)}/marca/${tipo}`, await achicarImagen(archivo, tipo === 'logo' ? 600 : 1920)),
     onSuccess: (configuracion) => {
       cliente.setQueryData(['panel', slug, 'configuracion'], configuracion)
       cliente.invalidateQueries({ queryKey: ['panel', slug], exact: true })
@@ -323,6 +325,6 @@ function useCambiarFotos<T>(slug: string, hacer: (valor: T) => Promise<FotoDelPa
   })
 }
 
-export const useSubirFoto = (slug: string) => useCambiarFotos(slug, (archivo: File) => subirArchivo<FotoDelPanel[]>(`${base(slug)}/fotos`, archivo))
+export const useSubirFoto = (slug: string) => useCambiarFotos(slug, async (archivo: File) => subirArchivo<FotoDelPanel[]>(`${base(slug)}/fotos`, await achicarImagen(archivo, 1600)))
 export const useQuitarFoto = (slug: string) => useCambiarFotos(slug, (id: string) => pedir<FotoDelPanel[]>(`${base(slug)}/fotos/${id}`, { method: 'DELETE' }))
 export const useOrdenarFotos = (slug: string) => useCambiarFotos(slug, (ids: string[]) => enviar<FotoDelPanel[]>(`${base(slug)}/fotos/orden`, 'PUT', ids))
