@@ -236,3 +236,14 @@ def test_un_error_pasajero_no_desvincula(complejo, mp_configurado, api_mp, admin
     tick(renovar_tokens=True)
     negocio = negocio_actual(admin, complejo["id"])
     assert mercadopago.access_token_de(negocio) == "APP_USR-viejo"
+
+
+def test_sin_dominio_la_cookie_va_a_la_ruta_de_la_pagina(monkeypatch) -> None:
+    """Etapa 1: Mercado Pago vuelve por la página (/api/...); la cookie tiene que ir ahí."""
+    from app.routers import cobros
+
+    settings = get_settings()
+    monkeypatch.setattr(settings, "mp_redirect_uri", "https://web.example/api/mercadopago/callback")
+    assert cobros._ruta_de_la_cookie() == "/api/mercadopago/callback"
+    monkeypatch.setattr(settings, "mp_redirect_uri", "")
+    assert cobros._ruta_de_la_cookie() == "/mercadopago/callback"

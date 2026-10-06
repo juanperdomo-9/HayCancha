@@ -60,6 +60,11 @@ services:
         sync: false
       - key: MP_WEBHOOK_SECRET
         sync: false
+      # ETAPA 1: Mercado Pago vuelve de la vinculación por la página (/api), así la cookie
+      # de la vinculación es del mismo sitio. ETAPA 2: borrarla (queda
+      # https://api.haycancha.com.ar/mercadopago/callback) y cambiarla también en la app de MP.
+      - key: MP_REDIRECT_URI
+        value: https://haycancha-web.onrender.com/api/mercadopago/callback
       - key: MP_TOKENS_DE_PRUEBA
         value: "false"
       - key: EMAIL_API_KEY

@@ -14,7 +14,7 @@ import secrets
 import uuid
 from datetime import timedelta
 from typing import Annotated
-from urllib.parse import quote
+from urllib.parse import quote, urlparse
 
 from fastapi import APIRouter, HTTPException, Query, Request, Response, status
 from fastapi.responses import RedirectResponse
@@ -75,7 +75,7 @@ def vincular(panel: PanelDeConfiguracion, response: Response) -> esquemas.LinkDe
         httponly=True,
         samesite="lax",  # vuelve desde Mercado Pago con una navegación normal (GET)
         secure=settings.cookie_segura,
-        path=RUTA_CALLBACK,
+        path=_ruta_de_la_cookie(),
     )
     return esquemas.LinkDeVinculacion(url=mercadopago.url_de_autorizacion(state, challenge))
 
@@ -89,11 +89,18 @@ def desvincular(panel: PanelDeConfiguracion) -> esquemas.EstadoCobros:
         return _estado(negocio)
 
 
+def _ruta_de_la_cookie() -> str:
+    """La cookie va a la ruta por la que vuelve Mercado Pago. Sin dominio propio, la vuelta
+    pasa por la página (/api/mercadopago/callback, ver MP_REDIRECT_URI en render.yaml): la
+    cookie tiene que quedar en ese sitio y con esa ruta, o el navegador no la manda."""
+    return urlparse(get_settings().mp_callback).path or RUTA_CALLBACK
+
+
 def _volver(slug: str | None, resultado: str) -> RedirectResponse:
     base = get_settings().frontend_url
     destino = f"{base}/panel/{quote(slug)}/cobros?mp={resultado}" if slug else f"{base}/panel"
     respuesta = RedirectResponse(destino, status.HTTP_303_SEE_OTHER)
-    respuesta.delete_cookie(COOKIE_OAUTH, path=RUTA_CALLBACK)
+    respuesta.delete_cookie(COOKIE_OAUTH, path=_ruta_de_la_cookie())
     return respuesta
 
 
