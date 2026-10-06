@@ -196,7 +196,7 @@ def test_la_reserva_online_devuelve_el_link_de_mercado_pago(complejo, api_mp) ->
     otro = TestClient(app).get(f"/publico/complejos/{complejo['slug']}/reservas/por-codigo/x")
     assert otro.status_code == 404
     assert preferencia["binary_mode"] is True and preferencia["expires"] is True
-    assert preferencia["marketplace_fee"] == 0
+    assert "marketplace_fee" not in preferencia
     assert {t["id"] for t in preferencia["payment_methods"]["excluded_payment_types"]} == {
         "ticket",
         "atm",
