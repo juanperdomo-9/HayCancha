@@ -5,7 +5,6 @@ import { useParams, useSearchParams } from 'react-router'
 
 import { ErrorApi } from '../../api/client'
 import { type ComplejoDetalle, useComplejo, useDisponibilidad } from '../../api/publico'
-import { ElegirCancha } from '../../components/complejo/ElegirCancha'
 import { BotonVerFotos, GaleriaFotos, VisorDeFotos } from '../../components/complejo/GaleriaFotos'
 import { GrillaTurnos } from '../../components/complejo/GrillaTurnos'
 import { LogoComplejo } from '../../components/complejo/LogoComplejo'
@@ -196,9 +195,6 @@ function PaginaComplejo({ complejo }: { complejo: ComplejoDetalle }) {
             }}
           />
 
-          {turno && deporteActual && deporteActual.canchas.length > 1 && (
-            <ElegirCancha canchas={deporteActual.canchas} turno={turno} elegida={canchaId} onElegir={setCanchaId} />
-          )}
         </section>
 
         <aside className="hidden rounded-[18px] border border-borde bg-superficie p-5.5 shadow-[0_24px_50px_-32px_rgba(20,20,25,.3)] lg:sticky lg:top-6 lg:block">
@@ -210,6 +206,7 @@ function PaginaComplejo({ complejo }: { complejo: ComplejoDetalle }) {
               deporte={deporteActual}
               cancha={cancha}
               canchaElegida={canchaId !== null}
+              onElegirCancha={setCanchaId}
               reservasOnline={complejo.reservas_online}
               minutosParaPagar={complejo.minutos_para_pagar}
             />
@@ -306,6 +303,7 @@ function PaginaComplejo({ complejo }: { complejo: ComplejoDetalle }) {
                     deporte={deporteActual}
                     cancha={cancha}
                     canchaElegida={canchaId !== null}
+              onElegirCancha={setCanchaId}
                     onCerrar={() => setHojaAbierta(false)}
                   />
                 </div>

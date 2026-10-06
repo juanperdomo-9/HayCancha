@@ -3,6 +3,7 @@ import { type FormEvent, useId, useState } from 'react'
 import { useNavigate } from 'react-router'
 
 import { llegadaDe } from '../../utils/llegada'
+import { ElegirCancha } from './ElegirCancha'
 
 import { mensaje } from '../../api/client'
 import { type CanchaLibre, type DeporteDelComplejo, type Turno, useCrearReserva } from '../../api/publico'
@@ -15,6 +16,7 @@ type Props = {
   deporte: DeporteDelComplejo
   cancha: CanchaLibre
   canchaElegida: boolean
+  onElegirCancha: (id: string | null) => void
   reservasOnline: boolean
   minutosParaPagar: number
   onCerrar?: () => void
@@ -31,7 +33,7 @@ function validar(datos: Datos): Partial<Record<keyof Datos, string>> {
 }
 
 /** Resumen del turno elegido y los datos del jugador. Los montos vienen del backend. */
-export function ReservaEnCurso({ slug, turno, fecha, deporte, cancha, canchaElegida, reservasOnline, minutosParaPagar, onCerrar }: Props) {
+export function ReservaEnCurso({ slug, turno, fecha, deporte, cancha, canchaElegida, onElegirCancha, reservasOnline, minutosParaPagar, onCerrar }: Props) {
   const id = useId()
   const navegar = useNavigate()
   const crear = useCrearReserva(slug)
@@ -123,6 +125,10 @@ export function ReservaEnCurso({ slug, turno, fecha, deporte, cancha, canchaEleg
           </dd>
         </div>
       </dl>
+
+      {deporte.canchas.length > 1 && (
+        <ElegirCancha canchas={deporte.canchas} turno={turno} elegida={canchaElegida ? cancha.id : null} onElegir={onElegirCancha} />
+      )}
 
       {reservasOnline ? (
         <form className="grid gap-3" onSubmit={enviar} noValidate>
