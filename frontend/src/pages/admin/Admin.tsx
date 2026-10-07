@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { Link, Route, Routes, useNavigate } from 'react-router'
 
 import { mensaje } from '../../api/client'
+import { Interesados } from './Interesados'
 import { type ComplejoAdmin, type UsuarioSesion, useCambiarComplejo, useComplejosAdmin, useLinkDelDueno, useSalir } from '../../api/panel'
 import { LogoHayCancha } from '../../components/marca/LogoHayCancha'
 import { PantallaMensaje, RequiereSesion } from '../../components/RequiereSesion'
@@ -86,6 +87,7 @@ function ListaDeComplejos() {
           <FilaComplejo key={c.id} complejo={c} />
         ))}
       </ul>
+      <Interesados />
     </div>
   )
 }

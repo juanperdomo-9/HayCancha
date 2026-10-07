@@ -360,3 +360,29 @@ export function useResultados(slug: string, mes: string) {
     retry: false,
   })
 }
+
+// --- Interesados (dueños que dejaron su contacto) ---
+
+export type Interesado = {
+  id: string
+  nombre: string
+  complejo: string
+  zona: string | null
+  whatsapp: string
+  canchas: string | null
+  como_reserva: string | null
+  estado: 'nuevo' | 'contactado' | 'se_sumo' | 'no_interesado'
+  creado_a: string
+}
+
+export function useInteresados() {
+  return useQuery({ queryKey: ['admin', 'interesados'], queryFn: () => pedir<Interesado[]>('/admin/interesados') })
+}
+
+export function useCambiarInteresado() {
+  const cliente = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, estado }: { id: string; estado: Interesado['estado'] }) => enviar<Interesado>(`/admin/interesados/${id}`, 'PATCH', { estado }),
+    onSuccess: () => cliente.invalidateQueries({ queryKey: ['admin', 'interesados'] }),
+  })
+}

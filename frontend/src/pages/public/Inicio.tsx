@@ -8,6 +8,7 @@ import { LogoHayCancha } from '../../components/marca/LogoHayCancha'
 import { PieHayCancha } from '../../components/PieDePagina'
 import { TemaComplejo } from '../../theme/TemaComplejo'
 import { useComplejos } from '../../api/publico'
+import { FormularioComplejo } from '../../components/FormularioComplejo'
 import { MapaDeCanchas } from '../../components/MapaLeaflet'
 import { BotonModo } from '../../components/BotonModo'
 import { BuscadorIA } from '../../components/BuscadorIA'
@@ -164,6 +165,9 @@ export default function Inicio() {
                 </li>
               ))}
             </ul>
+            <div className="mt-12 max-w-2xl">
+              <FormularioComplejo />
+            </div>
           </div>
         </section>
       </main>
