@@ -103,7 +103,7 @@ export default function Inicio() {
               <a href="#buscar" className="rounded-full bg-cesped px-5 py-3 font-semibold text-white transition-transform hover:-translate-y-px">
                 Buscar cancha
               </a>
-              <a href="#duenos" className="rounded-full px-5 py-3 font-semibold ring-[1.5px] ring-noche transition-colors ring-inset hover:bg-noche hover:text-crema">
+              <a href="#sumate" className="rounded-full px-5 py-3 font-semibold ring-[1.5px] ring-noche transition-colors ring-inset hover:bg-noche hover:text-crema">
                 Tengo un complejo
               </a>
             </motion.div>
@@ -165,7 +165,7 @@ export default function Inicio() {
                 </li>
               ))}
             </ul>
-            <div className="mt-12 max-w-2xl">
+            <div id="sumate" className="mt-12 max-w-2xl scroll-mt-20">
               <FormularioComplejo />
             </div>
           </div>

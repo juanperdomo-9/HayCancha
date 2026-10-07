@@ -41,7 +41,7 @@ export function PieHayCancha({ extra }: { extra?: ReactNode }) {
         </nav>
         <nav aria-label="Complejos" className="grid content-start gap-2 text-sm">
           <b className="mb-1 text-xs tracking-[.12em] text-cal/50 uppercase">Complejos</b>
-          <a href="#duenos" className="text-cal/80 hover:text-cal">
+          <a href="/#sumate" className="text-cal/80 hover:text-cal">
             Sumá tu complejo
           </a>
           <Link to="/ingresar" className="text-cal/80 hover:text-cal">
