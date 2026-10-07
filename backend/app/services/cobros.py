@@ -121,7 +121,7 @@ def link_de_la_reserva(negocio: Negocio, reserva: Reserva) -> str:
 def proveedor_para(negocio: Negocio) -> ProveedorDePagos | None:
     """Con qué cobra este complejo. None: todavía no toma reservas online.
 
-    Con Mercado Pago vinculado (y la app de HayCancha configurada) cobra en la cuenta del
+    Con Mercado Pago vinculado (y la app de HayCanchas configurada) cobra en la cuenta del
     complejo. Sin vincular, solo en desarrollo, el pago simulado."""
     settings = get_settings()
     if negocio.mp_access_token_enc and settings.mercadopago_configurado:

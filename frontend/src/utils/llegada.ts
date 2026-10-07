@@ -1,4 +1,4 @@
-/** De dónde vino el jugador: si entró a un complejo desde la página principal de HayCancha
+/** De dónde vino el jugador: si entró a un complejo desde la página principal de HayCanchas
  * (listado, mapa o buscador), los links llevan `?via=haycancha` y la página del complejo lo
  * recuerda durante la visita. Solo sirve para las métricas del complejo. */
 export const VIA_HAYCANCHA = 'via=haycancha'

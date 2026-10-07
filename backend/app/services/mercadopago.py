@@ -1,6 +1,6 @@
 """Mercado Pago: vincular la cuenta de cada complejo (OAuth), mantener sus tokens y cobrar.
 
-Cada complejo cobra en su propia cuenta. El dueño autoriza a la app de HayCancha desde
+Cada complejo cobra en su propia cuenta. El dueño autoriza a la app de HayCanchas desde
 el panel y Mercado Pago nos da un access token (dura 180 días) y un refresh token para
 renovarlo. Los dos se guardan encriptados y nunca salen del backend.
 
@@ -284,7 +284,7 @@ class ProveedorMercadoPago:
             "expiration_date_to": _fecha(reserva.vence_a or ahora()),
             "binary_mode": True,
             "payment_methods": {"excluded_payment_types": [{"id": t} for t in TIPOS_EXCLUIDOS]},
-            # Sin marketplace_fee: la comisión de HayCancha es 0, y con el campo Mercado Pago suma
+            # Sin marketplace_fee: la comisión de HayCanchas es 0, y con el campo Mercado Pago suma
             # a la cuenta dueña de la app como parte del pago (con cuentas de prueba, falla).
         }
         creada = _llamar(

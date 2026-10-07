@@ -1,4 +1,4 @@
-"""Validación de las franjas horarias que carga el dueño (o el equipo de HayCancha)."""
+"""Validación de las franjas horarias que carga el dueño (o el equipo de HayCanchas)."""
 
 from collections.abc import Sequence
 from dataclasses import dataclass

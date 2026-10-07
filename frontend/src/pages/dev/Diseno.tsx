@@ -42,7 +42,7 @@ export default function Diseno() {
   return (
     <div className="min-h-dvh bg-crema text-noche">
       <header className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-5 sm:px-8">
-        <Link to="/" aria-label="HayCancha, inicio">
+        <Link to="/" aria-label="HayCanchas, inicio">
           <LogoHayCancha className="text-[27px]" />
         </Link>
         <span className="flex items-center gap-3 text-sm text-gris">

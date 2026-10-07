@@ -24,7 +24,7 @@ from app.services.disponibilidad import zona_del_negocio
 logger = logging.getLogger(__name__)
 
 URL_RESEND = "https://api.resend.com/emails"
-REMITENTE_DE_PRUEBA = "HayCancha <onboarding@resend.dev>"
+REMITENTE_DE_PRUEBA = "HayCanchas <onboarding@resend.dev>"
 DIAS = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
 MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto",
          "septiembre", "octubre", "noviembre", "diciembre"]  # fmt: skip
@@ -106,7 +106,7 @@ def _plata(monto) -> str:
 
 def _armar(negocio: Negocio, para: list[str], asunto: str, parrafos: list[str],
            boton: tuple[str, str] | None = None) -> Email:  # fmt: skip
-    """Email simple con la marca de HayCancha y el color del complejo como acento."""
+    """Email simple con la marca de HayCanchas y el color del complejo como acento."""
     color = negocio.color_primario or "#1E7A3E"
     cuerpo = "".join(f'<p style="margin:0 0 12px;line-height:1.5">{p}</p>' for p in parrafos)
     if boton:
@@ -122,7 +122,7 @@ def _armar(negocio: Negocio, para: list[str], asunto: str, parrafos: list[str],
         f'<p style="margin:0 0 4px;font-size:13px;color:#5d6660">{html.escape(negocio.nombre)}</p>'
         f'<h1 style="margin:0 0 16px;font-size:20px">{html.escape(asunto)}</h1>{cuerpo}</div>'
         '<p style="text-align:center;font-size:12px;color:#5d6660;margin-top:16px">'
-        "<b>HAY</b>CANCHA · haycancha.com.ar</p></div>"
+        "<b>HAY</b>CANCHA · haycanchas.com.ar</p></div>"
     )
     texto = "\n\n".join([asunto, *[_sin_html(p) for p in parrafos]])
     if boton:
@@ -218,7 +218,7 @@ def mercadopago_desvinculado(negocio: Negocio, para: list[str]) -> Email:
         para,
         "Tu Mercado Pago se desvinculó",
         [
-            "Mercado Pago nos avisó que HayCancha ya no tiene permiso para cobrar en tu "
+            "Mercado Pago nos avisó que HayCanchas ya no tiene permiso para cobrar en tu "
             "cuenta (por ejemplo, porque se quitó desde Mercado Pago).",
             "<b>Mientras tanto, tu página no toma reservas online.</b> Volvé a vincularlo "
             "desde la pestaña Cobros del panel: tarda un minuto.",
@@ -232,9 +232,9 @@ def invitacion(negocio: Negocio, para: str, *, link: str, rol: str) -> Email:
     return _armar(
         negocio,
         [para],
-        f"Tu acceso a {negocio.nombre} en HayCancha",
+        f"Tu acceso a {negocio.nombre} en HayCanchas",
         [
-            f"Te sumaron para {que} <b>{_e(negocio.nombre)}</b> en HayCancha.",
+            f"Te sumaron para {que} <b>{_e(negocio.nombre)}</b> en HayCanchas.",
             "Para entrar, elegí tu contraseña con este link. Sirve una sola vez y vence en 7 días.",
         ],
         ("Elegir mi contraseña", link),

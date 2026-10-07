@@ -59,7 +59,7 @@ function PaginaComplejo({ complejo }: { complejo: ComplejoDetalle }) {
   const { data: disponibilidad, isPending } = useDisponibilidad(complejo.slug, deporte, fecha)
 
   useEffect(() => {
-    document.title = `${complejo.nombre} · HayCancha`
+    document.title = `${complejo.nombre} · HayCanchas`
   }, [complejo.nombre])
 
   const deporteActual = complejo.deportes.find((d) => d.codigo === deporte)

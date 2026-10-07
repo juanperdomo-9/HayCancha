@@ -18,7 +18,7 @@ function Credito() {
   )
 }
 
-/** Pie de la página principal de HayCancha. */
+/** Pie de la página principal de HayCanchas. */
 export function PieHayCancha({ extra }: { extra?: ReactNode }) {
   return (
     <footer className="bloque-oscuro border-t border-cal/10 bg-bloque text-cal">
@@ -27,7 +27,7 @@ export function PieHayCancha({ extra }: { extra?: ReactNode }) {
           <LogoHayCancha sobreOscuro className="text-[26px]" />
           <p className="max-w-[36ch] text-cal/70">Reservá cancha en segundos: horarios libres de verdad y la seña con Mercado Pago.</p>
         </div>
-        <nav aria-label="HayCancha" className="grid content-start gap-2 text-sm">
+        <nav aria-label="HayCanchas" className="grid content-start gap-2 text-sm">
           <b className="mb-1 text-xs tracking-[.12em] text-cal/50 uppercase">Jugadores</b>
           <a href="/#complejos" className="text-cal/80 hover:text-cal">
             Buscar cancha
@@ -53,7 +53,7 @@ export function PieHayCancha({ extra }: { extra?: ReactNode }) {
       <div className="border-t border-cal/10">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-5 text-[13px] text-cal/60 sm:px-8">
           <span>
-            © {ANIO} HayCancha, un producto de{' '}
+            © {ANIO} HayCanchas, un producto de{' '}
             <BotonTurnia className="font-semibold text-cal/85 underline decoration-cal/30 underline-offset-3 hover:text-cal hover:decoration-cal">Turnia</BotonTurnia>
           </span>
           {extra}
@@ -71,7 +71,7 @@ type PieComplejoProps = {
   referencia: string | null
 }
 
-/** Pie de la página de cada complejo: sus datos, la marca HayCancha y el crédito. */
+/** Pie de la página de cada complejo: sus datos, la marca HayCanchas y el crédito. */
 export function PieComplejo({ nombre, direccion, barrio, referencia }: PieComplejoProps) {
   return (
     <footer className="bg-oscuro text-white">

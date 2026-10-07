@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 
 class EstadoCobros(BaseModel):
-    # HayCancha tiene cargada su app de Mercado Pago (si no, no se puede vincular todavía).
+    # HayCanchas tiene cargada su app de Mercado Pago (si no, no se puede vincular todavía).
     disponible: bool
     vinculado: bool
     cuenta_mp: str | None

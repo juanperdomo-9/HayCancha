@@ -79,7 +79,7 @@ PanelDeConfiguracion = Annotated[Panel, Depends(acceso_configuracion)]
 
 def solo_superadmin(usuario: UsuarioActual) -> Usuario:
     if not usuario.es_superadmin:
-        raise HTTPException(status.HTTP_403_FORBIDDEN, "Esta sección es solo para HayCancha.")
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Esta sección es solo para HayCanchas.")
     return usuario
 
 

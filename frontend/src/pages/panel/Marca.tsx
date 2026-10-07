@@ -74,7 +74,7 @@ function FormularioMarca({ slug, c }: { slug: string; c: Configuracion }) {
           <>
             Lo que ven los jugadores en{' '}
             <Link to={`/${slug}`} className="font-semibold text-noche underline underline-offset-3">
-              haycancha.com.ar/{slug}
+              haycanchas.com.ar/{slug}
             </Link>
             .
           </>
@@ -113,7 +113,7 @@ function FormularioMarca({ slug, c }: { slug: string; c: Configuracion }) {
           </Tarjeta>
           <Tarjeta
             titulo="Ubicación en el mapa"
-            descripcion="Así aparece tu complejo en el mapa de HayCancha. Buscá la dirección y, si el pin no quedó justo en la entrada, tocá el lugar exacto o arrastralo."
+            descripcion="Así aparece tu complejo en el mapa de HayCanchas. Buscá la dirección y, si el pin no quedó justo en la entrada, tocá el lugar exacto o arrastralo."
           >
             <ElegirUbicacion
               valor={{ latitud: datos.latitud, longitud: datos.longitud }}

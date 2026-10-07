@@ -8,7 +8,7 @@ from app.models.base import Base, CreadoA, UuidPk
 
 
 class Negocio(Base):
-    """Un complejo (el cliente de HayCancha)."""
+    """Un complejo (el cliente de HayCanchas)."""
 
     __tablename__ = "negocios"
     __table_args__ = (

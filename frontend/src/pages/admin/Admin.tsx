@@ -10,7 +10,7 @@ import { Aviso, Boton, CopiarLink } from '../../components/ui/Formulario'
 import NuevoComplejo from './NuevoComplejo'
 import { BotonModo } from '../../components/BotonModo'
 
-/** Panel de HayCancha: todos los complejos, altas, suspensiones y cobros. */
+/** Panel de HayCanchas: todos los complejos, altas, suspensiones y cobros. */
 export default function Admin() {
   return (
     <RequiereSesion>
@@ -23,7 +23,7 @@ export default function Admin() {
             </Routes>
           </MarcoAdmin>
         ) : (
-          <PantallaMensaje titulo="Solo para HayCancha">Esta sección es del equipo de HayCancha.</PantallaMensaje>
+          <PantallaMensaje titulo="Solo para HayCanchas">Esta sección es del equipo de HayCanchas.</PantallaMensaje>
         )
       }
     </RequiereSesion>
@@ -37,7 +37,7 @@ function MarcoAdmin({ yo, children }: { yo: UsuarioSesion; children: ReactNode }
     <div className="min-h-dvh bg-crema text-noche">
       <header className="bloque-oscuro bg-bloque text-cal">
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3.5 sm:px-8">
-          <Link to="/admin" aria-label="Panel de HayCancha">
+          <Link to="/admin" aria-label="Panel de HayCanchas">
             <LogoHayCancha sobreOscuro className="text-[22px]" />
           </Link>
           <span className="rounded-md bg-cal/10 px-2 py-0.5 text-xs font-semibold tracking-[.08em] text-cesped-claro uppercase">Admin</span>
@@ -71,7 +71,7 @@ function ListaDeComplejos() {
         <div>
           <h1 className="font-titulo text-[clamp(40px,6vw,60px)] leading-[.9] font-extrabold uppercase">Complejos</h1>
           <p className="mt-2 text-gris">
-            {complejos.data ? `${complejos.data.length} ${complejos.data.length === 1 ? 'complejo' : 'complejos'} en HayCancha.` : ' '}
+            {complejos.data ? `${complejos.data.length} ${complejos.data.length === 1 ? 'complejo' : 'complejos'} en HayCanchas.` : ' '}
           </p>
         </div>
         <Link to="/admin/nuevo" className="inline-flex items-center gap-2 rounded-xl bg-cesped px-4 py-2.5 font-semibold text-white hover:bg-cesped/90">
@@ -100,7 +100,7 @@ function FilaComplejo({ complejo: c }: { complejo: ComplejoAdmin }) {
         <div className="min-w-0 flex-1">
           <b className="text-lg">{c.nombre}</b>
           <p className="text-sm text-gris">
-            haycancha.com.ar/{c.slug}
+            haycanchas.com.ar/{c.slug}
             {c.barrio && ` · ${c.barrio}`} · {c.canchas} {c.canchas === 1 ? 'cancha' : 'canchas'}
           </p>
           <p className="mt-1 text-sm">

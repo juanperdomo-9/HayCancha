@@ -4,7 +4,7 @@ Este archivo es la guía del proyecto. Leelo completo antes de proponer o escrib
 
 ## Qué estamos construyendo
 
-Una sola web (multi-tenant) que usan muchos complejos deportivos a la vez: fútbol (5, 7, 11), pádel, tenis, básquet, vóley y cualquier otro deporte que se alquile por turno. Un mismo complejo puede tener varias canchas, del mismo deporte o de distintos (por ejemplo, 4 canchas de fútbol 7 y 1 de fútbol 5), y cada una tiene su propia duración de turno (por ejemplo, fútbol 60 minutos y pádel 90). **Nunca asumas que todo es fútbol.** En este archivo, "complejo" es el cliente (un registro en `negocios`) y "cancha" es cada espacio que se reserva (un registro en `recursos`). El producto se llama **HayCancha** y vive en `haycancha.com.ar`. Cada complejo tiene su propia página (`haycancha.com.ar/el-potrero`) donde los jugadores:
+Una sola web (multi-tenant) que usan muchos complejos deportivos a la vez: fútbol (5, 7, 11), pádel, tenis, básquet, vóley y cualquier otro deporte que se alquile por turno. Un mismo complejo puede tener varias canchas, del mismo deporte o de distintos (por ejemplo, 4 canchas de fútbol 7 y 1 de fútbol 5), y cada una tiene su propia duración de turno (por ejemplo, fútbol 60 minutos y pádel 90). **Nunca asumas que todo es fútbol.** En este archivo, "complejo" es el cliente (un registro en `negocios`) y "cancha" es cada espacio que se reserva (un registro en `recursos`). El producto se llama **HayCancha** y vive en `haycanchas.com.ar`. Cada complejo tiene su propia página (`haycanchas.com.ar/el-potrero`) donde los jugadores:
 
 1. ven los horarios libres,
 2. reservan un turno,
@@ -54,7 +54,7 @@ La interfaz es en español de Argentina, con voseo ("Reservá", "Elegí un horar
   - Las migraciones (`DATABASE_URL_ADMIN`) van por el pooler en modo sesión (puerto 5432): la conexión directa de Supabase es solo IPv6 y Render no llega a IPv6.
   - Las extensiones van en el esquema `extensions`, como en Supabase. El rol `app_user` necesita ese esquema en su `search_path`.
   - Los tests automáticos usan un Postgres local descartable (`docker-compose.yml` en la raíz, puerto 5433, variable `TEST_DATABASE_URL`), nunca un proyecto de Supabase. Sin esa variable, los tests que necesitan base se saltean.
-- Dominios: `haycancha.com.ar` (frontend) y `api.haycancha.com.ar` (backend). Tienen que compartir dominio para que la cookie de sesión funcione.
+- Dominios: `haycanchas.com.ar` (frontend) y `api.haycanchas.com.ar` (backend). Tienen que compartir dominio para que la cookie de sesión funcione.
 - Deploy: Render (web service para el backend, static site para el frontend, cron job para tareas periódicas), definido en `render.yaml` (Blueprint, región Oregon como Supabase). Pasos en `docs/puesta-en-linea.md`
 - Webhooks en desarrollo local: túnel tipo ngrok
 
@@ -119,7 +119,7 @@ Nunca subir secretos al repo. Mantener actualizados `backend/.env.example` y `fr
 | `MP_TOKENS_DE_PRUEBA` | `true` solo para vincular cuentas de prueba de Mercado Pago (credenciales TEST-) |
 | `APP_BASE_URL` | URL pública del backend (para `notification_url`) |
 | `FRONTEND_URL` | URL pública del frontend (para `back_urls`) |
-| `EMAIL_API_KEY`, `EMAIL_FROM` | Envío de emails con Resend (avisos al dueño e invitaciones). Sin clave, los emails se muestran en el log. `EMAIL_FROM` con el dominio verificado: `HayCancha <avisos@mail.haycancha.com.ar>` |
+| `EMAIL_API_KEY`, `EMAIL_FROM` | Envío de emails con Resend (avisos al dueño e invitaciones). Sin clave, los emails se muestran en el log. `EMAIL_FROM` con el dominio verificado: `HayCancha <avisos@haycanchas.com.ar>` |
 | `PAGOS_SIMULADOS` | Solo desarrollo: permite reservas online sin Mercado Pago, con un botón para simular el pago |
 | `LLM_API_KEY`, `LLM_BASE_URL`, `LLM_MODELO` | Asistentes de IA (fase 3): proveedor compatible con OpenAI. Hoy Groq gratis (`https://api.groq.com/openai/v1`, `openai/gpt-oss-120b`) |
 
@@ -353,9 +353,9 @@ Hasta la puesta en línea, todo se desarrolla en local: la base es el Postgres d
 - [ ] Pruebas completas con usuarios de prueba de Mercado Pago
 
 **Puesta en línea** (cuando haya que mostrarlo afuera o antes de cobrar señas reales; puede ir entre la fase 1 y la 2). Plan detallado en `docs/puesta-en-linea.md`: el dominio se delega a un DNS (Cloudflare) porque nic.ar no guarda registros, y los logos no pueden quedar en el disco de Render (se borra en cada deploy).
-- [ ] Dominio `haycancha.com.ar` registrado en nic.ar
+- [ ] Dominio `haycanchas.com.ar` registrado en nic.ar
 - [ ] Proyectos `pruebas` y `produccion` en Supabase, conexión por el pooler, extensiones y migraciones aplicadas
-- [ ] Deploy en Render (backend, frontend y cron job) con `api.haycancha.com.ar`
+- [ ] Deploy en Render (backend, frontend y cron job) con `api.haycanchas.com.ar`
 
 **Fase 3: asistente de IA**
 - [ ] Carga de conocimiento por complejo en el panel

@@ -20,7 +20,7 @@ function mesesParaElegir() {
   })
 }
 
-/** Pestaña Resultados (Plan Pro): los números del mes y cuánto trajo HayCancha. */
+/** Pestaña Resultados (Plan Pro): los números del mes y cuánto trajo HayCanchas. */
 export default function Resultados() {
   const { slug = '' } = useParams()
   const panel = usePanel(slug)
@@ -31,12 +31,12 @@ export default function Resultados() {
 function SinPlanPro() {
   return (
     <div className="grid gap-6">
-      <EncabezadoSeccion titulo="Resultados" bajada="Cuántas reservas, cuánta plata y cuántos jugadores nuevos te trajo HayCancha, mes a mes." />
+      <EncabezadoSeccion titulo="Resultados" bajada="Cuántas reservas, cuánta plata y cuántos jugadores nuevos te trajo HayCanchas, mes a mes." />
       <div className="grid justify-items-start gap-3 rounded-2xl bg-cal p-6 ring-1 ring-linea">
         <Lock className="size-6 text-cesped" aria-hidden="true" />
         <b className="text-lg">Es parte del Plan Pro</b>
         <p className="max-w-prose text-gris">
-          Facturación, ocupación por día, horarios más pedidos y las reservas que te llegaron por HayCancha. Pedíselo a tu contacto de HayCancha y lo
+          Facturación, ocupación por día, horarios más pedidos y las reservas que te llegaron por HayCanchas. Pedíselo a tu contacto de HayCanchas y lo
           activamos.
         </p>
       </div>
@@ -71,11 +71,11 @@ function ResultadosDelMes({ slug }: { slug: string }) {
       {r && (
         <>
           <div className="bloque-oscuro grid gap-1 rounded-2xl bg-bloque p-5 text-cal sm:p-6">
-            <span className="text-sm font-semibold tracking-[.08em] text-cesped-claro uppercase">Te trajo HayCancha</span>
+            <span className="text-sm font-semibold tracking-[.08em] text-cesped-claro uppercase">Te trajo HayCanchas</span>
             <b className="numeros text-4xl" style={{ fontStretch: '80%' }}>
               {r.actual.de_haycancha} {r.actual.de_haycancha === 1 ? 'reserva' : 'reservas'} · {plata(r.actual.facturacion_haycancha)}
             </b>
-            <span className="text-sm text-cal/70">Jugadores que te encontraron en la página principal, el mapa o el buscador de HayCancha.</span>
+            <span className="text-sm text-cal/70">Jugadores que te encontraron en la página principal, el mapa o el buscador de HayCanchas.</span>
           </div>
           <ul className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             <Numero titulo="Reservas" valor={r.actual.reservas} antes={r.anterior.reservas} />

@@ -5,7 +5,7 @@ preparar-base   Habilita el login de app_user con la contraseña de DATABASE_URL
 cargar-ejemplo  Carga el complejo de ejemplo (El Potrero) y sus usuarios de prueba.
                 --reemplazar lo borra y lo vuelve a crear. Solo para desarrollo.
 crear-superadmin --usuario ...
-                Crea (o cambia la contraseña de) un superadmin de HayCancha. El usuario
+                Crea (o cambia la contraseña de) un superadmin de HayCanchas. El usuario
                 puede ser un email o un nombre (por ejemplo, haycancha). Pide la
                 contraseña sin mostrarla.
 """

@@ -17,7 +17,7 @@ export function PanelSinComplejo() {
   return <RequiereSesion>{(yo) => <Navigate to={inicioDe(yo)} replace />}</RequiereSesion>
 }
 
-/** Marco del panel de un complejo: estructura de HayCancha con el logo y el color del complejo. */
+/** Marco del panel de un complejo: estructura de HayCanchas con el logo y el color del complejo. */
 export default function Panel() {
   const { slug = '' } = useParams()
   return <RequiereSesion>{(yo) => <PanelDelComplejo slug={slug} yo={yo} />}</RequiereSesion>
@@ -70,7 +70,7 @@ function PanelDelComplejo({ slug, yo }: { slug: string; yo: UsuarioSesion }) {
           >
             <Menu className="size-6" aria-hidden="true" />
           </button>
-          <Link to="/" aria-label="HayCancha" className="hidden sm:block">
+          <Link to="/" aria-label="HayCanchas" className="hidden sm:block">
             <LogoHayCancha sobreOscuro className="text-[19px]" />
           </Link>
           <span className="hidden h-6 w-px bg-cal/20 sm:block" aria-hidden="true" />
@@ -205,7 +205,7 @@ function MenuDelCelular({
           {yo.rol === 'superadmin' && (
             <Link to="/admin" onClick={onCerrar} className="flex items-center gap-3 rounded-xl px-3.5 py-3 text-[15px] font-semibold text-cesped-claro hover:bg-cal/10">
               <Shield className="size-5" aria-hidden="true" />
-              Admin de HayCancha
+              Admin de HayCanchas
             </Link>
           )}
           <p className="truncate px-3.5 pt-1 text-[13px] text-cal/50">{yo.email}</p>

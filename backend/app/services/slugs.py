@@ -1,4 +1,4 @@
-"""La dirección de cada complejo: haycancha.com.ar/<slug>."""
+"""La dirección de cada complejo: haycanchas.com.ar/<slug>."""
 
 import re
 import unicodedata

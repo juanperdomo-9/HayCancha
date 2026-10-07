@@ -23,10 +23,10 @@ export function MarcaBurbuja({ className = '' }: { className?: string }) {
 /** Logo completo. El tamaño sale del font-size (por ejemplo, `text-[27px]`). */
 export function LogoHayCancha({ className = '', sobreOscuro = false }: Props) {
   return (
-    <span role="img" aria-label="HayCancha" className={`inline-flex items-center gap-[.37em] ${className}`}>
+    <span role="img" aria-label="HayCanchas" className={`inline-flex items-center gap-[.37em] ${className}`}>
       <MarcaBurbuja className="h-[1.15em] w-auto flex-none" />
       <span aria-hidden="true" className={`font-titulo leading-none font-extrabold whitespace-nowrap uppercase ${sobreOscuro ? 'text-cal' : 'text-noche'}`}>
-        <span className={sobreOscuro ? 'text-cesped-claro' : 'text-cesped'}>Hay</span>cancha
+        <span className={sobreOscuro ? 'text-cesped-claro' : 'text-cesped'}>Hay</span>canchas
       </span>
     </span>
   )

@@ -179,7 +179,7 @@ def _catalogo(session: Session) -> str:
 
 def _sistema(hoy: date, catalogo: str) -> str:
     return (
-        "Sos el buscador de HayCancha (reservas de canchas en Argentina). Español rioplatense, "
+        "Sos el buscador de HayCanchas (reservas de canchas en Argentina). Español rioplatense, "
         f"con voseo, cálido y breve. Hoy es {DIAS[hoy.weekday()]} {hoy.isoformat()}.\n"
         f"Complejos:\n{catalogo}\n"
         "Reglas:\n"

@@ -57,7 +57,7 @@ def vincular(panel: PanelDeConfiguracion, response: Response) -> esquemas.LinkDe
     if not settings.mercadopago_configurado:
         raise HTTPException(
             status.HTTP_409_CONFLICT,
-            "Todavía no se puede vincular Mercado Pago: falta configurar la app de HayCancha.",
+            "Todavía no se puede vincular Mercado Pago: falta configurar la app de HayCanchas.",
         )
     state = secrets.token_urlsafe(24)
     verifier, challenge = mercadopago.nuevo_pkce()

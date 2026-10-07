@@ -1,7 +1,7 @@
 import { Check, Copy } from 'lucide-react'
 import { type ComponentProps, type ReactNode, useId, useState } from 'react'
 
-/** Piezas de formulario del panel y /admin (marca HayCancha: crema, noche, césped). */
+/** Piezas de formulario del panel y /admin (marca HayCanchas: crema, noche, césped). */
 
 type CampoProps = ComponentProps<'input'> & {
   etiqueta: string

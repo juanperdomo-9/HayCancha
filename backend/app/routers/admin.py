@@ -1,4 +1,4 @@
-"""Panel de HayCancha (/admin): alta de complejos, suspensiones y cobros. Solo superadmin.
+"""Panel de HayCanchas (/admin): alta de complejos, suspensiones y cobros. Solo superadmin.
 Usa la conexión de administrador porque trabaja sobre todos los negocios; la
 configuración de un complejo se hace desde su propio panel (/panel/{slug})."""
 
@@ -81,12 +81,12 @@ def dar_de_alta(
     with sesion_admin() as s:
         if s.scalar(select(Negocio.id).where(Negocio.slug == slug)):
             raise HTTPException(
-                status.HTTP_409_CONFLICT, f"La dirección haycancha.com.ar/{slug} ya está en uso."
+                status.HTTP_409_CONFLICT, f"La dirección haycanchas.com.ar/{slug} ya está en uso."
             )
         email = datos.dueno_email.lower()
         if s.scalar(select(Usuario.id).where(Usuario.email == email)):
             raise HTTPException(
-                status.HTTP_409_CONFLICT, "Ese email ya tiene una cuenta en HayCancha."
+                status.HTTP_409_CONFLICT, "Ese email ya tiene una cuenta en HayCanchas."
             )
 
         negocio = Negocio(
@@ -156,9 +156,9 @@ def email_de_prueba(datos: PruebaDeEmail, _: Superadmin) -> dict[str, bool]:
     enviado = correo.enviar(
         correo.Email(
             para=[datos.para],
-            asunto="Prueba de HayCancha",
-            html="<p>Si leés esto, los emails de HayCancha salen bien desde el servidor.</p>",
-            texto="Si leés esto, los emails de HayCancha salen bien desde el servidor.",
+            asunto="Prueba de HayCanchas",
+            html="<p>Si leés esto, los emails de HayCanchas salen bien desde el servidor.</p>",
+            texto="Si leés esto, los emails de HayCanchas salen bien desde el servidor.",
         )
     )
     return {"enviado": enviado}

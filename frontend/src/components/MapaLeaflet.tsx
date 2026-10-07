@@ -302,7 +302,7 @@ export function ElegirUbicacion({ valor, color, direccion, onCambiar }: { valor:
           {buscando ? 'Buscando…' : 'Buscar la dirección en el mapa'}
         </button>
         <span className="text-sm text-gris">
-          {valor.latitud == null ? 'Todavía no está marcado: no aparece en el mapa de HayCancha.' : 'Si no quedó justo, tocá el lugar exacto o arrastrá el pin.'}
+          {valor.latitud == null ? 'Todavía no está marcado: no aparece en el mapa de HayCanchas.' : 'Si no quedó justo, tocá el lugar exacto o arrastrá el pin.'}
         </span>
       </div>
       {aviso && <p className="text-sm text-amber-800">{aviso}</p>}

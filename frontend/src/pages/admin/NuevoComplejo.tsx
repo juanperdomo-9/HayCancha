@@ -101,7 +101,7 @@ export default function NuevoComplejo() {
           />
           <Campo
             etiqueta="Dirección de su página"
-            prefijo="haycancha.com.ar/"
+            prefijo="haycanchas.com.ar/"
             required
             className="sm:col-span-2"
             value={datos.slug}

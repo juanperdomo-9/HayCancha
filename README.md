@@ -1,7 +1,7 @@
 # HayCancha
 
 Reservas de canchas para complejos deportivos: cada complejo tiene su página
-(`haycancha.com.ar/el-potrero`) donde los jugadores ven los horarios libres, reservan y
+(`haycanchas.com.ar/el-potrero`) donde los jugadores ven los horarios libres, reservan y
 pagan la seña, sin mandar un WhatsApp. El dueño maneja todo desde su panel.
 
 La guía completa del proyecto (reglas, modelo de datos, fases y decisiones) está en

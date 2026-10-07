@@ -1,6 +1,6 @@
 # Puesta en línea (entorno de pruebas)
 
-Objetivo: HayCancha en `haycancha.com.ar` (página) y `api.haycancha.com.ar` (API), con la
+Objetivo: HayCancha en `haycanchas.com.ar` (página) y `api.haycanchas.com.ar` (API), con la
 base en Supabase y todo en **Oregon** (Supabase y Render en la misma región).
 
 Las llaves **nunca** se mandan por chat ni se escriben en el repo: se pegan directo en
@@ -8,10 +8,10 @@ Render (servicio → **Environment**). Guardá una copia en el gestor de contras
 
 ## 1. Dominio (nic.ar + Cloudflare)
 
-1. Registrar `haycancha.com.ar` en [nic.ar](https://nic.ar) (Clave Fiscal de ARCA).
-2. En [Cloudflare](https://dash.cloudflare.com): **Add a domain** → `haycancha.com.ar` →
+1. Registrar `haycanchas.com.ar` en [nic.ar](https://nic.ar) (Clave Fiscal de ARCA).
+2. En [Cloudflare](https://dash.cloudflare.com): **Add a domain** → `haycanchas.com.ar` →
    plan Free. Cloudflare da dos *nameservers*.
-3. En nic.ar: **Mis dominios → haycancha.com.ar → Delegar** y cargar los dos nameservers
+3. En nic.ar: **Mis dominios → haycanchas.com.ar → Delegar** y cargar los dos nameservers
    de Cloudflare. Puede tardar unas horas; Cloudflare avisa cuando queda activo.
 
 ## 2. Supabase (proyecto `haycancha-pruebas`, Oregon)
@@ -50,7 +50,7 @@ Render (servicio → **Environment**). Guardá una copia en el gestor de contras
 3. Aplicar. El primer deploy de la API instala todo, aplica las migraciones en Supabase y
    prepara `app_user`.
 4. Dominios: en cada servicio, **Settings → Custom Domains** ya figura el dominio
-   (`api.haycancha.com.ar` en la API; `haycancha.com.ar` y `www` en la web). Render
+   (`api.haycanchas.com.ar` en la API; `haycanchas.com.ar` y `www` en la web). Render
    muestra qué registro DNS crear.
 5. En Cloudflare → **DNS → Records**, crear los que indica Render (CNAME) con la nube en
    **gris (DNS only)**, así Render emite el certificado https.
@@ -64,7 +64,7 @@ uso). Para cobrar señas reales, la API en **Starter** (USD 7/mes) y Supabase **
 
 ## 4. Resend (emails)
 
-1. **Domains → Add domain** → `mail.haycancha.com.ar`.
+1. **Domains → Add domain** → `haycanchas.com.ar`.
 2. Copiar los registros que muestra (SPF, DKIM, MX) en Cloudflare → DNS → Records.
 3. **Verify**. Hasta que quede verificado, solo se pueden mandar emails de prueba a la
    cuenta de Resend.
@@ -74,11 +74,11 @@ uso). Para cobrar señas reales, la API en **Starter** (USD 7/mes) y Supabase **
 1. [Tus integraciones](https://www.mercadopago.com.ar/developers/panel/app) → **Crear
    aplicación** → Pagos online → Checkout Pro.
 2. **Detalles de aplicación → Editar**: URL de redireccionamiento
-   `https://api.haycancha.com.ar/mercadopago/callback` y habilitar **PKCE**.
+   `https://api.haycanchas.com.ar/mercadopago/callback` y habilitar **PKCE**.
 3. **Credenciales de producción**: Client ID y Client Secret → `MP_CLIENT_ID`,
    `MP_CLIENT_SECRET`.
 4. **Webhooks → Configurar notificaciones** → modo productivo:
-   `https://api.haycancha.com.ar/webhooks/mercadopago`, evento **Pagos** → guardar →
+   `https://api.haycanchas.com.ar/webhooks/mercadopago`, evento **Pagos** → guardar →
    copiar la clave secreta → `MP_WEBHOOK_SECRET`.
 5. **Cuentas de prueba**: crear un vendedor y un comprador. Para probar, en Render
    `MP_TOKENS_DE_PRUEBA=true`, vincular un complejo de prueba con el vendedor y pagar con

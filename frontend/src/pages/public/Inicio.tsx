@@ -17,7 +17,7 @@ const ENTRADA = [0.2, 0.8, 0.2, 1] as const
 const PARA_DUENOS = [
   {
     icono: LayoutGrid,
-    clave: 'haycancha.com.ar/tu-complejo',
+    clave: 'haycanchas.com.ar/tu-complejo',
     titulo: 'Tu página, con tu logo y tus colores',
     texto: 'Tus jugadores ven los horarios libres y reservan desde el celular, a cualquier hora.',
   },
@@ -40,7 +40,7 @@ export default function Inicio() {
     <div className="min-h-dvh bg-crema text-noche">
       <header className="sticky top-0 z-30 border-b border-linea/70 bg-crema/85 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-2 px-4 sm:px-8">
-          <Link to="/" aria-label="HayCancha, inicio" className="flex items-center">
+          <Link to="/" aria-label="HayCanchas, inicio" className="flex items-center">
             <LogoHayCancha className="text-[24px]" />
           </Link>
           <nav aria-label="Secciones" className="ml-6 hidden items-center gap-1 text-[15px] font-semibold lg:flex">
@@ -138,7 +138,7 @@ export default function Inicio() {
           <div className="mx-auto max-w-6xl px-4 py-16 sm:px-8 sm:py-24">
             <h2 className="font-titulo text-[clamp(40px,6vw,64px)] leading-[.9] font-extrabold uppercase">El mapa de las canchas</h2>
             <p className="mt-2 mb-6 max-w-[60ch] text-gris">
-              Todos los complejos que trabajan con HayCancha. Buscá por nombre, barrio o deporte y tocá un pin para ver sus horarios.
+              Todos los complejos que trabajan con HayCanchas. Buscá por nombre, barrio o deporte y tocá un pin para ver sus horarios.
             </p>
             <SeccionMapa />
           </div>

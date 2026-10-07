@@ -21,7 +21,7 @@ from app.routers import (
     webhooks,
 )
 
-app = FastAPI(title="HayCancha")
+app = FastAPI(title="HayCanchas")
 app.include_router(publico.router)
 app.include_router(reservas_online.router)
 app.include_router(auth.router)

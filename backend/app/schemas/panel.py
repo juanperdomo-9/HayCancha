@@ -17,7 +17,7 @@ Rol = Literal["superadmin", "dueno", "empleado"]
 
 
 class Ingreso(BaseModel):
-    # Email (dueños y empleados) o nombre de usuario (superadmins de HayCancha).
+    # Email (dueños y empleados) o nombre de usuario (superadmins de HayCanchas).
     email: Annotated[
         str, StringConstraints(strip_whitespace=True, to_lower=True, min_length=1, max_length=254)
     ]
@@ -110,7 +110,7 @@ class PanelResumen(BaseModel):
     color_secundario: str | None
     logo_url: str | None
     rol: Rol
-    # Si tiene el Plan Pro (métricas del mes). Lo habilita HayCancha desde el superadmin.
+    # Si tiene el Plan Pro (métricas del mes). Lo habilita HayCanchas desde el superadmin.
     plan_pro: bool = False
 
 

@@ -34,7 +34,7 @@ export default function Cobros() {
     <div className="grid gap-6">
       <EncabezadoSeccion
         titulo="Cobros"
-        bajada="Las señas de las reservas online se cobran con Mercado Pago y entran directo a la cuenta del complejo. HayCancha no toca esa plata."
+        bajada="Las señas de las reservas online se cobran con Mercado Pago y entran directo a la cuenta del complejo. HayCanchas no toca esa plata."
       />
       {resultado && <Aviso tipo={resultado.tipo}>{resultado.texto}</Aviso>}
       {cobros.error && <Aviso>{mensaje(cobros.error)}</Aviso>}
@@ -54,7 +54,7 @@ function SinVincular({ slug, disponible }: { slug: string; disponible: boolean }
   return (
     <Tarjeta titulo="Vinculá tu cuenta de Mercado Pago" descripcion="Se hace una sola vez y tarda un minuto.">
       <ol className="grid gap-2.5 text-[15px]">
-        {['Tocá «Vincular Mercado Pago».', 'Entrá con la cuenta de Mercado Pago donde querés cobrar las señas.', 'Autorizá a HayCancha. Volvés acá solo.'].map(
+        {['Tocá «Vincular Mercado Pago».', 'Entrá con la cuenta de Mercado Pago donde querés cobrar las señas.', 'Autorizá a HayCanchas. Volvés acá solo.'].map(
           (paso, i) => (
             <li key={paso} className="flex gap-3">
               <span className="numeros grid size-6 flex-none place-items-center rounded-full bg-noche text-[13px] font-bold text-crema">{i + 1}</span>
@@ -64,10 +64,10 @@ function SinVincular({ slug, disponible }: { slug: string; disponible: boolean }
         )}
       </ol>
       <p className="mt-4 text-sm text-gris">
-        HayCancha usa este permiso solo para cobrar las señas y devolverlas cuando corresponde. Lo podés quitar cuando quieras desde acá.
+        HayCanchas usa este permiso solo para cobrar las señas y devolverlas cuando corresponde. Lo podés quitar cuando quieras desde acá.
       </p>
       <div className="mt-5 grid gap-3">
-        {!disponible && <Aviso tipo="info">Todavía no se puede vincular: HayCancha está terminando de configurar Mercado Pago. Te avisamos cuando esté listo.</Aviso>}
+        {!disponible && <Aviso tipo="info">Todavía no se puede vincular: HayCanchas está terminando de configurar Mercado Pago. Te avisamos cuando esté listo.</Aviso>}
         {vincular.error && <Aviso>{mensaje(vincular.error)}</Aviso>}
         <Boton onClick={() => vincular.mutate()} disabled={!disponible || vincular.isPending} className="justify-self-start">
           {vincular.isPending ? 'Yendo a Mercado Pago…' : 'Vincular Mercado Pago'}

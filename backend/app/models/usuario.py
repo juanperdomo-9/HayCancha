@@ -7,7 +7,7 @@ from app.models.base import Base, CreadoA, UuidPk
 
 
 class Usuario(Base):
-    """Quien entra al panel: dueño o empleado de un negocio, o superadmin de HayCancha."""
+    """Quien entra al panel: dueño o empleado de un negocio, o superadmin de HayCanchas."""
 
     __tablename__ = "usuarios"
     __table_args__ = (

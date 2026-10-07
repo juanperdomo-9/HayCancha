@@ -8,7 +8,7 @@ export function PantallaDeAcceso({ titulo, bajada, children }: { titulo: string;
   return (
     <div className="grid min-h-dvh bg-crema text-noche lg:grid-cols-[1fr_1.1fr]">
       <div className="flex flex-col px-5 py-6 sm:px-10">
-        <Link to="/" aria-label="HayCancha, inicio" className="self-start">
+        <Link to="/" aria-label="HayCanchas, inicio" className="self-start">
           <LogoHayCancha className="text-[26px]" />
         </Link>
         <main className="my-auto w-full max-w-sm self-center py-10">

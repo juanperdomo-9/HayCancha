@@ -1,5 +1,5 @@
 """Métricas del mes de un complejo (Plan Pro): reservas, facturación, ocupación y cuánto
-trajo HayCancha. Todo sale de las reservas confirmadas (sin bloqueos ni espejos)."""
+trajo HayCanchas. Todo sale de las reservas confirmadas (sin bloqueos ni espejos)."""
 
 import uuid
 from collections import Counter

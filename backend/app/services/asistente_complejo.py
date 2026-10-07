@@ -74,7 +74,7 @@ def _sistema(negocio: Negocio, hoy: date, deportes: str) -> str:
         else f"${int(negocio.sena_valor)}"
     )
     return (
-        f"Sos {nombre}, el asistente de {negocio.nombre} en HayCancha. Español rioplatense, "
+        f"Sos {nombre}, el asistente de {negocio.nombre} en HayCanchas. Español rioplatense, "
         f"con voseo, cálido y breve (1 a 3 oraciones, texto plano, sin asteriscos ni listas "
         f"largas). Hoy es {DIAS[hoy.weekday()]} {hoy.isoformat()}.\n"
         f"Datos del complejo: {negocio.direccion or 'dirección a confirmar'}"

@@ -6,7 +6,7 @@ import { inicioDe, useIngresar, useYo } from '../api/panel'
 import { PantallaDeAcceso } from '../components/PantallaDeAcceso'
 import { Aviso, Boton, Campo } from '../components/ui/Formulario'
 
-/** Ingreso de dueños, empleados y del equipo de HayCancha. Los jugadores no necesitan cuenta. */
+/** Ingreso de dueños, empleados y del equipo de HayCanchas. Los jugadores no necesitan cuenta. */
 export default function Ingresar() {
   const { data: yo } = useYo()
   const ingresar = useIngresar()

@@ -60,7 +60,7 @@ describe('temaComplejo', () => {
     expect(contraste(tema.texto, FONDO_BASE)).toBeGreaterThanOrEqual(CONTRASTE_TEXTO)
   })
 
-  it('con un color inválido usa el de HayCancha', () => {
+  it('con un color inválido usa el de HayCanchas', () => {
     expect(temaComplejo('cualquier cosa').complejo).toBe(COLOR_POR_DEFECTO)
   })
 

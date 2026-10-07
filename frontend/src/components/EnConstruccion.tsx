@@ -15,7 +15,7 @@ export function EnConstruccion({ titulo, fase, children }: Props) {
   return (
     <div className="min-h-dvh bg-crema text-noche">
       <header className="mx-auto max-w-6xl px-4 py-5 sm:px-8">
-        <Link to="/" aria-label="HayCancha, inicio">
+        <Link to="/" aria-label="HayCanchas, inicio">
           <LogoHayCancha className="text-[27px]" />
         </Link>
       </header>

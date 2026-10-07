@@ -58,7 +58,7 @@ def ver_resultados(panel: PanelDeConfiguracion, mes: str | None = None) -> esque
     if negocio.plan != PLAN_PRO:
         raise HTTPException(
             status.HTTP_403_FORBIDDEN,
-            "Los resultados son parte del Plan Pro. Pedíselo a HayCancha.",
+            "Los resultados son parte del Plan Pro. Pedíselo a HayCanchas.",
         )
     hoy = hoy_en_el_negocio(negocio)
     try:
@@ -406,7 +406,7 @@ def invitar_empleado(
             s.commit()
         except IntegrityError as error:
             raise HTTPException(
-                status.HTTP_409_CONFLICT, "Ese email ya tiene una cuenta en HayCancha."
+                status.HTTP_409_CONFLICT, "Ese email ya tiene una cuenta en HayCanchas."
             ) from error
         link = link_de_invitacion(_usuario_auth(usuario))
         tareas.add_task(
@@ -446,7 +446,7 @@ def cambiar_integrante(
         if usuario.rol == "dueno":
             raise HTTPException(
                 status.HTTP_422_UNPROCESSABLE_CONTENT,
-                "Al dueño no se lo puede desactivar desde el panel. Escribinos a HayCancha.",
+                "Al dueño no se lo puede desactivar desde el panel. Escribinos a HayCanchas.",
             )
         usuario.activo = cambios.activo
     return _integrante(usuario)
