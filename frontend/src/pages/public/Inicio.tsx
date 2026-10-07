@@ -165,7 +165,7 @@ export default function Inicio() {
                 </li>
               ))}
             </ul>
-            <div id="sumate" className="mt-12 max-w-2xl scroll-mt-20">
+            <div id="sumate" className="mt-16 scroll-mt-20 border-t border-cal/15 pt-14">
               <FormularioComplejo />
             </div>
           </div>
