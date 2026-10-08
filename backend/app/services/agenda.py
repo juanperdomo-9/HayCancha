@@ -10,6 +10,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models import Cliente, Deporte, Negocio, Recurso, Reserva
+from app.services.bloqueos_fijos import Ocurrencia, bloqueo_en, ocurrencias
 from app.services.disponibilidad import ahora, reservas_que_ocupan, turnos_de_canchas
 from app.services.turnos import Turno, se_superponen
 
@@ -21,6 +22,8 @@ class TurnoDeAgenda:
     turno: Turno
     reserva: Reserva | None
     cliente: Cliente | None
+    # Un bloqueo fijo (todas las semanas) cuando no hay reserva en el turno.
+    fijo: Ocurrencia | None = None
 
 
 @dataclass
@@ -77,6 +80,9 @@ def agenda_del_dia(session: Session, negocio: Negocio, fecha: date) -> list[Canc
     ocupacion: dict[uuid.UUID, list[Reserva]] = defaultdict(list)
     for reserva in reservas:
         ocupacion[reserva.recurso_id].append(reserva)
+    fijos = ocurrencias(
+        session, negocio, list(por_id), turnos[0].inicio, max(t.fin for t in turnos)
+    )
 
     for turno in turnos:
         reserva = next(
@@ -88,7 +94,12 @@ def agenda_del_dia(session: Session, negocio: Negocio, fecha: date) -> list[Canc
             None,
         )
         por_id[turno.recurso_id].turnos.append(
-            TurnoDeAgenda(turno, reserva, clientes.get(reserva.cliente_id) if reserva else None)
+            TurnoDeAgenda(
+                turno,
+                reserva,
+                clientes.get(reserva.cliente_id) if reserva else None,
+                None if reserva else bloqueo_en(fijos, turno.recurso_id, turno.inicio, turno.fin),
+            )
         )
     return canchas
 
@@ -99,7 +110,10 @@ def resumen(canchas: list[CanchaDeAgenda]) -> ResumenDelDia:
     for cancha in canchas:
         for t in cancha.turnos:
             if t.reserva is None:
-                total.libres += 1
+                if t.fijo:
+                    total.bloqueados += 1
+                else:
+                    total.libres += 1
                 continue
             if t.reserva.estado == "bloqueada":
                 total.bloqueados += 1

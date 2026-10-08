@@ -21,6 +21,8 @@ export type ReservaEnAgenda = {
   origen: Origen
   asistencia: 'vino' | 'no_vino' | null
   motivo_bloqueo: string | null
+  // Bloqueo fijo (todas las semanas): el id es el del bloqueo, no de una reserva.
+  fijo?: boolean
   minutos_para_pagar: number | null
 }
 
@@ -163,5 +165,48 @@ export function useBloquear(slug: string) {
     mutationFn: (datos: { turnos: { recurso_id: string; inicio: string }[]; motivo: string }) =>
       enviar<{ bloqueados: number; omitidos: number }>(`${base(slug)}/bloqueos`, 'POST', datos),
     onSuccess: refrescar,
+  })
+}
+
+// --- Bloqueos fijos (todas las semanas) ---
+
+export type BloqueoFijo = {
+  id: string
+  dia_semana: number
+  desde: string
+  hasta: string
+  recurso_id: string | null
+  cancha: string | null
+  motivo: string
+}
+
+export type NuevoBloqueoFijo = { dia_semana: number; desde: string; hasta: string; recurso_id: string | null; motivo: string }
+
+export function useBloqueosFijos(slug: string) {
+  return useQuery({ queryKey: ['panel', slug, 'bloqueos-fijos'], queryFn: () => pedir<BloqueoFijo[]>(`${base(slug)}/bloqueos-fijos`) })
+}
+
+export function useCrearBloqueoFijo(slug: string) {
+  const refrescar = useRefrescar(slug)
+  const cliente = useQueryClient()
+  return useMutation({
+    mutationFn: (datos: NuevoBloqueoFijo) =>
+      enviar<{ bloqueo: BloqueoFijo; reservas_existentes: number }>(`${base(slug)}/bloqueos-fijos`, 'POST', datos),
+    onSuccess: () => {
+      refrescar()
+      cliente.invalidateQueries({ queryKey: ['panel', slug, 'bloqueos-fijos'] })
+    },
+  })
+}
+
+export function useBorrarBloqueoFijo(slug: string) {
+  const refrescar = useRefrescar(slug)
+  const cliente = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => pedir<void>(`${base(slug)}/bloqueos-fijos/${id}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      refrescar()
+      cliente.invalidateQueries({ queryKey: ['panel', slug, 'bloqueos-fijos'] })
+    },
   })
 }

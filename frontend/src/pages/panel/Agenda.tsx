@@ -1,6 +1,7 @@
-import { Ban, CalendarDays, ChevronLeft, ChevronRight, LayoutGrid } from 'lucide-react'
+import { Ban, CalendarDays, ChevronLeft, ChevronRight, LayoutGrid, Repeat } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { Link, useParams } from 'react-router'
+import { BloqueosFijos } from '../../components/agenda/BloqueosFijos'
 
 import { type CanchaEnAgenda, type TurnoEnAgenda, claveTurno, useAgenda, useBloquear, useSemana } from '../../api/agenda'
 import { mensaje } from '../../api/client'
@@ -30,6 +31,7 @@ export default function Agenda() {
   const [seleccionados, setSeleccionados] = useState<Set<string>>(new Set())
   const [motivo, setMotivo] = useState('')
   const [avisoBloqueo, setAvisoBloqueo] = useState<string | null>(null)
+  const [verFijos, setVerFijos] = useState(false)
   const bloquear = useBloquear(slug)
 
   const cerrarLibre = useCallback(() => setLibre(null), [])
@@ -204,12 +206,20 @@ export default function Agenda() {
               <span />
             )}
             {!modoBloqueo && (
-              <Boton variante="secundario" onClick={() => { setModoBloqueo(true); setAvisoBloqueo(null) }}>
-                <Ban className="size-4" aria-hidden="true" />
-                Bloquear horarios
-              </Boton>
+              <span className="flex flex-wrap gap-2">
+                <Boton variante="secundario" onClick={() => { setModoBloqueo(true); setAvisoBloqueo(null) }}>
+                  <Ban className="size-4" aria-hidden="true" />
+                  Bloquear horarios
+                </Boton>
+                <Boton variante="secundario" onClick={() => setVerFijos(!verFijos)}>
+                  <Repeat className="size-4" aria-hidden="true" />
+                  Bloqueos fijos
+                </Boton>
+              </span>
             )}
           </div>
+
+          {verFijos && <BloqueosFijos slug={slug} canchas={agenda.data?.canchas ?? []} onCerrar={() => setVerFijos(false)} />}
 
           {modoBloqueo && (
             <Aviso tipo="info">Tocá los turnos libres que querés cerrar (o "Todo el día" en una cancha) y poné el motivo abajo.</Aviso>
@@ -224,7 +234,12 @@ export default function Agenda() {
                 modoBloqueo={modoBloqueo}
                 seleccionados={seleccionados}
                 onElegirLibre={(cancha, turno) => setLibre({ cancha, turno })}
-                onElegirOcupado={setReservaId}
+                onElegirOcupado={(id) => {
+                  // Un bloqueo fijo no es una reserva: abre la lista de bloqueos fijos.
+                  const fijo = agenda.data?.canchas.some((c) => c.turnos.some((t) => t.reserva?.id === id && t.reserva.fijo))
+                  if (fijo) setVerFijos(true)
+                  else setReservaId(id)
+                }}
                 onAlternarSeleccion={alternar}
                 onSeleccionarDia={todoElDia}
               />

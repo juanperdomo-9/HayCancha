@@ -126,18 +126,29 @@ def disponibilidad(
     for reserva in reservas:
         ocupacion[reserva.recurso_id].append(reserva)
 
+    from app.services.bloqueos_fijos import bloqueo_en, ocurrencias
+
+    fijos = ocurrencias(
+        session, negocio, list(por_id), turnos[0].inicio, max(t.fin for t in turnos)
+    )
     momento = ahora()
+    # Online solo se reserva con la anticipación mínima del complejo (el dueño igual carga a
+    # mano turnos de último momento desde la agenda).
+    primero = momento + timedelta(hours=negocio.horas_anticipacion or 0)
     agrupados: dict[tuple[datetime, datetime], TurnoDisponible] = {}
     for turno in turnos:
-        if turno.inicio <= momento:
+        if turno.inicio <= primero:
             continue
         grupo = agrupados.setdefault(
             (turno.inicio, turno.fin), TurnoDisponible(turno.inicio, turno.fin, 0)
         )
         grupo.canchas_total += 1
-        ocupada = any(
-            se_superponen(turno.inicio, turno.fin, r.inicio, r.fin)
-            for r in ocupacion[turno.recurso_id]
+        ocupada = (
+            any(
+                se_superponen(turno.inicio, turno.fin, r.inicio, r.fin)
+                for r in ocupacion[turno.recurso_id]
+            )
+            or bloqueo_en(fijos, turno.recurso_id, turno.inicio, turno.fin) is not None
         )
         if not ocupada:
             grupo.libres.append(

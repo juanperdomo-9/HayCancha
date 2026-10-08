@@ -129,6 +129,16 @@ def reservar(
     candidatas = [c for c in canchas if turnos[c.id] is not None]
     if not candidatas:
         raise TurnoInvalido("Ese horario no es un turno de esa cancha.")
+    from app.services.bloqueos_fijos import esta_bloqueado
+
+    sin_bloqueo = [
+        c
+        for c in candidatas
+        if not esta_bloqueado(session, negocio, c.id, turnos[c.id].inicio, turnos[c.id].fin)
+    ]
+    if not sin_bloqueo:
+        raise TurnoNoDisponible("Ese horario ya no está disponible.")
+    candidatas = sin_bloqueo
 
     esperar_turno_para_reservar(session, negocio.id)
     liberar_vencidas(session, negocio.id, [c.id for c in candidatas])

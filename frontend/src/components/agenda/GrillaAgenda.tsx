@@ -111,6 +111,7 @@ function Celda({ turno, modoBloqueo, seleccionado, onLibre, onOcupado }: { turno
       <button type="button" role="cell" onClick={onOcupado} className={`${base} bg-[repeating-linear-gradient(135deg,var(--color-crema-oscuro)_0_6px,transparent_6px_12px)] text-gris ring-1 ring-linea ${pasado}`}>
         <b className="text-noche">Bloqueado</b>
         <span className="truncate">{r.motivo_bloqueo}</span>
+        {r.fijo && <span className="text-[11px]">Todas las semanas</span>}
       </button>
     )
   }

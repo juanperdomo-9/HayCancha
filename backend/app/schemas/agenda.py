@@ -1,7 +1,7 @@
 """La agenda del panel: la usan el dueño y los empleados."""
 
 import uuid
-from datetime import date, datetime
+from datetime import date, datetime, time
 from decimal import Decimal
 from typing import Annotated, Literal
 
@@ -27,6 +27,8 @@ class ReservaEnAgenda(BaseModel):
     asistencia: Literal["vino", "no_vino"] | None
     motivo_bloqueo: str | None
     minutos_para_pagar: int | None
+    # Bloqueo fijo (todas las semanas): el id es el del bloqueo, no el de una reserva.
+    fijo: bool = False
 
 
 class TurnoEnAgenda(BaseModel):
@@ -150,3 +152,28 @@ class Bloqueo(BaseModel):
 class ResultadoDeBloqueo(BaseModel):
     bloqueados: int
     omitidos: int
+
+
+class NuevoBloqueoFijo(BaseModel):
+    dia_semana: Annotated[int, Field(ge=0, le=6)]
+    desde: time
+    hasta: time
+    # None: todas las canchas.
+    recurso_id: uuid.UUID | None = None
+    motivo: Annotated[str, StringConstraints(strip_whitespace=True, min_length=2, max_length=80)]
+
+
+class BloqueoFijo(BaseModel):
+    id: uuid.UUID
+    dia_semana: int
+    desde: time
+    hasta: time
+    recurso_id: uuid.UUID | None
+    cancha: str | None
+    motivo: str
+
+
+class BloqueoFijoCreado(BaseModel):
+    bloqueo: BloqueoFijo
+    # Reservas que ya existen en ese horario (próximas 8 semanas): el bloqueo no las cancela.
+    reservas_existentes: int

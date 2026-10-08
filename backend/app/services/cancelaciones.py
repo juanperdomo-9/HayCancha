@@ -101,6 +101,16 @@ def reprogramar(
     candidatas = [c for c in canchas if turnos[c.id] is not None]
     if not candidatas:
         raise TurnoInvalido("Ese horario no es un turno de esa cancha.")
+    from app.services.bloqueos_fijos import esta_bloqueado
+
+    sin_bloqueo = [
+        c
+        for c in candidatas
+        if not esta_bloqueado(session, negocio, c.id, turnos[c.id].inicio, turnos[c.id].fin)
+    ]
+    if not sin_bloqueo:
+        raise TurnoNoDisponible("Ese horario ya no está disponible.")
+    candidatas = sin_bloqueo
 
     esperar_turno_para_reservar(session, negocio.id)
     liberar_vencidas(session, negocio.id, [c.id for c in candidatas])
@@ -144,7 +154,11 @@ def cambiar_como_jugador(
         raise CambioNoPermitido(
             f"El horario se puede cambiar hasta {negocio.horas_cancelacion} horas antes del turno."
         )
-    if inicio <= ahora():
-        raise CambioNoPermitido("Elegí un turno que todavía no empezó.")
+    if inicio <= ahora() + timedelta(hours=negocio.horas_anticipacion or 0):
+        raise CambioNoPermitido(
+            "Elegí un turno que todavía no empezó."
+            if inicio <= ahora()
+            else f"Elegí un turno con al menos {negocio.horas_anticipacion} horas de anticipación."
+        )
     reprogramar(session, negocio, reserva, inicio=inicio, recurso_id=recurso_id)
     reserva.cambios_de_horario += 1

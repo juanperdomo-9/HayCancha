@@ -71,6 +71,7 @@ class Configuracion(BaseModel):
     sena_tipo: Literal["fija", "porcentaje"]
     sena_valor: Decimal
     horas_cancelacion: int
+    horas_anticipacion: int = 0
     minutos_para_pagar: int
 
 
@@ -100,6 +101,7 @@ class CambiosDeConfiguracion(BaseModel):
     sena_tipo: Literal["fija", "porcentaje"] | None = None
     sena_valor: Annotated[Decimal, Field(ge=0, max_digits=12, decimal_places=2)] | None = None
     horas_cancelacion: Annotated[int, Field(ge=0, le=24 * 30)] | None = None
+    horas_anticipacion: Annotated[int, Field(ge=0, le=72)] | None = None
     minutos_para_pagar: Annotated[int, Field(ge=1, le=120)] | None = None
 
 

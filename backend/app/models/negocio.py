@@ -20,6 +20,7 @@ class Negocio(Base):
         ),
         CheckConstraint("minutos_para_pagar > 0", name="minutos_para_pagar_positivo"),
         CheckConstraint("horas_cancelacion >= 0", name="horas_cancelacion_valida"),
+        CheckConstraint("horas_anticipacion BETWEEN 0 AND 72", name="horas_anticipacion_valida"),
         CheckConstraint(
             "estado_cuenta IN ('al_dia', 'atrasado', 'suspendido')", name="estado_cuenta_valido"
         ),
@@ -48,6 +49,8 @@ class Negocio(Base):
     minutos_para_pagar: Mapped[int] = mapped_column(server_default="10")
     # Sin valor por defecto: se acuerda con cada complejo en el alta.
     horas_cancelacion: Mapped[int]
+    # Reservas online solo con esta anticipación mínima (0 = sin mínimo, migración 0018).
+    horas_anticipacion: Mapped[int] = mapped_column(server_default=text("0"))
     plan: Mapped[str | None] = mapped_column(String)
     estado_cuenta: Mapped[str] = mapped_column(String, server_default="al_dia")
     # Mercado Pago (fase 2). Los tokens van encriptados y nunca salen del backend.

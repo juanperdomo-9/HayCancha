@@ -118,6 +118,12 @@ def crear_reserva_online(
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_CONTENT, "Ese turno ya empezó. Elegí otro."
         )
+    if datos.inicio <= ahora() + timedelta(hours=negocio.horas_anticipacion or 0):
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            f"Este complejo toma reservas online con {negocio.horas_anticipacion} horas de "
+            "anticipación. Elegí un turno más adelante.",
+        )
     fecha = datos.inicio.astimezone(zona_del_negocio(negocio)).date()
     if fecha >= hoy_en_el_negocio(negocio) + timedelta(days=DIAS_RESERVABLES):
         raise HTTPException(

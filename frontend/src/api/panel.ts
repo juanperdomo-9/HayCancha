@@ -44,6 +44,7 @@ export type Configuracion = {
   sena_tipo: 'fija' | 'porcentaje'
   sena_valor: string
   horas_cancelacion: number
+  horas_anticipacion: number
   minutos_para_pagar: number
 }
 

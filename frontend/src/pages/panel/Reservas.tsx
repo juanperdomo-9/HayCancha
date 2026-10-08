@@ -23,6 +23,7 @@ function FormularioReservas({ slug, configuracion: c }: { slug: string; configur
     sena_tipo: c.sena_tipo,
     sena_valor: String(Number(c.sena_valor)),
     horas_cancelacion: String(c.horas_cancelacion),
+    horas_anticipacion: String(c.horas_anticipacion ?? 0),
     minutos_para_pagar: String(c.minutos_para_pagar),
   })
   const [ok, setOk] = useState(false)
@@ -35,6 +36,7 @@ function FormularioReservas({ slug, configuracion: c }: { slug: string; configur
         sena_tipo: datos.sena_tipo,
         sena_valor: datos.sena_valor || '0',
         horas_cancelacion: Number(datos.horas_cancelacion),
+        horas_anticipacion: Number(datos.horas_anticipacion || 0),
         minutos_para_pagar: Number(datos.minutos_para_pagar),
       },
       { onSuccess: () => setOk(true) },
@@ -111,6 +113,22 @@ function FormularioReservas({ slug, configuracion: c }: { slug: string; configur
             ayuda="Si no paga en ese tiempo, el turno se libera. Recomendamos 10."
           />
         </div>
+      </Tarjeta>
+      <Tarjeta titulo="Reservas de último momento">
+        <Campo
+          etiqueta="No aceptar reservas online con menos de estas horas de anticipación"
+          type="number"
+          min={0}
+          max={72}
+          inputMode="numeric"
+          value={datos.horas_anticipacion}
+          onChange={(e) => setDatos({ ...datos, horas_anticipacion: e.target.value })}
+          ayuda={
+            Number(datos.horas_anticipacion) > 0
+              ? `Ejemplo: si son las 13:20, desde la página se puede reservar recién el turno que empieza después de las ${String((13 + Number(datos.horas_anticipacion)) % 24).padStart(2, '0')}:20. Vos igual podés cargar a mano un turno de último momento desde la agenda.`
+              : 'Con 0, se puede reservar online hasta el último momento.'
+          }
+        />
       </Tarjeta>
       <div className="grid gap-3">
         {guardar.error && <Aviso>{mensaje(guardar.error)}</Aviso>}

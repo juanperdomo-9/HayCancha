@@ -1,4 +1,5 @@
 from app.models.base import Base
+from app.models.bloqueo_fijo import BloqueoFijo
 from app.models.cliente import Cliente
 from app.models.consulta import ConsultaSinRespuesta
 from app.models.deporte import Deporte
@@ -14,6 +15,7 @@ from app.models.usuario import Usuario
 __all__ = [
     "ESTADOS_QUE_OCUPAN",
     "Base",
+    "BloqueoFijo",
     "Cliente",
     "ConsultaSinRespuesta",
     "Deporte",
