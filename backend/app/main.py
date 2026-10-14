@@ -15,6 +15,7 @@ from app.routers import (
     asistente,
     auth,
     cobros,
+    compartir,
     interesados,
     panel,
     publico,
@@ -34,6 +35,7 @@ app.include_router(asistente.router)
 app.include_router(asistente.router_panel)
 app.include_router(admin.router)
 app.include_router(interesados.router)
+app.include_router(compartir.router)
 
 # Logos y portadas subidos desde el panel.
 _archivos = get_settings().carpeta_archivos

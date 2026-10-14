@@ -5,6 +5,7 @@ import { useParams, useSearchParams } from 'react-router'
 
 import { ErrorApi } from '../../api/client'
 import { type ComplejoDetalle, useComplejo, useDisponibilidad } from '../../api/publico'
+import { BotonCompartir } from '../../components/complejo/Compartir'
 import { BotonVerFotos, GaleriaFotos, VisorDeFotos } from '../../components/complejo/GaleriaFotos'
 import { GrillaTurnos } from '../../components/complejo/GrillaTurnos'
 import { LogoComplejo } from '../../components/complejo/LogoComplejo'
@@ -82,8 +83,9 @@ function PaginaComplejo({ complejo }: { complejo: ComplejoDetalle }) {
             <LogoComplejo nombre={complejo.nombre} logoUrl={complejo.logo_url} className="w-8 flex-none rounded-lg text-[32px] ring-0" />
             <span className="truncate">{complejo.nombre}</span>
           </span>
-          <span className="flex items-center gap-2">
-            <a href="#info" className="text-sm font-semibold whitespace-nowrap text-complejo-texto">
+          <span className="flex items-center gap-3">
+            <BotonCompartir slug={complejo.slug} nombre={complejo.nombre} className="text-complejo-texto" />
+            <a href="#info" className="hidden text-sm font-semibold whitespace-nowrap text-complejo-texto sm:inline">
               Cómo llegar
             </a>
             <BotonModo className="text-tinta hover:bg-lienzo" />

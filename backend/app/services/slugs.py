@@ -7,6 +7,7 @@ import unicodedata
 RESERVADOS = frozenset(
     {
         "panel",
+        "c",  # link para compartir: /c/{slug}
         "admin",
         "ingresar",
         "api",

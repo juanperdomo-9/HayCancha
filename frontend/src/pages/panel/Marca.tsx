@@ -10,6 +10,7 @@ import { Aviso, Boton, Campo, Tarjeta } from '../../components/ui/Formulario'
 import { TemaComplejo } from '../../theme/TemaComplejo'
 import { EncabezadoSeccion } from './EncabezadoSeccion'
 import { GaleriaDelPanel } from './GaleriaDelPanel'
+import { LinkParaCompartir } from '../../components/complejo/Compartir'
 import { ElegirUbicacion } from '../../components/MapaLeaflet'
 
 const SERVICIOS_COMUNES = ['Vestuarios', 'Duchas', 'Estacionamiento', 'Buffet', 'Parrilla', 'Wi-Fi', 'Alquiler de pelotas', 'Alquiler de paletas']
@@ -82,6 +83,9 @@ function FormularioMarca({ slug, c }: { slug: string; c: Configuracion }) {
       />
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
         <div className="grid gap-6">
+          <Tarjeta titulo="Tu link para compartir">
+            <LinkParaCompartir slug={slug} />
+          </Tarjeta>
           <Tarjeta titulo="Datos del complejo">
             <div className="grid gap-4 sm:grid-cols-2">
               <Campo etiqueta="Nombre" required value={datos.nombre} onChange={(e) => setDatos({ ...datos, nombre: e.target.value })} className="sm:col-span-2" />
