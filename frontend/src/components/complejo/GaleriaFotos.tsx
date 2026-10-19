@@ -3,6 +3,8 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
 
+import type { Foto } from '../../api/publico'
+
 /** Botón sobre la portada: "Ver fotos · 8". */
 export function BotonVerFotos({ cantidad, onAbrir }: { cantidad: number; onAbrir: () => void }) {
   if (cantidad === 0) return null
@@ -22,7 +24,7 @@ const VISIBLES = 5
 
 /** Las fotos del complejo: mosaico en la compu (una grande y cuatro chicas) y carrusel
  * grande en el celular. Tocando cualquiera se abre el visor. */
-export function GaleriaFotos({ fotos, nombre, onAbrir }: { fotos: string[]; nombre: string; onAbrir: (indice: number) => void }) {
+export function GaleriaFotos({ fotos, nombre, onAbrir }: { fotos: Foto[]; nombre: string; onAbrir: (indice: number) => void }) {
   if (fotos.length === 0) return null
   const resto = fotos.length - VISIBLES
   return (
@@ -38,10 +40,11 @@ export function GaleriaFotos({ fotos, nombre, onAbrir }: { fotos: string[]; nomb
 
       {/* Celular: carrusel de fotos grandes. */}
       <ul className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:hidden">
-        {fotos.map((url, i) => (
+        {fotos.map(({ url, texto }, i) => (
           <li key={url} className="relative w-[86%] flex-none snap-center">
-            <button type="button" onClick={() => onAbrir(i)} aria-label={`Ver la foto ${i + 1} de ${fotos.length}`} className="block w-full">
-              <img src={url} alt="" loading="lazy" className="aspect-[4/3] w-full rounded-2xl object-cover ring-1 ring-borde" />
+            <button type="button" onClick={() => onAbrir(i)} aria-label={`Ver la foto ${i + 1} de ${fotos.length}`} className="relative block w-full overflow-hidden rounded-2xl">
+              <img src={url} alt={texto ?? ''} loading="lazy" className="aspect-[4/3] w-full rounded-2xl object-cover ring-1 ring-borde" />
+              {texto && <Epigrafe texto={texto} />}
             </button>
             <span className="pointer-events-none absolute top-3 right-3 rounded-full bg-black/55 px-2.5 py-1 text-xs font-semibold text-white tabular-nums">
               {i + 1}/{fotos.length}
@@ -52,7 +55,7 @@ export function GaleriaFotos({ fotos, nombre, onAbrir }: { fotos: string[]; nomb
 
       {/* Compu: mosaico. */}
       <div className={`hidden h-[clamp(320px,38vw,460px)] gap-2.5 sm:grid ${mosaico(fotos.length)}`}>
-        {fotos.slice(0, VISIBLES).map((url, i) => (
+        {fotos.slice(0, VISIBLES).map(({ url, texto }, i) => (
           <button
             key={url}
             type="button"
@@ -62,6 +65,7 @@ export function GaleriaFotos({ fotos, nombre, onAbrir }: { fotos: string[]; nomb
           >
             <img src={url} alt="" loading="lazy" className="size-full object-cover transition duration-500 group-hover:scale-[1.04]" />
             <span className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/10" />
+            {texto && !(i === VISIBLES - 1 && resto > 0) && <Epigrafe texto={texto} />}
             {i === VISIBLES - 1 && resto > 0 && (
               <span className="absolute inset-0 grid place-content-center bg-black/55 text-white">
                 <b className="numeros text-3xl" style={{ fontStretch: '80%' }}>
@@ -75,6 +79,15 @@ export function GaleriaFotos({ fotos, nombre, onAbrir }: { fotos: string[]; nomb
       </div>
       <p className="sr-only">Fotos de {nombre}</p>
     </section>
+  )
+}
+
+/** El texto de la foto, abajo y sobre un degradé para que se lea con cualquier foto. */
+function Epigrafe({ texto }: { texto: string }) {
+  return (
+    <span className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/35 to-transparent px-4 pt-10 pb-3 text-left text-[15px] leading-snug font-semibold text-white">
+      {texto}
+    </span>
   )
 }
 
@@ -100,7 +113,7 @@ export function VisorDeFotos({
   onCambiar,
   onCerrar,
 }: {
-  fotos: string[]
+  fotos: Foto[]
   nombre: string
   indice: number | null
   onCambiar: (i: number) => void
@@ -114,7 +127,7 @@ export function VisorDeFotos({
   )
 }
 
-function Visor({ fotos, nombre, indice, onCambiar, onCerrar }: { fotos: string[]; nombre: string; indice: number; onCambiar: (i: number) => void; onCerrar: () => void }) {
+function Visor({ fotos, nombre, indice, onCambiar, onCerrar }: { fotos: Foto[]; nombre: string; indice: number; onCambiar: (i: number) => void; onCerrar: () => void }) {
   const quieto = useReducedMotion()
   const total = fotos.length
   const ir = (paso: number) => onCambiar((indice + paso + total) % total)
@@ -157,9 +170,9 @@ function Visor({ fotos, nombre, indice, onCambiar, onCerrar }: { fotos: string[]
       <div className="relative min-h-0 flex-1" onClick={onCerrar}>
         <AnimatePresence initial={false} mode="popLayout">
           <motion.img
-            key={fotos[indice]}
-            src={fotos[indice]}
-            alt={`Foto ${indice + 1} de ${total} de ${nombre}`}
+            key={fotos[indice].url}
+            src={fotos[indice].url}
+            alt={fotos[indice].texto ?? `Foto ${indice + 1} de ${total} de ${nombre}`}
             className="absolute inset-0 m-auto max-h-full max-w-full touch-pan-y object-contain px-2 select-none sm:px-20"
             initial={quieto ? { opacity: 0 } : { opacity: 0, scale: 0.97 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -204,9 +217,10 @@ function Visor({ fotos, nombre, indice, onCambiar, onCerrar }: { fotos: string[]
         )}
       </div>
 
+      {fotos[indice].texto && <p className="px-6 pt-3 text-center text-[17px] font-semibold text-white">{fotos[indice].texto}</p>}
       {total > 1 && (
         <ul className="mx-auto flex max-w-full gap-2 overflow-x-auto px-4 py-4 [scrollbar-width:none]">
-          {fotos.map((url, i) => (
+          {fotos.map(({ url }, i) => (
             <li key={url} className="flex-none">
               <button
                 type="button"

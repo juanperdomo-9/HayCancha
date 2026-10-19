@@ -211,6 +211,8 @@ function PaginaComplejo({ complejo }: { complejo: ComplejoDetalle }) {
               onElegirCancha={setCanchaId}
               reservasOnline={complejo.reservas_online}
               minutosParaPagar={complejo.minutos_para_pagar}
+              reglas={complejo.reglas ?? []}
+              adicionales={complejo.adicionales ?? []}
             />
           ) : (
             <SinTurnoElegido complejo={complejo} />
@@ -300,6 +302,8 @@ function PaginaComplejo({ complejo }: { complejo: ComplejoDetalle }) {
                     slug={complejo.slug}
                     reservasOnline={complejo.reservas_online}
                     minutosParaPagar={complejo.minutos_para_pagar}
+              reglas={complejo.reglas ?? []}
+              adicionales={complejo.adicionales ?? []}
                     turno={turno}
                     fecha={fecha}
                     deporte={deporteActual}

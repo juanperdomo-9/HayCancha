@@ -60,6 +60,7 @@ function Pagina({ reserva: r }: { reserva: ReservaPublica }) {
               ['Día', fechaLarga(r.fecha)],
               ['Horario', `${r.hora} a ${r.hora_fin}`],
               ['Seña', plata(r.sena)],
+              ...(r.adicionales?.length ? [['Adicionales', r.adicionales.map((a) => `${a.cantidad > 1 ? `${a.cantidad} × ` : ''}${a.nombre}`).join(', ')]] : []),
               ['En la cancha', r.saldo_efectivo ? `${plata(r.saldo)} (${plata(r.saldo_efectivo)} en efectivo)` : plata(r.saldo)],
             ].map(([dt, dd]) => (
               <div key={dt} className="contents">

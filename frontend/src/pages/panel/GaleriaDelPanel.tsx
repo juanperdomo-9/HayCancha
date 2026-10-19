@@ -2,7 +2,7 @@ import { ChevronLeft, ChevronRight, ImageUp, Trash2 } from 'lucide-react'
 import { useRef } from 'react'
 
 import { mensaje } from '../../api/client'
-import { MAX_FOTOS, useFotos, useOrdenarFotos, useQuitarFoto, useSubirFoto } from '../../api/panel'
+import { MAX_FOTOS, useFotos, useOrdenarFotos, useQuitarFoto, useSubirFoto, useTextoDeFoto } from '../../api/panel'
 import { Aviso, Tarjeta } from '../../components/ui/Formulario'
 
 /** Panel → Marca: la galería de fotos de la página del complejo. */
@@ -11,6 +11,7 @@ export function GaleriaDelPanel({ slug }: { slug: string }) {
   const subir = useSubirFoto(slug)
   const quitar = useQuitarFoto(slug)
   const ordenar = useOrdenarFotos(slug)
+  const textoDeFoto = useTextoDeFoto(slug)
   const entrada = useRef<HTMLInputElement>(null)
   const lista = fotos.data ?? []
   const lleno = lista.length >= MAX_FOTOS
@@ -34,11 +35,12 @@ export function GaleriaDelPanel({ slug }: { slug: string }) {
 
   const boton = 'grid size-8 place-items-center rounded-full bg-noche/75 text-cal hover:bg-noche disabled:opacity-30'
   return (
-    <Tarjeta titulo="Fotos" descripcion={`Hasta ${MAX_FOTOS}: las canchas, el buffet, los vestuarios. La primera es la que se ve primero.`}>
+    <Tarjeta titulo="Fotos" descripcion={`Hasta ${MAX_FOTOS}: las canchas, el buffet, los vestuarios. La primera es la que se ve primero. Cada una puede llevar un texto corto.`}>
       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {lista.map((foto, i) => (
-          <li key={foto.id} className="relative aspect-[4/3] overflow-hidden rounded-xl ring-1 ring-linea">
-            <img src={foto.url} alt={`Foto ${i + 1}`} className="size-full object-cover" />
+          <li key={foto.id} className="grid content-start gap-1.5">
+            <div className="relative aspect-[4/3] overflow-hidden rounded-xl ring-1 ring-linea">
+            <img src={foto.url} alt={foto.texto ?? `Foto ${i + 1}`} className="size-full object-cover" />
             <div className="absolute inset-x-1.5 bottom-1.5 flex items-center justify-between">
               <span className="flex gap-1">
                 <button type="button" className={boton} aria-label="Mover antes" disabled={i === 0 || ordenar.isPending} onClick={() => mover(i, -1)}>
@@ -58,6 +60,21 @@ export function GaleriaDelPanel({ slug }: { slug: string }) {
                 <Trash2 className="size-4" aria-hidden="true" />
               </button>
             </div>
+            </div>
+            {/* Se guarda al salir del campo (o con Enter). */}
+            <input
+              key={foto.texto ?? ''}
+              defaultValue={foto.texto ?? ''}
+              maxLength={80}
+              placeholder="Texto opcional: Cancha 1, techada"
+              aria-label={`Texto de la foto ${i + 1}`}
+              className="rounded-lg border-[1.5px] border-linea bg-superficie px-2.5 py-1.5 text-[16px]"
+              onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+              onBlur={(e) => {
+                const texto = e.target.value.trim()
+                if (texto !== (foto.texto ?? '')) textoDeFoto.mutate({ id: foto.id, texto })
+              }}
+            />
           </li>
         ))}
         {!lleno && (
@@ -87,7 +104,9 @@ export function GaleriaDelPanel({ slug }: { slug: string }) {
           e.target.value = ''
         }}
       />
-      {(subir.error || quitar.error || fotos.error) && <Aviso>{mensaje(subir.error ?? quitar.error ?? fotos.error)}</Aviso>}
+      {(subir.error || quitar.error || textoDeFoto.error || fotos.error) && (
+        <Aviso>{mensaje(subir.error ?? quitar.error ?? textoDeFoto.error ?? fotos.error)}</Aviso>
+      )}
     </Tarjeta>
   )
 }

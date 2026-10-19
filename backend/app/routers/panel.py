@@ -11,12 +11,22 @@ from starlette.concurrency import run_in_threadpool
 
 from app.db import sesion_de_negocio
 from app.dependencias import PanelActual, PanelDeConfiguracion
-from app.models import Deporte, Foto, Horario, Negocio, Recurso, Usuario
+from app.models import (
+    Adicional,
+    Deporte,
+    Foto,
+    Horario,
+    Negocio,
+    Recurso,
+    ReservaAdicional,
+    Usuario,
+)
 from app.schemas import panel as esquemas
 from app.services import email
 from app.services.archivos import ArchivoInvalido, borrar_imagen, guardar_imagen
 from app.services.auth import Usuario as UsuarioAuth
 from app.services.auth import link_de_invitacion
+from app.services.combinadas import CombinacionInvalida, cambiar_partes, partes_por_cancha
 from app.services.disponibilidad import hoy_en_el_negocio
 from app.services.horarios import FranjaNueva, HorariosInvalidos, validar_franjas
 from app.services.metricas import metricas_del_mes
@@ -148,7 +158,7 @@ def _fotos(s, negocio_id: uuid.UUID) -> list[esquemas.FotoDelPanel]:
     filas = s.scalars(
         select(Foto).where(Foto.negocio_id == negocio_id).order_by(Foto.orden, Foto.creado_a)
     )
-    return [esquemas.FotoDelPanel(id=f.id, url=f.url) for f in filas]
+    return [esquemas.FotoDelPanel(id=f.id, url=f.url, texto=f.texto) for f in filas]
 
 
 @router.get("/fotos")
@@ -194,6 +204,19 @@ def quitar_foto(foto_id: uuid.UUID, panel: PanelDeConfiguracion) -> list[esquema
         return _fotos(s, panel.negocio_id)
 
 
+@router.put("/fotos/{foto_id}/texto")
+def cambiar_texto_de_foto(
+    foto_id: uuid.UUID, datos: esquemas.TextoDeFoto, panel: PanelDeConfiguracion
+) -> list[esquemas.FotoDelPanel]:
+    with sesion_de_negocio(panel.negocio_id) as s:
+        foto = s.scalar(select(Foto).where(Foto.id == foto_id, Foto.negocio_id == panel.negocio_id))
+        if foto is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "No encontramos esa foto.")
+        foto.texto = datos.texto or None
+        s.commit()
+        return _fotos(s, panel.negocio_id)
+
+
 @router.put("/fotos/orden")
 def ordenar_fotos(ids: list[uuid.UUID], panel: PanelDeConfiguracion) -> list[esquemas.FotoDelPanel]:
     """Recibe los ids en el orden nuevo (los que no vengan quedan al final)."""
@@ -215,6 +238,7 @@ def _canchas(session, negocio_id: uuid.UUID) -> list[esquemas.Cancha]:
         .where(Recurso.negocio_id == negocio_id)
         .order_by(Recurso.orden, Recurso.nombre)
     ).all()
+    partes = partes_por_cancha(session, negocio_id)
     return [
         esquemas.Cancha(
             id=r.id,
@@ -224,6 +248,7 @@ def _canchas(session, negocio_id: uuid.UUID) -> list[esquemas.Cancha]:
             caracteristicas=r.caracteristicas,
             activo=r.activo,
             orden=r.orden,
+            partes=partes.get(r.id, []),
         )
         for r, d in filas
     ]
@@ -291,6 +316,143 @@ def cambiar_cancha(
                 status.HTTP_409_CONFLICT, "Ya hay otra cancha con ese nombre."
             ) from error
         return next(c for c in _canchas(s, panel.negocio_id) if c.id == cancha_id)
+
+
+@router.put("/canchas/{cancha_id}/partes")
+def cambiar_partes_de_cancha(
+    cancha_id: uuid.UUID, datos: esquemas.PartesDeCancha, panel: PanelDeConfiguracion
+) -> esquemas.ResultadoDePartes:
+    """Canchas unidas: con qué canchas se arma esta. Al reservarla se bloquean sus partes
+    (y al reservar una parte, esta) automáticamente."""
+    with sesion_de_negocio(panel.negocio_id) as s:
+        try:
+            se_pisan = cambiar_partes(s, panel.negocio_id, cancha_id, datos.partes)
+        except CombinacionInvalida as error:
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(error)) from error
+        s.commit()
+        return esquemas.ResultadoDePartes(
+            canchas=_canchas(s, panel.negocio_id),
+            reservas_que_se_pisan=[
+                esquemas.ReservaQueSePisa(cancha=r.cancha, inicio=r.inicio, nombre=r.nombre)
+                for r in se_pisan
+            ],
+        )
+
+
+# --- Adicionales (paletas, pelotas, parrilla) ---
+
+
+def _adicionales(s, negocio_id: uuid.UUID) -> list[esquemas.Adicional]:
+    codigos = {d.id: d.codigo for d in s.scalars(select(Deporte))}
+    return [
+        esquemas.Adicional(
+            id=a.id,
+            nombre=a.nombre,
+            precio=a.precio,
+            deporte=codigos.get(a.deporte_id) if a.deporte_id else None,
+            activo=a.activo,
+        )
+        for a in s.scalars(
+            select(Adicional)
+            .where(Adicional.negocio_id == negocio_id)
+            .order_by(Adicional.orden, Adicional.nombre)
+        )
+    ]
+
+
+def _deporte_id(s, codigo: str | None) -> uuid.UUID | None:
+    if codigo is None:
+        return None
+    deporte_id = s.scalar(select(Deporte.id).where(Deporte.codigo == codigo))
+    if deporte_id is None:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Ese deporte no existe.")
+    return deporte_id
+
+
+def _buscar_adicional(s, panel, adicional_id: uuid.UUID) -> Adicional:
+    adicional = s.scalar(
+        select(Adicional).where(
+            Adicional.id == adicional_id, Adicional.negocio_id == panel.negocio_id
+        )
+    )
+    if adicional is None:
+        raise _no_encontrado("ese adicional")
+    return adicional
+
+
+@router.get("/adicionales")
+def listar_adicionales(panel: PanelActual) -> list[esquemas.Adicional]:
+    """También para los empleados: los suman a una reserva desde la agenda."""
+    with sesion_de_negocio(panel.negocio_id) as s:
+        return _adicionales(s, panel.negocio_id)
+
+
+@router.post("/adicionales", status_code=status.HTTP_201_CREATED)
+def crear_adicional(
+    datos: esquemas.NuevoAdicional, panel: PanelDeConfiguracion
+) -> list[esquemas.Adicional]:
+    with sesion_de_negocio(panel.negocio_id) as s:
+        ultimo = s.scalar(
+            select(func.max(Adicional.orden)).where(Adicional.negocio_id == panel.negocio_id)
+        )
+        s.add(
+            Adicional(
+                negocio_id=panel.negocio_id,
+                nombre=datos.nombre,
+                precio=datos.precio,
+                deporte_id=_deporte_id(s, datos.deporte),
+                orden=(ultimo or 0) + 1,
+            )
+        )
+        try:
+            s.commit()
+        except IntegrityError as error:
+            raise HTTPException(
+                status.HTTP_409_CONFLICT, f"Ya hay un adicional que se llama «{datos.nombre}»."
+            ) from error
+        return _adicionales(s, panel.negocio_id)
+
+
+@router.patch("/adicionales/{adicional_id}")
+def cambiar_adicional(
+    adicional_id: uuid.UUID, cambios: esquemas.CambiosDeAdicional, panel: PanelDeConfiguracion
+) -> list[esquemas.Adicional]:
+    """El precio nuevo vale para las reservas que vienen: las ya hechas guardan el suyo."""
+    with sesion_de_negocio(panel.negocio_id) as s:
+        adicional = _buscar_adicional(s, panel, adicional_id)
+        valores = cambios.model_dump(exclude_unset=True)
+        if "deporte" in valores:
+            adicional.deporte_id = _deporte_id(s, valores.pop("deporte"))
+        for campo, valor in valores.items():
+            setattr(adicional, campo, valor)
+        try:
+            s.commit()
+        except IntegrityError as error:
+            raise HTTPException(
+                status.HTTP_409_CONFLICT, "Ya hay otro adicional con ese nombre."
+            ) from error
+        return _adicionales(s, panel.negocio_id)
+
+
+@router.delete("/adicionales/{adicional_id}")
+def quitar_adicional(
+    adicional_id: uuid.UUID, panel: PanelDeConfiguracion
+) -> list[esquemas.Adicional]:
+    """Si nunca se pidió, se borra; si ya está en alguna reserva, se desactiva."""
+    with sesion_de_negocio(panel.negocio_id) as s:
+        adicional = _buscar_adicional(s, panel, adicional_id)
+        pedido = s.scalar(
+            select(func.count()).where(
+                ReservaAdicional.negocio_id == panel.negocio_id,
+                ReservaAdicional.adicional_id == adicional_id,
+            )
+        )
+        if pedido:
+            adicional.activo = False
+        else:
+            s.delete(adicional)
+        s.commit()
+        return _adicionales(s, panel.negocio_id)
 
 
 # --- Horarios ---

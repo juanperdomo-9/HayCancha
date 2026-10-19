@@ -102,5 +102,7 @@ class Reserva(Base):
     # De dónde vino el jugador que reservó online: "haycancha" (página principal) o
     # "directo" (link del complejo). Solo para las métricas (migración 0014).
     llegada: Mapped[str | None] = mapped_column(String)
+    # Lo que se pidió aparte (paletas, parrilla): se paga en la cancha con el saldo.
+    total_adicionales: Mapped[Decimal] = mapped_column(Numeric(12, 2), server_default="0")
     creado_por: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("usuarios.id"))
     creado_a: Mapped[CreadoA]

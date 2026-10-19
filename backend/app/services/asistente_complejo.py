@@ -81,6 +81,7 @@ def _sistema(negocio: Negocio, hoy: date, deportes: str) -> str:
         f"{', ' + negocio.barrio if negocio.barrio else ''}"
         f"{'. Referencia: ' + negocio.referencia if negocio.referencia else ''}. "
         f"Deportes: {deportes}. Servicios: {', '.join(negocio.servicios) or 'no informados'}. "
+        f"Reglas del predio: {'; '.join(negocio.reglas) or 'no informadas'}. "
         f"Seña para reservar: {sena}, se paga online con Mercado Pago. Se puede cancelar y "
         f"recuperar la seña hasta {negocio.horas_cancelacion} horas antes.\n"
         f"Lo que te contó el complejo:\n{sabe or '(nada todavía)'}\n"

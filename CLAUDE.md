@@ -152,7 +152,7 @@ Claves primarias `uuid` con `gen_random_uuid()`. Fechas con hora en `timestamptz
 
 | Tabla | Campos principales |
 | --- | --- |
-| `negocios` | `id`, `slug` (único), `nombre`, `rubro` (`deportes` por ahora), `logo_url`, `portada_url`, `color_primario`, `color_secundario`, `zona_horaria` (por defecto `America/Argentina/Buenos_Aires`), `direccion`, `barrio`, `servicios` (lista de textos: "Vestuarios", "Estacionamiento"…), `sena_tipo` (`fija` o `porcentaje`, por defecto `porcentaje`), `sena_valor` (por defecto 20: lo habitual es 20%, pero lo decide cada complejo), `minutos_para_pagar` (por defecto 10), `horas_cancelacion` (**sin valor por defecto**: se acuerda con cada complejo y es obligatorio en el alta), `plan`, `estado_cuenta` (`al_dia`, `atrasado`, `suspendido`), `mp_user_id`, `mp_access_token_enc`, `mp_refresh_token_enc`, `mp_token_vence_a`, `activo`, `creado_a` |
+| `negocios` | `id`, `slug` (único), `nombre`, `rubro` (`deportes` por ahora), `logo_url`, `portada_url`, `color_primario`, `color_secundario`, `zona_horaria` (por defecto `America/Argentina/Buenos_Aires`), `direccion`, `barrio`, `servicios` (lista de textos: "Vestuarios", "Estacionamiento"…), `reglas` (reglas del predio que el jugador ve antes de pagar), `sena_tipo` (`fija` o `porcentaje`, por defecto `porcentaje`), `sena_valor` (por defecto 20: lo habitual es 20%, pero lo decide cada complejo), `minutos_para_pagar` (por defecto 10), `horas_cancelacion` (**sin valor por defecto**: se acuerda con cada complejo y es obligatorio en el alta), `plan`, `estado_cuenta` (`al_dia`, `atrasado`, `suspendido`), `mp_user_id`, `mp_access_token_enc`, `mp_refresh_token_enc`, `mp_token_vence_a`, `activo`, `creado_a` |
 | `usuarios` | `id`, `negocio_id` (null solo para superadmin), `email` (único), `password_hash`, `rol` (`superadmin`, `dueno`, `empleado`) |
 | `deportes` | `id`, `codigo` (único: `futbol5`, `futbol7`, `futbol11`, `padel`, `tenis`, `basquet`, `voley`…), `nombre`, `duracion_sugerida_min`. Tabla global, sin `negocio_id`: se amplía agregando filas, sin cambiar código |
 | `recursos` | `id`, `negocio_id`, `deporte_id`, `nombre` ("Cancha 1", "Pádel 2"), `caracteristicas` (texto libre: "techada", "sintético", "blindex"), `activo` |
@@ -160,6 +160,8 @@ Claves primarias `uuid` con `gen_random_uuid()`. Fechas con hora en `timestamptz
 | `clientes` | `id`, `negocio_id`, `nombre`, `telefono`, `email`; único (`negocio_id`, `telefono`) |
 | `recursos_combinados` | `negocio_id`, `recurso_id` (la cancha grande), `parte_id` (cada cancha que la forma). Solo para complejos que unen canchas |
 | `reservas` | `id`, `negocio_id`, `recurso_id`, `cliente_id` (null en un bloqueo), `reserva_origen_id` (solo en las reservas espejo de canchas combinadas), `inicio`, `fin`, `estado`, `precio`, `sena`, `sena_en_efectivo` (bool), `saldo_cobrado` (bool), `asistencia` (null, `vino`, `no_vino`), `motivo_bloqueo`, `vence_a`, `mp_preference_id`, `origen` (`web`, `panel`, `bot`), `creado_por` (usuario del panel, si la cargó a mano), `creado_a` |
+| `adicionales` | `id`, `negocio_id`, `nombre`, `precio`, `deporte_id` (null: para todos), `activo`, `orden`. Lo que el complejo alquila aparte (paletas, parrilla); opcional |
+| `reservas_adicionales` | `negocio_id`, `reserva_id`, `adicional_id`, `nombre` y `precio` (copia del momento), `cantidad`. La suma va en `reservas.total_adicionales` y se cobra en la cancha con el saldo: la seña no cambia |
 | `pagos` | `id`, `negocio_id`, `reserva_id`, `mp_payment_id` (**único**), `monto`, `estado`, `detalle` (jsonb con la respuesta de Mercado Pago), `creado_a` |
 | `conocimiento` (fase 3) | `id`, `negocio_id`, `texto`, `embedding` (vector), `fuente` |
 | `consultas_sin_respuesta` (fase 3) | `id`, `negocio_id`, `pregunta`, `resuelta`, `creado_a` |
@@ -176,7 +178,7 @@ ALTER TABLE reservas ADD CONSTRAINT reservas_sin_superposicion
   ) WHERE (estado IN ('pendiente_pago', 'confirmada', 'bloqueada'));
 ```
 
-**Canchas que se combinan.** Algunos complejos unen canchas (por ejemplo, dos de fútbol 5 forman una de fútbol 7). Se modela con `recursos_combinados`. Al reservar una cancha, en la misma transacción se crean reservas `bloqueada` espejo en todas las canchas relacionadas (sus partes, o la cancha grande que integra), con `reserva_origen_id` apuntando a la reserva real. Así la misma regla de superposición impide que se pisen. Si la reserva real se cancela o vence, sus espejos se liberan con ella. El modelo queda preparado desde el principio, pero esta función se implementa cuando un complejo la necesite.
+**Canchas que se combinan.** Algunos complejos unen canchas (por ejemplo, dos de fútbol 5 forman una de fútbol 7). Se modela con `recursos_combinados`. El dueño las une en Canchas → «Canchas unidas». Las reservas `bloqueada` espejo (con `reserva_origen_id` apuntando a la reserva real) las mantiene un trigger de la base (migración 0020): se crean en cada cancha que comparte lugar (sus partes, la grande que integra, o dos grandes con una parte en común) y se cancelan y rehacen cuando la reserva real vence, se cancela o se mueve. La regla de superposición está dividida en dos: `reservas_sin_superposicion` (reales entre sí) y `reservas_sin_pisar_espejos` (real contra espejo); los espejos sí pueden superponerse entre sí. Un espejo no se levanta suelto (409). Los bloqueos fijos de una cancha también cierran las que comparten lugar.
 
 ## Flujo de reserva
 
@@ -308,7 +310,7 @@ Si en el aviso falta alguno de los valores del manifest (por ejemplo, `x-request
 
 - Dos reservas superpuestas en el mismo recurso: la segunda falla (también con duraciones distintas, por ejemplo un turno de 90 minutos contra uno de 60).
 - Complejo con 4 canchas de fútbol 7: cuatro reservas a la misma hora quedan en cuatro canchas distintas y la quinta falla, también si llegan todas al mismo tiempo.
-- Canchas combinadas (cuando se implemente): reservar la cancha grande bloquea sus partes, y reservar una parte bloquea la grande.
+- Canchas combinadas: reservar la cancha grande bloquea sus partes, y reservar una parte bloquea la grande (`test_canchas_combinadas.py`).
 - Un complejo con canchas de fútbol y de pádel muestra cada deporte con su duración y su precio.
 - Una reserva cargada a mano o un bloqueo ocupan el turno: la página y el asistente ya no lo ofrecen, y una reserva online en ese horario falla.
 - La agenda muestra cada turno con el estado correcto (libre, pendiente, reservado, bloqueado) y el nombre del jugador.

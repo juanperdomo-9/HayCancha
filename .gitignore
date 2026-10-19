@@ -26,3 +26,6 @@ dist/
 .DS_Store
 Thumbs.db
 *.log
+
+# Videos generados con frontend/scripts/grabar-recorrido.mjs
+docs/videos/

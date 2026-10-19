@@ -1,0 +1,14 @@
+node_modules
+dist
+.DS_Store
+.env
+
+# Ignore the output video from Git but not videos you import into src/.
+out
+
+# Grabaciones copiadas con npm run grabaciones (se generan, no se suben)
+public/*.mp4
+public/steps-*.json
+public/musica.mp3
+public/logo-haycanchas.png
+build

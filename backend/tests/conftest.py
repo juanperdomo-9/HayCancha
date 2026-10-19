@@ -53,7 +53,8 @@ def base_de_pruebas() -> Iterator[str]:
     with get_engine_admin().begin() as conexion:
         conexion.execute(
             text(
-                "TRUNCATE interesados, bloqueos_fijos, fotos, consultas_sin_respuesta, pagos, "
+                "TRUNCATE interesados, reservas_adicionales, adicionales, bloqueos_fijos, fotos, "
+                "consultas_sin_respuesta, pagos, "
                 "reservas, "
                 "recursos_combinados, "
                 "horarios, "

@@ -15,5 +15,7 @@ class Foto(Base):
     id: Mapped[UuidPk]
     negocio_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("negocios.id"))
     url: Mapped[str] = mapped_column(String)
+    # Epígrafe opcional que se muestra sobre la foto.
+    texto: Mapped[str | None] = mapped_column(String(80))
     orden: Mapped[int] = mapped_column(server_default=text("0"))
     creado_a: Mapped[CreadoA]

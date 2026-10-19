@@ -11,7 +11,7 @@ llama a `cobros.devolver` (así la devolución queda registrada aunque Mercado P
 import uuid
 from datetime import datetime, timedelta
 
-from sqlalchemy import select, update
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -51,12 +51,9 @@ def cancelar(
 
     Si tenía la seña pagada online y `devolver_sena`, marca el pago para devolver y lo
     devuelve. La seña en efectivo no la toca: la maneja el dueño en persona."""
+    # Los espejos de canchas combinadas los cancela la base (trigger de la migración 0020).
     reserva.estado, reserva.vence_a, reserva.url_pago = "cancelada", None, None
-    session.execute(
-        update(Reserva)
-        .where(Reserva.negocio_id == negocio.id, Reserva.reserva_origen_id == reserva.id)
-        .values(estado="cancelada")
-    )
+    session.flush()
     pago = pago_aprobado_de(session, negocio, reserva)
     if pago is None or not devolver_sena:
         return None

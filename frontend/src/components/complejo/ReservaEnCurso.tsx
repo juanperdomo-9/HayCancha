@@ -1,4 +1,4 @@
-import { X } from 'lucide-react'
+import { Minus, Plus, X } from 'lucide-react'
 import { type FormEvent, useId, useState } from 'react'
 import { useNavigate } from 'react-router'
 
@@ -6,7 +6,7 @@ import { llegadaDe } from '../../utils/llegada'
 import { ElegirCancha } from './ElegirCancha'
 
 import { mensaje } from '../../api/client'
-import { type CanchaLibre, type DeporteDelComplejo, type Turno, useCrearReserva } from '../../api/publico'
+import { type AdicionalPublico, type CanchaLibre, type DeporteDelComplejo, type Turno, useCrearReserva } from '../../api/publico'
 import { fechaLarga, plata } from '../../utils/formato'
 
 type Props = {
@@ -19,6 +19,10 @@ type Props = {
   onElegirCancha: (id: string | null) => void
   reservasOnline: boolean
   minutosParaPagar: number
+  /** Reglas del predio: se muestran antes de pagar. */
+  reglas: string[]
+  /** Lo que el complejo alquila aparte: se paga en la cancha. */
+  adicionales: AdicionalPublico[]
   onCerrar?: () => void
 }
 
@@ -33,13 +37,17 @@ function validar(datos: Datos): Partial<Record<keyof Datos, string>> {
 }
 
 /** Resumen del turno elegido y los datos del jugador. Los montos vienen del backend. */
-export function ReservaEnCurso({ slug, turno, fecha, deporte, cancha, canchaElegida, onElegirCancha, reservasOnline, minutosParaPagar, onCerrar }: Props) {
+export function ReservaEnCurso({ slug, turno, fecha, deporte, cancha, canchaElegida, onElegirCancha, reservasOnline, minutosParaPagar, reglas, adicionales, onCerrar }: Props) {
   const id = useId()
   const navegar = useNavigate()
   const crear = useCrearReserva(slug)
   const [datos, setDatos] = useState<Datos>({ nombre: '', telefono: '', email: '' })
   const [errores, setErrores] = useState<Partial<Record<keyof Datos, string>>>({})
-  const saldo = Number(cancha.precio) - Number(cancha.sena)
+  const [pedidos, setPedidos] = useState<Record<string, number>>({})
+  const ofrecidos = adicionales.filter((a) => !a.deporte || a.deporte === deporte.codigo)
+  const totalAdicionales = ofrecidos.reduce((total, a) => total + Number(a.precio) * (pedidos[a.id] ?? 0), 0)
+  const saldo = Number(cancha.precio) - Number(cancha.sena) + totalAdicionales
+  const cambiarPedido = (id: string, paso: number) => setPedidos((actuales) => ({ ...actuales, [id]: Math.min(20, Math.max(0, (actuales[id] ?? 0) + paso)) }))
   const canchaTexto = canchaElegida ? `${cancha.nombre}${cancha.caracteristicas ? ` (${cancha.caracteristicas.toLowerCase()})` : ''}` : 'te asignamos la primera libre'
 
   function enviar(e: FormEvent) {
@@ -56,6 +64,9 @@ export function ReservaEnCurso({ slug, turno, fecha, deporte, cancha, canchaEleg
         telefono: datos.telefono.trim(),
         email: datos.email.trim() || undefined,
         llegada: llegadaDe(slug),
+        adicionales: Object.entries(pedidos)
+          .filter(([, cantidad]) => cantidad > 0)
+          .map(([id, cantidad]) => ({ id, cantidad })),
       },
       {
         onSuccess: ({ url_pago, link }) => {
@@ -120,7 +131,7 @@ export function ReservaEnCurso({ slug, turno, fecha, deporte, cancha, canchaEleg
           <dd className="text-right">
             {plata(saldo)}
             {cancha.precio_efectivo && (
-              <span className="block text-[13px] text-tenue">{plata(Math.max(0, Number(cancha.precio_efectivo) - Number(cancha.sena)))} en efectivo</span>
+              <span className="block text-[13px] text-tenue">{plata(Math.max(0, Number(cancha.precio_efectivo) - Number(cancha.sena)) + totalAdicionales)} en efectivo</span>
             )}
           </dd>
         </div>
@@ -128,6 +139,37 @@ export function ReservaEnCurso({ slug, turno, fecha, deporte, cancha, canchaEleg
 
       {deporte.canchas.length > 1 && (
         <ElegirCancha canchas={deporte.canchas} turno={turno} elegida={canchaElegida ? cancha.id : null} onElegir={onElegirCancha} />
+      )}
+
+      {reservasOnline && ofrecidos.length > 0 && (
+        <section aria-labelledby={`${id}-adicionales`} className="mb-4">
+          <h3 id={`${id}-adicionales`} className="font-semibold">
+            ¿Algo más?
+          </h3>
+          <p className="mb-2 text-[13px] text-tenue">Se paga en la cancha, con el resto del turno.</p>
+          <ul className="grid gap-2">
+            {ofrecidos.map((a) => {
+              const cantidad = pedidos[a.id] ?? 0
+              return (
+                <li key={a.id} className="flex items-center gap-3 rounded-xl bg-lienzo px-3.5 py-2.5 ring-1 ring-borde">
+                  <span className="min-w-0 flex-1">
+                    <b className="block text-[14.5px]">{a.nombre}</b>
+                    <span className="text-[13px] text-tenue tabular-nums">{plata(a.precio)}</span>
+                  </span>
+                  <button type="button" onClick={() => cambiarPedido(a.id, -1)} disabled={!cantidad} aria-label={`Uno menos de ${a.nombre}`} className="grid size-9 place-items-center rounded-full bg-superficie ring-1 ring-borde disabled:opacity-40">
+                    <Minus className="size-4" aria-hidden="true" />
+                  </button>
+                  <span className="w-5 text-center font-bold tabular-nums" aria-live="polite">
+                    {cantidad}
+                  </span>
+                  <button type="button" onClick={() => cambiarPedido(a.id, 1)} aria-label={`Uno más de ${a.nombre}`} className="grid size-9 place-items-center rounded-full bg-complejo text-complejo-sobre">
+                    <Plus className="size-4" aria-hidden="true" />
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+        </section>
       )}
 
       {reservasOnline ? (
@@ -139,6 +181,22 @@ export function ReservaEnCurso({ slug, turno, fecha, deporte, cancha, canchaEleg
             <p role="alert" className="rounded-xl bg-red-50 px-3.5 py-2.5 text-sm text-red-800 ring-1 ring-red-200">
               {mensaje(crear.error)}
             </p>
+          )}
+          {reglas.length > 0 && (
+            <section aria-labelledby={`${id}-reglas`} className="rounded-xl bg-complejo-suave/60 px-4 py-3 ring-1 ring-complejo-linea">
+              <h3 id={`${id}-reglas`} className="text-sm font-bold">
+                Reglas del predio
+              </h3>
+              <ul className="mt-1.5 grid gap-1 text-[13.5px]">
+                {reglas.map((regla) => (
+                  <li key={regla} className="flex gap-2">
+                    <span aria-hidden="true" className="mt-[7px] size-1.5 flex-none rounded-full bg-complejo" />
+                    {regla}
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-2 text-[12.5px] text-tenue">Al reservar aceptás las reglas del complejo.</p>
+            </section>
           )}
           <button
             type="submit"

@@ -384,10 +384,50 @@ def test_galeria_de_fotos(escenario) -> None:
     primera, segunda = respuesta.json()
     dadas_vuelta = dueno.put(f"{fotos}/orden", json=[segunda["id"], primera["id"]]).json()
     assert [f["id"] for f in dadas_vuelta] == [segunda["id"], primera["id"]]
+    # Texto de la foto: se guarda recortado y se ve en la página.
+    con_texto = dueno.put(f"{fotos}/{segunda['id']}/texto", json={"texto": "  Cancha 1, techada "})
+    assert con_texto.json()[0]["texto"] == "Cancha 1, techada"
     publico = dueno.get(f"/publico/complejos/{escenario['a']}").json()
-    assert publico["fotos"] == [segunda["url"], primera["url"]]
+    assert publico["fotos"] == [
+        {"url": segunda["url"], "texto": "Cancha 1, techada"},
+        {"url": primera["url"], "texto": None},
+    ]
+    # Vacío: sin texto. Y el de otro complejo no la encuentra.
+    assert (
+        dueno.put(f"{fotos}/{segunda['id']}/texto", json={"texto": ""}).json()[0]["texto"] is None
+    )
+    otro = entrar(escenario["dueno_b"]).put(
+        f"/panel/{escenario['b']}/fotos/{segunda['id']}/texto", json={"texto": "x"}
+    )
+    assert otro.status_code == 404
     # Ni el empleado ni el dueño de otro complejo la tocan.
     assert entrar(escenario["empleado_a"]).delete(f"{fotos}/{primera['id']}").status_code == 403
     ajeno = entrar(escenario["dueno_b"]).delete(f"/panel/{escenario['b']}/fotos/{primera['id']}")
     assert ajeno.status_code == 404
     assert [f["id"] for f in dueno.delete(f"{fotos}/{primera['id']}").json()] == [segunda["id"]]
+
+
+def test_reglas_del_predio(escenario) -> None:
+    dueno = entrar(escenario["dueno_a"])
+    reglas = ["No se permiten bebidas alcohólicas", "  El saldo se paga solo en efectivo "]
+    guardada = dueno.patch(f"/panel/{escenario['a']}/configuracion", json={"reglas": reglas})
+    assert guardada.json()["reglas"] == [reglas[0], "El saldo se paga solo en efectivo"]
+    publico = TestClient(app).get(f"/publico/complejos/{escenario['a']}").json()
+    assert publico["reglas"] == guardada.json()["reglas"]
+    # Una regla vacía o demasiadas reglas: no.
+    assert (
+        dueno.patch(f"/panel/{escenario['a']}/configuracion", json={"reglas": [""]}).status_code
+        == 422
+    )
+    assert (
+        dueno.patch(
+            f"/panel/{escenario['a']}/configuracion", json={"reglas": ["x"] * 13}
+        ).status_code
+        == 422
+    )
+    # El empleado no toca la configuración.
+    empleado = entrar(escenario["empleado_a"])
+    assert (
+        empleado.patch(f"/panel/{escenario['a']}/configuracion", json={"reglas": []}).status_code
+        == 403
+    )

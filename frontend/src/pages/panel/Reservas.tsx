@@ -1,3 +1,4 @@
+import { Plus, X } from 'lucide-react'
 import { type FormEvent, useState } from 'react'
 import { useParams } from 'react-router'
 
@@ -8,6 +9,17 @@ import { plata } from '../../utils/formato'
 import { EncabezadoSeccion } from './EncabezadoSeccion'
 
 const TURNO_DE_EJEMPLO = 85000
+
+// Las más comunes, para cargarlas con un toque.
+const REGLAS_SUGERIDAS = [
+  'No se permiten bebidas alcohólicas',
+  'Prohibido jugar con botines de fútbol 11 (tapones) en el sintético',
+  'El saldo se paga solo en efectivo',
+  'Llegá 10 minutos antes: el turno termina a horario',
+  'Prohibido fumar dentro de las canchas',
+  'No se permiten mascotas',
+]
+const MAX_REGLAS = 12
 
 export default function Reservas() {
   const { slug = '' } = useParams()
@@ -26,7 +38,14 @@ function FormularioReservas({ slug, configuracion: c }: { slug: string; configur
     horas_anticipacion: String(c.horas_anticipacion ?? 0),
     minutos_para_pagar: String(c.minutos_para_pagar),
   })
+  const [reglas, setReglas] = useState<string[]>(c.reglas ?? [])
+  const [otraRegla, setOtraRegla] = useState('')
   const [ok, setOk] = useState(false)
+
+  function alternarRegla(regla: string) {
+    setOk(false)
+    setReglas((actuales) => (actuales.includes(regla) ? actuales.filter((r) => r !== regla) : [...actuales, regla].slice(0, MAX_REGLAS)))
+  }
 
   function enviar(e: FormEvent) {
     e.preventDefault()
@@ -38,6 +57,7 @@ function FormularioReservas({ slug, configuracion: c }: { slug: string; configur
         horas_cancelacion: Number(datos.horas_cancelacion),
         horas_anticipacion: Number(datos.horas_anticipacion || 0),
         minutos_para_pagar: Number(datos.minutos_para_pagar),
+        reglas,
       },
       { onSuccess: () => setOk(true) },
     )
@@ -48,7 +68,7 @@ function FormularioReservas({ slug, configuracion: c }: { slug: string; configur
 
   return (
     <form onSubmit={enviar} className="grid gap-6">
-      <EncabezadoSeccion titulo="Seña y cancelación" bajada="Cuánto paga el jugador para reservar y hasta cuándo puede cancelar sin perderla." />
+      <EncabezadoSeccion titulo="Seña y cancelación" bajada="Cuánto paga el jugador para reservar, hasta cuándo puede cancelar sin perderla y las reglas del predio." />
       <Tarjeta titulo="Seña" descripcion="Lo habitual es un 20% del turno.">
         <div className="grid gap-4 sm:grid-cols-2">
           <fieldset className="grid gap-2">
@@ -129,6 +149,43 @@ function FormularioReservas({ slug, configuracion: c }: { slug: string; configur
               : 'Con 0, se puede reservar online hasta el último momento.'
           }
         />
+      </Tarjeta>
+      <Tarjeta titulo="Reglas del predio" descripcion="El jugador las ve en un recuadro antes de pagar la seña. Tocá las que valen en tu complejo o escribí las tuyas.">
+        <div className="flex flex-wrap gap-2">
+          {[...REGLAS_SUGERIDAS, ...reglas.filter((r) => !REGLAS_SUGERIDAS.includes(r))].map((regla) => (
+            <button
+              key={regla}
+              type="button"
+              aria-pressed={reglas.includes(regla)}
+              onClick={() => alternarRegla(regla)}
+              className="inline-flex items-center gap-1.5 rounded-full bg-superficie px-3.5 py-1.5 text-left text-sm ring-1 ring-linea aria-pressed:bg-complejo aria-pressed:text-complejo-sobre aria-pressed:ring-complejo"
+            >
+              {regla}
+              {reglas.includes(regla) && !REGLAS_SUGERIDAS.includes(regla) && <X className="size-3.5" aria-hidden="true" />}
+            </button>
+          ))}
+        </div>
+        <div className="mt-3 flex gap-2">
+          <input
+            value={otraRegla}
+            onChange={(e) => setOtraRegla(e.target.value)}
+            maxLength={140}
+            placeholder="Otra regla: Las pelotas las trae cada equipo"
+            aria-label="Otra regla"
+            className="w-full max-w-md rounded-[10px] border-[1.5px] border-linea bg-superficie px-3 py-2 text-[16px]"
+          />
+          <Boton
+            variante="suave"
+            disabled={!otraRegla.trim() || reglas.length >= MAX_REGLAS}
+            onClick={() => {
+              alternarRegla(otraRegla.trim())
+              setOtraRegla('')
+            }}
+          >
+            <Plus className="size-4" aria-hidden="true" />
+            Sumar
+          </Boton>
+        </div>
       </Tarjeta>
       <div className="grid gap-3">
         {guardar.error && <Aviso>{mensaje(guardar.error)}</Aviso>}

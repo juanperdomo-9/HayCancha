@@ -58,8 +58,14 @@ export type DeporteDelComplejo = Deporte & {
   canchas: Cancha[]
 }
 
+/** Foto de la galería, con su texto opcional ("Cancha 1, techada"). */
+export type Foto = { url: string; texto: string | null }
+
+/** Algo que el complejo alquila aparte. Si tiene deporte, es solo de ese (paletas: pádel). */
+export type AdicionalPublico = { id: string; nombre: string; precio: string; deporte: string | null }
+
 export type ComplejoDetalle = {
-  fotos: string[]
+  fotos: Foto[]
   asistente: { nombre: string; bienvenida: string } | null
   slug: string
   nombre: string
@@ -68,6 +74,8 @@ export type ComplejoDetalle = {
   referencia: string | null
   whatsapp: string | null
   servicios: string[]
+  reglas: string[]
+  adicionales: AdicionalPublico[]
   logo_url: string | null
   portada_url: string | null
   color_primario: string
@@ -134,6 +142,7 @@ export type NuevaReserva = {
   telefono: string
   email?: string
   llegada?: 'haycancha' | 'directo'
+  adicionales?: { id: string; cantidad: number }[]
 }
 
 export type ReservaPublica = {
@@ -155,6 +164,8 @@ export type ReservaPublica = {
   precio: string
   sena: string
   saldo: string
+  adicionales: { nombre: string; cantidad: number; precio: string }[]
+  total_adicionales: string
   precio_efectivo: string | null
   saldo_efectivo: string | null
   vence_a: string | null

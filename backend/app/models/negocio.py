@@ -44,6 +44,8 @@ class Negocio(Base):
     servicios: Mapped[list[str]] = mapped_column(
         ARRAY(String), server_default=text("'{}'::varchar[]")
     )
+    # Reglas del predio: el jugador las ve antes de pagar la seña.
+    reglas: Mapped[list[str]] = mapped_column(ARRAY(String), server_default=text("'{}'::varchar[]"))
     sena_tipo: Mapped[str] = mapped_column(String, server_default="porcentaje")
     sena_valor: Mapped[Decimal] = mapped_column(Numeric(12, 2), server_default="20")
     minutos_para_pagar: Mapped[int] = mapped_column(server_default="10")

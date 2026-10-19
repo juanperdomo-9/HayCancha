@@ -8,7 +8,21 @@ from decimal import Decimal
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
-from app.models import Cliente, Deporte, Horario, Negocio, Recurso, Reserva, Usuario
+from app.models import (
+    Adicional,
+    BloqueoFijo,
+    Cliente,
+    ConsultaSinRespuesta,
+    Deporte,
+    Foto,
+    Horario,
+    Negocio,
+    Pago,
+    Recurso,
+    Reserva,
+    ReservaAdicional,
+    Usuario,
+)
 from app.services.auth import hashear_clave
 from app.services.disponibilidad import ahora, hoy_en_el_negocio, zona_del_negocio
 from app.services.sena import calcular_sena
@@ -71,10 +85,7 @@ def cargar_ejemplo(session: Session, *, reemplazar: bool = False) -> Negocio:
     if existente is not None:
         if not reemplazar:
             return existente
-        for tabla in (Reserva, Cliente, Horario, Recurso, Usuario):
-            session.execute(delete(tabla).where(tabla.negocio_id == existente.id))
-        session.delete(existente)
-        session.flush()
+        borrar_negocio(session, existente)
 
     negocio = Negocio(
         slug=SLUG_EJEMPLO,
@@ -90,9 +101,42 @@ def cargar_ejemplo(session: Session, *, reemplazar: bool = False) -> Negocio:
     session.add(negocio)
     session.flush()
 
+    cargar_canchas(session, negocio, CANCHAS)
+    session.flush()
+    cargar_usuarios_de_ejemplo(session, negocio)
+    cargar_reservas_de_ejemplo(session, negocio)
+    return negocio
+
+
+def borrar_negocio(session: Session, negocio: Negocio) -> None:
+    """Borra un complejo de prueba con todo lo suyo."""
+    for tabla in (
+        Pago,
+        ReservaAdicional,
+        Reserva,
+        Adicional,
+        BloqueoFijo,
+        Foto,
+        ConsultaSinRespuesta,
+        Cliente,
+        Horario,
+        Recurso,
+        Usuario,
+    ):
+        session.execute(delete(tabla).where(tabla.negocio_id == negocio.id))
+    session.delete(negocio)
+    session.flush()
+
+
+def cargar_canchas(
+    session: Session,
+    negocio: Negocio,
+    canchas_datos: dict[str, tuple[list[tuple[str, str]], int, list[Franja]]],
+) -> None:
+    """Crea las canchas con sus horarios: los mismos todos los días."""
     deportes = {d.codigo: d for d in session.scalars(select(Deporte))}
     orden = 0
-    for codigo, (canchas, duracion, franjas) in CANCHAS.items():
+    for codigo, (canchas, duracion, franjas) in canchas_datos.items():
         for nombre, caracteristicas in canchas:
             recurso = Recurso(
                 negocio_id=negocio.id,
@@ -118,9 +162,6 @@ def cargar_ejemplo(session: Session, *, reemplazar: bool = False) -> Negocio:
                         )
                     )
     session.flush()
-    cargar_usuarios_de_ejemplo(session, negocio)
-    cargar_reservas_de_ejemplo(session, negocio)
-    return negocio
 
 
 def cargar_usuarios_de_ejemplo(session: Session, negocio: Negocio) -> None:
@@ -163,14 +204,22 @@ OCUPACION = [
 ]
 
 
-def _precio(codigo: str, hora: time) -> Decimal:
-    for franja in CANCHAS[codigo][2]:
+def _precio(codigo: str, hora: time, canchas_datos=CANCHAS) -> Decimal:
+    for franja in canchas_datos[codigo][2]:
         if franja.desde <= hora and (hora < franja.hasta or franja.hasta <= franja.desde):
             return franja.precio
     raise ValueError(f"{hora} no está en los horarios de {codigo}")
 
 
-def cargar_reservas_de_ejemplo(session: Session, negocio: Negocio, dias: int = 7) -> None:
+def cargar_reservas_de_ejemplo(
+    session: Session,
+    negocio: Negocio,
+    dias: int = 7,
+    *,
+    canchas_datos=CANCHAS,
+    jugadores=JUGADORES,
+    ocupacion=OCUPACION,
+) -> None:
     """Reservas confirmadas y un bloqueo en los próximos días, para ver la página con
     turnos a medio llenar. Se calculan desde hoy: para renovarlas, --reemplazar."""
     zona = zona_del_negocio(negocio)
@@ -185,7 +234,7 @@ def cargar_reservas_de_ejemplo(session: Session, negocio: Negocio, dias: int = 7
         canchas.setdefault(codigo, []).append(recurso)
 
     clientes = []
-    for nombre, telefono in JUGADORES:
+    for nombre, telefono in jugadores:
         cliente = Cliente(negocio_id=negocio.id, nombre=nombre, telefono=telefono)
         session.add(cliente)
         clientes.append(cliente)
@@ -195,7 +244,8 @@ def cargar_reservas_de_ejemplo(session: Session, negocio: Negocio, dias: int = 7
         return datetime.combine(fecha, hora, tzinfo=zona)
 
     manana = hoy + timedelta(days=1)
-    bloqueada = (canchas["futbol7"][3].id, momento(manana, time(22)))
+    # Un bloqueo mañana a las 22, en la última cancha del primer deporte.
+    bloqueada = (canchas[ocupacion[0][0]][-1].id, momento(manana, time(22)))
     session.add(
         Reserva(
             negocio_id=negocio.id,
@@ -211,7 +261,7 @@ def cargar_reservas_de_ejemplo(session: Session, negocio: Negocio, dias: int = 7
     n = 0
     for i in range(dias):
         fecha = hoy + timedelta(days=i)
-        for codigo, hora, minutos, (pares, impares) in OCUPACION:
+        for codigo, hora, minutos, (pares, impares) in ocupacion:
             inicio = momento(fecha, hora)
             if inicio <= ahora():
                 continue
@@ -220,7 +270,7 @@ def cargar_reservas_de_ejemplo(session: Session, negocio: Negocio, dias: int = 7
                 recurso = lista[(k + i) % len(lista)]
                 if (recurso.id, inicio) == bloqueada:
                     continue
-                precio = _precio(codigo, hora)
+                precio = _precio(codigo, hora, canchas_datos)
                 session.add(
                     Reserva(
                         negocio_id=negocio.id,

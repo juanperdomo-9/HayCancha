@@ -46,12 +46,17 @@ def saldo_efectivo(reserva: Reserva) -> Decimal | None:
     """Lo que falta si el saldo se paga en efectivo (None si no hay precio en efectivo)."""
     if reserva.precio_efectivo is None:
         return None
-    return max(CERO, reserva.precio_efectivo - reserva.sena)
+    return max(CERO, reserva.precio_efectivo - reserva.sena) + adicionales_de(reserva)
 
 
 def saldo(reserva: Reserva) -> Decimal:
+    """Lo que se cobra en la cancha: el turno menos la seña, más los adicionales."""
     # Si el turno quedó más barato que la seña (un cambio de horario), no queda nada por cobrar.
-    return max(CERO, (reserva.precio or CERO) - reserva.sena)
+    return max(CERO, (reserva.precio or CERO) - reserva.sena) + adicionales_de(reserva)
+
+
+def adicionales_de(reserva: Reserva) -> Decimal:
+    return reserva.total_adicionales or CERO
 
 
 def agenda_del_dia(session: Session, negocio: Negocio, fecha: date) -> list[CanchaDeAgenda]:

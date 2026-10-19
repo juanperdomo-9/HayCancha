@@ -1,12 +1,13 @@
 import 'leaflet/dist/leaflet.css'
 
 import L from 'leaflet'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router'
 
 import { type ComplejoResumen, useComplejosConLugar } from '../api/publico'
 import { plata } from '../utils/formato'
 import { VIA_HAYCANCHA } from '../utils/llegada'
+import { limpiarDireccion, ubicacionDeLinkDeMaps } from '../utils/mapas'
 
 // Mapas de OpenStreetMap (gratis, sin clave; piden la atribución).
 const CAPAS = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
@@ -233,23 +234,34 @@ export function MapaDeCanchas({ complejos }: { complejos: ComplejoResumen[] }) {
 
 type Ubicacion = { latitud: number | null; longitud: number | null }
 
-/** Panel: el dueño marca dónde queda el complejo tocando el mapa (o buscando la dirección). */
+/** Panel: el dueño marca dónde queda el complejo tocando el mapa, buscando la dirección o
+ * pegando el link de Google Maps. */
 export function ElegirUbicacion({ valor, color, direccion, onCambiar }: { valor: Ubicacion; color: string; direccion: string; onCambiar: (u: Ubicacion) => void }) {
   const contenedor = useRef<HTMLDivElement>(null)
   const mapa = useMapa(contenedor)
   const marcador = useRef<L.Marker | null>(null)
   const [buscando, setBuscando] = useState(false)
   const [aviso, setAviso] = useState('')
+  const [link, setLink] = useState('')
+  // Si el pin lo puso la persona (tocando, arrastrando o con el link), no se pisa solo.
+  const manual = useRef(valor.latitud != null)
+  const ponerAMano = useCallback(
+    (u: Ubicacion) => {
+      manual.current = true
+      onCambiar(u)
+    },
+    [onCambiar],
+  )
 
   useEffect(() => {
     const m = mapa.current
     if (!m) return
-    const alTocar = (e: L.LeafletMouseEvent) => onCambiar({ latitud: +e.latlng.lat.toFixed(6), longitud: +e.latlng.lng.toFixed(6) })
+    const alTocar = (e: L.LeafletMouseEvent) => ponerAMano({ latitud: +e.latlng.lat.toFixed(6), longitud: +e.latlng.lng.toFixed(6) })
     m.on('click', alTocar)
     return () => {
       m.off('click', alTocar)
     }
-  }, [mapa, onCambiar])
+  }, [mapa, ponerAMano])
 
   useEffect(() => {
     const m = mapa.current
@@ -261,33 +273,61 @@ export function ElegirUbicacion({ valor, color, direccion, onCambiar }: { valor:
     marcador.current = L.marker(punto, { icon: pin(color, ''), draggable: true }).addTo(m)
     marcador.current.on('dragend', () => {
       const p = marcador.current!.getLatLng()
-      onCambiar({ latitud: +p.lat.toFixed(6), longitud: +p.lng.toFixed(6) })
+      ponerAMano({ latitud: +p.lat.toFixed(6), longitud: +p.lng.toFixed(6) })
     })
     m.setView(punto, Math.max(m.getZoom(), 16))
-  }, [mapa, valor.latitud, valor.longitud, color, onCambiar])
+  }, [mapa, valor.latitud, valor.longitud, color, ponerAMano])
 
-  // Automático: cuando hay dirección y todavía no hay pin, se busca sola.
-  const sinPin = valor.latitud == null
+  // Automático: cada vez que cambia la dirección (completa, con altura) se vuelve a buscar,
+  // salvo que el pin lo haya puesto la persona. Antes se buscaba una sola vez, a veces con
+  // la dirección a medio escribir, y el pin quedaba en otro lado.
   useEffect(() => {
-    if (!sinPin || direccion.split(',').length < 3) return
+    if (manual.current || direccion.split(',').length < 3 || !/\d/.test(direccion)) return
     const espera = setTimeout(() => void buscar(), 1200)
     return () => clearTimeout(espera)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [direccion, sinPin])
+  }, [direccion])
+
+  async function buscarEnElMapa(consulta: string): Promise<Ubicacion | null> {
+    const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=ar&q=${encodeURIComponent(consulta)}`
+    const [lugar] = (await (await fetch(url)).json()) as { lat: string; lon: string }[]
+    return lugar ? { latitud: +(+lugar.lat).toFixed(6), longitud: +(+lugar.lon).toFixed(6) } : null
+  }
 
   async function buscar() {
     setBuscando(true)
     setAviso('')
     try {
-      const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=ar&q=${encodeURIComponent(direccion)}`
-      const [lugar] = (await (await fetch(url)).json()) as { lat: string; lon: string }[]
-      if (lugar) onCambiar({ latitud: +(+lugar.lat).toFixed(6), longitud: +(+lugar.lon).toFixed(6) })
-      else setAviso('No la encontramos. Mové el mapa hasta el complejo y tocá el lugar exacto.')
+      const limpia = limpiarDireccion(direccion)
+      const exacta = await buscarEnElMapa(limpia)
+      if (exacta) {
+        manual.current = false
+        onCambiar(exacta)
+        return
+      }
+      // Sin la altura: al menos la calle, para acomodar el pin a mano.
+      const calle = await buscarEnElMapa(limpia.replace(/\s+\d+\s*(?=,|$)/, ''))
+      if (calle) {
+        ponerAMano(calle)
+        setAviso('Encontramos la calle pero no la altura: arrastrá el pin hasta el complejo o pegá el link de Google Maps.')
+      } else setAviso('No la encontramos. Pegá el link de Google Maps del complejo o tocá el lugar exacto en el mapa.')
     } catch {
-      setAviso('No pudimos buscarla. Tocá el lugar exacto en el mapa.')
+      setAviso('No pudimos buscarla. Pegá el link de Google Maps o tocá el lugar exacto en el mapa.')
     } finally {
       setBuscando(false)
     }
+  }
+
+  function usarLink(texto: string) {
+    setLink(texto)
+    if (!texto.trim()) return
+    const u = ubicacionDeLinkDeMaps(texto)
+    if (u) {
+      ponerAMano(u)
+      setAviso('')
+    } else if (/goo\.gl|maps\.app/.test(texto)) {
+      setAviso('Ese es un link corto: abrilo y copiá el link largo de la barra de direcciones (el que tiene @ y números).')
+    } else setAviso('No encontramos la ubicación en ese link. Copiá el de la barra de direcciones de Google Maps.')
   }
 
   return (
@@ -305,6 +345,14 @@ export function ElegirUbicacion({ valor, color, direccion, onCambiar }: { valor:
           {valor.latitud == null ? 'Todavía no está marcado: no aparece en el mapa de HayCanchas.' : 'Si no quedó justo, tocá el lugar exacto o arrastrá el pin.'}
         </span>
       </div>
+      <input
+        type="url"
+        value={link}
+        onChange={(e) => usarLink(e.target.value)}
+        placeholder="O pegá el link de Google Maps del complejo"
+        aria-label="Link de Google Maps del complejo"
+        className="rounded-[10px] border-[1.5px] border-linea bg-superficie px-3 py-2.5 text-[16px]"
+      />
       {aviso && <p className="text-sm text-amber-800">{aviso}</p>}
       <div ref={contenedor} className="z-0 aspect-[16/10] w-full overflow-hidden rounded-2xl border border-linea" />
     </div>

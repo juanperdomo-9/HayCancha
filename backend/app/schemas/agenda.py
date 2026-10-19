@@ -80,9 +80,27 @@ class Cliente(BaseModel):
     email: str | None
 
 
+class AdicionalDeReserva(BaseModel):
+    adicional_id: uuid.UUID
+    nombre: str
+    cantidad: int
+    precio: Decimal
+
+
+class PedidoDeAdicional(BaseModel):
+    id: uuid.UUID
+    cantidad: Annotated[int, Field(ge=1, le=20)] = 1
+
+
 class ReservaDetalle(BaseModel):
     id: uuid.UUID
     estado: Estado
+    # Bloqueo automático porque la cancha comparte lugar con otra reservada (canchas
+    # unidas). No se levanta solo: se cancela o se mueve la reserva original.
+    espejo: bool = False
+    # Lo que se alquila aparte (paletas, parrilla): ya está sumado en el saldo.
+    adicionales: list[AdicionalDeReserva] = []
+    total_adicionales: Decimal = Decimal("0")
     cancha_id: uuid.UUID
     cancha: str
     deporte: str

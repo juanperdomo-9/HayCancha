@@ -42,6 +42,14 @@ def ocurrencias(
     )
     if not bloqueos:
         return resultado
+    from app.services.combinadas import en_conflicto
+
+    # Un bloqueo fijo en una cancha también ocupa las que comparten lugar con ella
+    # (canchas combinadas): bloquear la de fútbol 7 cierra sus dos de fútbol 5.
+    alcance: dict[uuid.UUID, set[uuid.UUID]] = {}
+    for b in bloqueos:
+        if b.recurso_id and b.recurso_id not in alcance:
+            alcance[b.recurso_id] = {b.recurso_id} | en_conflicto(session, negocio.id, b.recurso_id)
     zona = zona_del_negocio(negocio)
     # Desde un día antes: un bloqueo de 23 a 02 del día anterior puede tocar el intervalo.
     dia: date = desde.astimezone(zona).date() - timedelta(days=1)
@@ -56,7 +64,7 @@ def ocurrencias(
                 fin += timedelta(days=1)  # termina al día siguiente (o a medianoche)
             if not se_superponen(inicio, fin, desde, hasta):
                 continue
-            for recurso_id in [b.recurso_id] if b.recurso_id else recurso_ids:
+            for recurso_id in alcance[b.recurso_id] if b.recurso_id else recurso_ids:
                 if recurso_id in recurso_ids:
                     resultado[recurso_id].append(Ocurrencia(b.id, inicio, fin, b.motivo))
         dia += timedelta(days=1)

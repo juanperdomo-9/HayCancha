@@ -22,6 +22,7 @@ from app.models import Cliente, Deporte, Negocio, Recurso, Reserva
 from app.routers.publico import DIAS_RESERVABLES, buscar_negocio
 from app.schemas import reserva_online as esquemas
 from app.services import avisos
+from app.services.adicionales import AdicionalInvalido, Pedido, fijar_adicionales, pedidos_de
 from app.services.agenda import saldo, saldo_efectivo
 from app.services.cancelaciones import (
     CambioNoPermitido,
@@ -160,6 +161,12 @@ def crear_reserva_online(
         except (TurnoInvalido, ValueError) as error:
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(error)) from error
 
+        if datos.adicionales:
+            try:
+                fijar_adicionales(s, reserva, [Pedido(a.id, a.cantidad) for a in datos.adicionales])
+            except AdicionalInvalido as error:
+                s.rollback()
+                raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(error)) from error
         reserva.conexion = conexion
         reserva.llegada = datos.llegada
         reserva.codigo = nuevo_codigo(negocio, reserva)
@@ -245,6 +252,11 @@ def _publica(s: Session, negocio: Negocio, reserva: Reserva) -> esquemas.Reserva
         precio=reserva.precio,
         sena=reserva.sena,
         saldo=saldo(reserva),
+        adicionales=[
+            esquemas.AdicionalPedido(nombre=p.nombre, cantidad=p.cantidad, precio=p.precio)
+            for p in pedidos_de(s, reserva)
+        ],
+        total_adicionales=reserva.total_adicionales,
         precio_efectivo=reserva.precio_efectivo,
         saldo_efectivo=saldo_efectivo(reserva),
         vence_a=reserva.vence_a if pendiente else None,

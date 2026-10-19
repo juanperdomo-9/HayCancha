@@ -17,6 +17,7 @@ from app.db import sesion_de_negocio
 from app.dependencias import PanelActual
 from app.models import BloqueoFijo, Cliente, Deporte, Negocio, Recurso, Reserva
 from app.schemas import agenda as esquemas
+from app.services.adicionales import AdicionalInvalido, Pedido, fijar_adicionales, pedidos_de
 from app.services.agenda import (
     agenda_del_dia,
     minutos_para_pagar,
@@ -188,6 +189,14 @@ def _detalle(s: Session, negocio: Negocio, reserva: Reserva) -> esquemas.Reserva
         asistencia=reserva.asistencia,
         origen=reserva.origen,
         motivo_bloqueo=reserva.motivo_bloqueo,
+        espejo=reserva.reserva_origen_id is not None,
+        adicionales=[
+            esquemas.AdicionalDeReserva(
+                adicional_id=p.adicional_id, nombre=p.nombre, cantidad=p.cantidad, precio=p.precio
+            )
+            for p in pedidos_de(s, reserva)
+        ],
+        total_adicionales=reserva.total_adicionales,
         minutos_para_pagar=minutos_para_pagar(reserva),
         cliente=esquemas.Cliente(
             nombre=cliente.nombre, telefono=cliente.telefono, email=cliente.email
@@ -261,6 +270,26 @@ def cambiar_reserva(
         return _detalle(s, panel.negocio, reserva)
 
 
+@router.put("/reservas/{reserva_id}/adicionales")
+def cambiar_adicionales(
+    reserva_id: uuid.UUID, pedidos: list[esquemas.PedidoDeAdicional], panel: PanelActual
+) -> esquemas.ReservaDetalle:
+    """Lo que el jugador pidió aparte (o sumó en la cancha). Se cobra con el saldo."""
+    with sesion_de_negocio(panel.negocio_id) as s:
+        reserva = _buscar_reserva(s, panel, reserva_id)
+        if reserva.cliente_id is None or reserva.estado not in ("pendiente_pago", "confirmada"):
+            raise HTTPException(
+                status.HTTP_422_UNPROCESSABLE_CONTENT,
+                "Los adicionales se suman a reservas activas.",
+            )
+        try:
+            fijar_adicionales(s, reserva, [Pedido(p.id, p.cantidad) for p in pedidos])
+        except AdicionalInvalido as error:
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(error)) from error
+        s.commit()
+        return _detalle(s, panel.negocio, reserva)
+
+
 @router.post("/reservas/{reserva_id}/cancelar")
 def cancelar_reserva(
     reserva_id: uuid.UUID, panel: PanelActual, datos: esquemas.Cancelacion | None = None
@@ -270,6 +299,12 @@ def cancelar_reserva(
     datos = datos or esquemas.Cancelacion()
     with sesion_de_negocio(panel.negocio_id) as s:
         reserva = _buscar_reserva(s, panel, reserva_id)
+        if reserva.reserva_origen_id is not None:
+            raise HTTPException(
+                status.HTTP_409_CONFLICT,
+                "Este turno está ocupado porque se usa en otra cancha (canchas unidas): "
+                "cancelá o mové esa reserva.",
+            )
         if reserva.estado not in ("pendiente_pago", "confirmada", "bloqueada"):
             raise HTTPException(
                 status.HTTP_422_UNPROCESSABLE_CONTENT, "Esa reserva ya no está activa."

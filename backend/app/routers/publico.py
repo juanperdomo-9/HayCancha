@@ -16,6 +16,7 @@ from app.db import get_session, sesion_de_negocio
 from app.models import Deporte, Foto, Horario, Negocio, Recurso
 from app.schemas import publico as esquemas
 from app.services import ia
+from app.services.adicionales import ofrecidos
 from app.services.cobros import proveedor_para
 from app.services.disponibilidad import (
     disponibilidad,
@@ -137,13 +138,24 @@ def ver_complejo(slug: str, session: SesionPublica) -> esquemas.ComplejoDetalle:
     negocio = buscar_negocio(session, slug)
     with sesion_de_negocio(negocio.id) as s:
         deportes = deportes_del_negocio(s, negocio.id)
-        fotos = list(
-            s.scalars(
-                select(Foto.url)
+        codigos = {d.id: d.codigo for d in s.scalars(select(Deporte))}
+        adicionales = [
+            esquemas.AdicionalPublico(
+                id=a.id,
+                nombre=a.nombre,
+                precio=a.precio,
+                deporte=codigos.get(a.deporte_id) if a.deporte_id else None,
+            )
+            for a in ofrecidos(s, negocio.id)
+        ]
+        fotos = [
+            esquemas.FotoPublica(url=f.url, texto=f.texto)
+            for f in s.scalars(
+                select(Foto)
                 .where(Foto.negocio_id == negocio.id)
                 .order_by(Foto.orden, Foto.creado_a)
             )
-        )
+        ]
     return esquemas.ComplejoDetalle(
         slug=negocio.slug,
         nombre=negocio.nombre,
@@ -159,6 +171,8 @@ def ver_complejo(slug: str, session: SesionPublica) -> esquemas.ComplejoDetalle:
         if get_settings().asistentes_de_complejo and negocio.asistente_activo and ia.disponible()
         else None,
         servicios=negocio.servicios,
+        reglas=negocio.reglas,
+        adicionales=adicionales,
         logo_url=negocio.logo_url,
         portada_url=negocio.portada_url,
         color_primario=negocio.color_primario,

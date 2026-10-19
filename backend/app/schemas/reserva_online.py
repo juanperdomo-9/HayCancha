@@ -6,7 +6,18 @@ from datetime import date, datetime
 from decimal import Decimal
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, EmailStr, StringConstraints
+from pydantic import BaseModel, EmailStr, Field, StringConstraints
+
+
+class PedidoDeAdicional(BaseModel):
+    id: uuid.UUID
+    cantidad: Annotated[int, Field(ge=1, le=20)] = 1
+
+
+class AdicionalPedido(BaseModel):
+    nombre: str
+    cantidad: int
+    precio: Decimal
 
 
 class NuevaReserva(BaseModel):
@@ -18,6 +29,8 @@ class NuevaReserva(BaseModel):
     email: EmailStr | None = None
     # Si llegó desde la página principal de HayCanchas (para las métricas del complejo).
     llegada: Literal["haycancha", "directo"] = "directo"
+    # Lo que se alquila aparte (paletas, parrilla): se paga en la cancha.
+    adicionales: list[PedidoDeAdicional] = Field(default_factory=list, max_length=10)
 
 
 class ReservaCreada(BaseModel):
@@ -47,6 +60,8 @@ class ReservaPublica(BaseModel):
     precio: Decimal
     sena: Decimal
     saldo: Decimal
+    adicionales: list[AdicionalPedido] = []
+    total_adicionales: Decimal = Decimal("0")
     # Si el complejo cobra menos en efectivo: el precio y lo que falta pagando así.
     precio_efectivo: Decimal | None = None
     saldo_efectivo: Decimal | None = None

@@ -1,15 +1,17 @@
-import { Check, MessageCircle, Phone, X } from 'lucide-react'
+import { Check, MessageCircle, Minus, Phone, Plus, X } from 'lucide-react'
 import { useState } from 'react'
 
 import {
   type Agenda,
   type ReservaDetalle,
+  useCambiarAdicionales,
   useCambiarReserva,
   useCancelarReserva,
   useMoverReserva,
   useReserva,
 } from '../../api/agenda'
 import { mensaje } from '../../api/client'
+import { useAdicionales } from '../../api/panel'
 import { fechaLarga, plata } from '../../utils/formato'
 import { urlLlamar, urlWhatsapp } from '../../utils/telefono'
 import { Aviso, Boton } from '../ui/Formulario'
@@ -62,6 +64,11 @@ function Detalle({ slug, r, agenda, onListo }: { slug: string; r: ReservaDetalle
       {r.estado === 'bloqueada' ? (
         <p className="rounded-xl bg-superficie px-4 py-3 ring-1 ring-linea">
           <b>Motivo:</b> {r.motivo_bloqueo}
+          {r.espejo && (
+            <span className="mt-1 block text-sm text-gris">
+              Se bloqueó sola porque esta cancha comparte lugar con otra (canchas unidas). Para liberarla, cancelá o mové esa reserva.
+            </span>
+          )}
         </p>
       ) : (
         r.cliente && (
@@ -117,6 +124,14 @@ function Detalle({ slug, r, agenda, onListo }: { slug: string; r: ReservaDetalle
               </dd>
             </div>
           )}
+          {r.adicionales && r.adicionales.length > 0 && (
+            <div className="flex justify-between gap-3">
+              <dt className="text-gris">Adicionales</dt>
+              <dd className="text-right">
+                {r.adicionales.map((a) => `${a.cantidad > 1 ? `${a.cantidad} × ` : ''}${a.nombre}`).join(', ')} · {plata(r.total_adicionales ?? 0)}
+              </dd>
+            </div>
+          )}
           <div className="flex justify-between font-bold">
             <dt>{r.saldo_cobrado ? 'Saldo' : 'Falta cobrar en la cancha'}</dt>
             <dd className="text-right">
@@ -125,6 +140,10 @@ function Detalle({ slug, r, agenda, onListo }: { slug: string; r: ReservaDetalle
             </dd>
           </div>
         </dl>
+      )}
+
+      {r.cliente && (r.estado === 'confirmada' || r.estado === 'pendiente_pago') && !r.saldo_cobrado && (
+        <EditarAdicionales slug={slug} reservaId={r.id} pedidos={r.adicionales ?? []} />
       )}
 
       {r.estado === 'confirmada' && (
@@ -179,7 +198,7 @@ function Detalle({ slug, r, agenda, onListo }: { slug: string; r: ReservaDetalle
 
       {error && <Aviso>{mensaje(error)}</Aviso>}
 
-      {(activa || r.estado === 'bloqueada') &&
+      {(activa || (r.estado === 'bloqueada' && !r.espejo)) &&
         (confirmarCancelacion ? (
           <div className="grid gap-2 rounded-xl bg-red-50 p-4 ring-1 ring-red-200">
             <p className="text-sm text-red-900">
@@ -269,6 +288,55 @@ function Mover({ slug, r, agenda, onCancelar, onListo }: { slug: string; r: Rese
           Volver
         </Boton>
       </div>
+    </div>
+  )
+}
+
+/** Sumar o sacar adicionales (paletas, parrilla) de una reserva. Solo si el complejo cargó alguno. */
+function EditarAdicionales({ slug, reservaId, pedidos }: { slug: string; reservaId: string; pedidos: { adicional_id: string; cantidad: number }[] }) {
+  const adicionales = useAdicionales(slug)
+  const guardar = useCambiarAdicionales(slug)
+  const [abierto, setAbierto] = useState(false)
+  const [cantidades, setCantidades] = useState<Record<string, number>>(() => Object.fromEntries(pedidos.map((p) => [p.adicional_id, p.cantidad])))
+  const activos = (adicionales.data ?? []).filter((a) => a.activo)
+  if (!activos.length) return null
+  if (!abierto) {
+    return (
+      <Boton variante="suave" onClick={() => setAbierto(true)}>
+        <Plus className="size-4" aria-hidden="true" />
+        {pedidos.length ? 'Cambiar adicionales' : 'Sumar adicionales'}
+      </Boton>
+    )
+  }
+  const cambiar = (id: string, paso: number) => setCantidades((c) => ({ ...c, [id]: Math.min(20, Math.max(0, (c[id] ?? 0) + paso)) }))
+  return (
+    <div className="grid gap-2 rounded-xl bg-superficie p-3 ring-1 ring-linea">
+      {activos.map((a) => (
+        <div key={a.id} className="flex items-center gap-3">
+          <span className="min-w-0 flex-1 text-[15px]">
+            {a.nombre} <span className="text-sm text-gris tabular-nums">{plata(a.precio)}</span>
+          </span>
+          <button type="button" onClick={() => cambiar(a.id, -1)} disabled={!cantidades[a.id]} aria-label={`Uno menos de ${a.nombre}`} className="grid size-8 place-items-center rounded-full ring-1 ring-linea disabled:opacity-40">
+            <Minus className="size-4" aria-hidden="true" />
+          </button>
+          <span className="w-5 text-center font-bold tabular-nums">{cantidades[a.id] ?? 0}</span>
+          <button type="button" onClick={() => cambiar(a.id, 1)} aria-label={`Uno más de ${a.nombre}`} className="grid size-8 place-items-center rounded-full bg-noche text-crema">
+            <Plus className="size-4" aria-hidden="true" />
+          </button>
+        </div>
+      ))}
+      <Boton
+        cargando={guardar.isPending}
+        onClick={() =>
+          guardar.mutate(
+            { id: reservaId, pedidos: Object.entries(cantidades).filter(([, c]) => c > 0).map(([id, cantidad]) => ({ id, cantidad })) },
+            { onSuccess: () => setAbierto(false) },
+          )
+        }
+      >
+        Guardar adicionales
+      </Boton>
+      {guardar.error && <Aviso>{mensaje(guardar.error)}</Aviso>}
     </div>
   )
 }

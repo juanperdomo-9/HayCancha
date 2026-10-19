@@ -1,3 +1,4 @@
+from app.models.adicional import Adicional, ReservaAdicional
 from app.models.base import Base
 from app.models.bloqueo_fijo import BloqueoFijo
 from app.models.cliente import Cliente
@@ -14,6 +15,7 @@ from app.models.usuario import Usuario
 
 __all__ = [
     "ESTADOS_QUE_OCUPAN",
+    "Adicional",
     "Base",
     "BloqueoFijo",
     "Cliente",
@@ -27,5 +29,6 @@ __all__ = [
     "Recurso",
     "RecursoCombinado",
     "Reserva",
+    "ReservaAdicional",
     "Usuario",
 ]

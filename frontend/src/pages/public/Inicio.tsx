@@ -83,7 +83,7 @@ export default function Inicio() {
               transition={{ duration: 0.65, ease: ENTRADA, delay: 0.05 }}
               className="font-titulo text-[clamp(68px,12.5vw,168px)] leading-[.88] font-extrabold text-balance uppercase"
             >
-              <span className="text-cesped">¿</span>Hay cancha<span className="text-cesped">?</span>
+              <span className="text-cesped">¿</span>Hay canchas<span className="text-cesped">?</span>
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 14 }}

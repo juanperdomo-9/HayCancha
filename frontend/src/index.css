@@ -27,7 +27,13 @@
   --font-numeros: 'Archivo', 'Arial Narrow', system-ui, sans-serif;
 
   --animate-deriva: deriva 26s ease-in-out infinite alternate;
-  --animate-sube: sube 0.35s both;
+  --animate-sube: sube 0.22s cubic-bezier(0.23, 1, 0.32, 1) both;
+
+  /* Las transiciones de Tailwind (`transition`, `transition-colors`…) usan esta curva:
+     ease-out fuerte y corta, para que todo responda al instante. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --default-transition-duration: 160ms;
+  --default-transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
 
   @keyframes sube {
     from {
@@ -89,6 +95,14 @@
   }
   body {
     @apply bg-crema text-noche antialiased;
+  }
+  /* Todo botón se hunde apenas al tocarlo: confirma que la página escuchó.
+     (Las clases de Tailwind pisan esta transición y ya incluyen `scale`.) */
+  button {
+    transition: scale 160ms var(--ease-out);
+  }
+  button:not(:disabled):active {
+    scale: 0.97;
   }
   :focus-visible {
     outline: 3px solid var(--color-cesped);

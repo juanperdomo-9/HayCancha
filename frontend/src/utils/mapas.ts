@@ -10,6 +10,29 @@ export function consultaMaps({ direccion, barrio }: Ubicacion): string | null {
   return [direccion, barrio, 'Argentina'].filter(Boolean).join(', ')
 }
 
+/** Lo que confunde al buscador de OpenStreetMap: "N° 1150", "nro. 1150", "entre 7 y 8". */
+export function limpiarDireccion(direccion: string): string {
+  return direccion
+    .replace(/\s+entre\s+[^,]+?\s+y\s+[^,]+/gi, '')
+    .replace(/(?<![a-záéíóúñ])(n[°º]|nro\.?|n[uú]mero)\s*/gi, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim()
+}
+
+/** Coordenadas de un link de Google Maps (el largo, de la barra de direcciones). */
+export function ubicacionDeLinkDeMaps(link: string): { latitud: number; longitud: number } | null {
+  const lugar = link.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/) // el punto exacto del lugar
+  const consulta = link.match(/[?&](?:q|query|ll|destination)=(-?\d+\.\d+),\s*(-?\d+\.\d+)/)
+  const centro = link.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/)
+  const m = lugar ?? consulta ?? centro
+  if (!m) return null
+  const latitud = +(+m[1]).toFixed(6)
+  const longitud = +(+m[2]).toFixed(6)
+  // Argentina, más o menos: evita coordenadas al revés o de otro lado.
+  if (latitud > -21 || latitud < -56 || longitud > -53 || longitud < -74) return null
+  return { latitud, longitud }
+}
+
 export function urlComoLlegar(consulta: string): string {
   return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(consulta)}`
 }

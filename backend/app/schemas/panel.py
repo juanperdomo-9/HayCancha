@@ -64,6 +64,7 @@ class Configuracion(BaseModel):
     asistente_bienvenida: str | None
     asistente_conocimiento: str | None
     servicios: list[str]
+    reglas: list[str] = []
     logo_url: str | None
     portada_url: str | None
     color_primario: str
@@ -96,6 +97,10 @@ class CambiosDeConfiguracion(BaseModel):
         Annotated[str, StringConstraints(strip_whitespace=True, max_length=6000)] | None
     ) = None
     servicios: list[Texto] | None = None
+    reglas: (
+        list[Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=140)]]
+        | None
+    ) = Field(None, max_length=12)
     color_primario: Color | None = None
     color_secundario: Color | None = None
     sena_tipo: Literal["fija", "porcentaje"] | None = None
@@ -127,6 +132,52 @@ class Cancha(BaseModel):
     caracteristicas: str | None
     activo: bool
     orden: int
+    # Canchas unidas: las que forman esta (dos de fútbol 5 forman una de fútbol 7).
+    partes: list[uuid.UUID] = []
+
+
+class PartesDeCancha(BaseModel):
+    partes: list[uuid.UUID] = Field(default_factory=list, max_length=8)
+
+
+class ReservaQueSePisa(BaseModel):
+    cancha: str
+    inicio: datetime
+    nombre: str | None
+
+
+class ResultadoDePartes(BaseModel):
+    canchas: list[Cancha]
+    # Reservas ya cargadas que chocan con la combinación nueva: hay que resolverlas a mano.
+    reservas_que_se_pisan: list[ReservaQueSePisa] = []
+
+
+class Adicional(BaseModel):
+    id: uuid.UUID
+    nombre: str
+    precio: Decimal
+    deporte: str | None = None
+    activo: bool
+
+
+NombreDeAdicional = Annotated[
+    str, StringConstraints(strip_whitespace=True, min_length=2, max_length=60)
+]
+PrecioDeAdicional = Annotated[Decimal, Field(ge=0, max_digits=12, decimal_places=2)]
+
+
+class NuevoAdicional(BaseModel):
+    nombre: NombreDeAdicional
+    precio: PrecioDeAdicional
+    # Código del deporte (padel) si es de uno solo; None para todos.
+    deporte: str | None = None
+
+
+class CambiosDeAdicional(BaseModel):
+    nombre: NombreDeAdicional | None = None
+    precio: PrecioDeAdicional | None = None
+    deporte: str | None = None
+    activo: bool | None = None
 
 
 class NuevaCancha(BaseModel):
@@ -243,6 +294,11 @@ class CambiosDeComplejo(BaseModel):
 class FotoDelPanel(BaseModel):
     id: uuid.UUID
     url: str
+    texto: str | None = None
+
+
+class TextoDeFoto(BaseModel):
+    texto: Annotated[str, StringConstraints(strip_whitespace=True, max_length=80)]
 
 
 class NumerosDelMes(BaseModel):

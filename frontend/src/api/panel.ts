@@ -37,6 +37,7 @@ export type Configuracion = {
   asistente_bienvenida: string | null
   asistente_conocimiento: string | null
   servicios: string[]
+  reglas: string[]
   logo_url: string | null
   portada_url: string | null
   color_primario: string
@@ -56,7 +57,11 @@ export type CanchaPanel = {
   caracteristicas: string | null
   activo: boolean
   orden: number
+  /** Canchas unidas: las que forman esta (dos de fútbol 5 forman una de fútbol 7). */
+  partes: string[]
 }
+
+export type ReservaQueSePisa = { cancha: string; inicio: string; nombre: string | null }
 
 export type DeportePanel = { codigo: string; nombre: string; duracion_sugerida_min: number }
 
@@ -229,6 +234,15 @@ export function useCrearCancha(slug: string) {
   })
 }
 
+export function useCambiarPartes(slug: string) {
+  const cliente = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, partes }: { id: string; partes: string[] }) =>
+      enviar<{ canchas: CanchaPanel[]; reservas_que_se_pisan: ReservaQueSePisa[] }>(`${base(slug)}/canchas/${id}/partes`, 'PUT', { partes }),
+    onSuccess: (r) => cliente.setQueryData(['panel', slug, 'canchas'], r.canchas),
+  })
+}
+
 export function useCambiarCancha(slug: string) {
   const cliente = useQueryClient()
   return useMutation({
@@ -314,7 +328,7 @@ export function useLinkDelDueno() {
 // --- Galería de fotos ---
 
 export const MAX_FOTOS = 12
-export type FotoDelPanel = { id: string; url: string }
+export type FotoDelPanel = { id: string; url: string; texto: string | null }
 
 export function useFotos(slug: string) {
   return useQuery({ queryKey: ['panel', slug, 'fotos'], queryFn: () => pedir<FotoDelPanel[]>(`${base(slug)}/fotos`) })
@@ -330,6 +344,8 @@ function useCambiarFotos<T>(slug: string, hacer: (valor: T) => Promise<FotoDelPa
 
 export const useSubirFoto = (slug: string) => useCambiarFotos(slug, async (archivo: File) => subirArchivo<FotoDelPanel[]>(`${base(slug)}/fotos`, await achicarImagen(archivo, 1600)))
 export const useQuitarFoto = (slug: string) => useCambiarFotos(slug, (id: string) => pedir<FotoDelPanel[]>(`${base(slug)}/fotos/${id}`, { method: 'DELETE' }))
+export const useTextoDeFoto = (slug: string) =>
+  useCambiarFotos(slug, ({ id, texto }: { id: string; texto: string }) => enviar<FotoDelPanel[]>(`${base(slug)}/fotos/${id}/texto`, 'PUT', { texto }))
 export const useOrdenarFotos = (slug: string) => useCambiarFotos(slug, (ids: string[]) => enviar<FotoDelPanel[]>(`${base(slug)}/fotos/orden`, 'PUT', ids))
 
 // --- Resultados del mes (Plan Pro) ---
@@ -387,3 +403,24 @@ export function useCambiarInteresado() {
     onSuccess: () => cliente.invalidateQueries({ queryKey: ['admin', 'interesados'] }),
   })
 }
+
+/** Lo que el complejo alquila aparte (paletas, pelotas, parrilla). */
+export type AdicionalPanel = { id: string; nombre: string; precio: string; deporte: string | null; activo: boolean }
+
+export function useAdicionales(slug: string) {
+  return useQuery({ queryKey: ['panel', slug, 'adicionales'], queryFn: () => pedir<AdicionalPanel[]>(`${base(slug)}/adicionales`) })
+}
+
+function useCambiarAdicionalesDelComplejo<T>(slug: string, hacer: (valor: T) => Promise<AdicionalPanel[]>) {
+  const cliente = useQueryClient()
+  return useMutation({ mutationFn: hacer, onSuccess: (lista) => cliente.setQueryData(['panel', slug, 'adicionales'], lista) })
+}
+
+export const useCrearAdicional = (slug: string) =>
+  useCambiarAdicionalesDelComplejo(slug, (datos: { nombre: string; precio: string; deporte: string | null }) => enviar<AdicionalPanel[]>(`${base(slug)}/adicionales`, 'POST', datos))
+export const useCambiarAdicional = (slug: string) =>
+  useCambiarAdicionalesDelComplejo(slug, ({ id, ...cambios }: { id: string; precio?: string; activo?: boolean }) =>
+    enviar<AdicionalPanel[]>(`${base(slug)}/adicionales/${id}`, 'PATCH', cambios),
+  )
+export const useQuitarAdicional = (slug: string) =>
+  useCambiarAdicionalesDelComplejo(slug, (id: string) => pedir<AdicionalPanel[]>(`${base(slug)}/adicionales/${id}`, { method: 'DELETE' }))

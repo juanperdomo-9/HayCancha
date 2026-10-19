@@ -76,6 +76,7 @@ def main(argv: list[str] | None = None) -> None:
     comandos.add_parser("preparar-base", help="habilita el login de app_user")
     ejemplo = comandos.add_parser("cargar-ejemplo", help="carga El Potrero")
     ejemplo.add_argument("--reemplazar", action="store_true")
+    comandos.add_parser("cargar-demo", help="complejos ficticios para los videos")
     superadmin = comandos.add_parser("crear-superadmin", help="crea un superadmin")
     superadmin.add_argument("--usuario", "--email", dest="usuario", required=True)
     comandos.add_parser("generar-clave", help="clave nueva para TOKEN_ENCRYPTION_KEY")
@@ -88,6 +89,13 @@ def main(argv: list[str] | None = None) -> None:
             negocio = cargar_ejemplo(session, reemplazar=args.reemplazar)
         print(f"Complejo de ejemplo: {negocio.nombre} ({negocio.slug}).")
         print("Usuarios de prueba: ver USUARIOS_DE_EJEMPLO en app/ejemplo.py.")
+    elif args.comando == "cargar-demo":
+        from app.demo import cargar_demo
+
+        with sesion_admin() as session, session.begin():
+            negocios = cargar_demo(session)
+        print("Complejos de la demo: " + ", ".join(n.nombre for n in negocios) + ".")
+        print("Los demás complejos quedaron inactivos (solo en la base local).")
     elif args.comando == "crear-superadmin":
         crear_superadmin(args.usuario)
     elif args.comando == "generar-clave":

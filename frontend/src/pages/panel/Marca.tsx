@@ -10,7 +10,7 @@ import { Aviso, Boton, Campo, Tarjeta } from '../../components/ui/Formulario'
 import { TemaComplejo } from '../../theme/TemaComplejo'
 import { EncabezadoSeccion } from './EncabezadoSeccion'
 import { GaleriaDelPanel } from './GaleriaDelPanel'
-import { LinkParaCompartir } from '../../components/complejo/Compartir'
+import { LinkParaCompartir, QrDelComplejo } from '../../components/complejo/Compartir'
 import { ElegirUbicacion } from '../../components/MapaLeaflet'
 
 const SERVICIOS_COMUNES = ['Vestuarios', 'Duchas', 'Estacionamiento', 'Buffet', 'Parrilla', 'Wi-Fi', 'Alquiler de pelotas', 'Alquiler de paletas']
@@ -85,6 +85,9 @@ function FormularioMarca({ slug, c }: { slug: string; c: Configuracion }) {
         <div className="grid gap-6">
           <Tarjeta titulo="Tu link para compartir">
             <LinkParaCompartir slug={slug} />
+          </Tarjeta>
+          <Tarjeta titulo="Tu código QR">
+            <QrDelComplejo slug={slug} nombre={c.nombre} color={c.color_primario} />
           </Tarjeta>
           <Tarjeta titulo="Datos del complejo">
             <div className="grid gap-4 sm:grid-cols-2">

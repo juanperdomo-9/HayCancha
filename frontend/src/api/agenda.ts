@@ -21,6 +21,11 @@ export type ReservaEnAgenda = {
   origen: Origen
   asistencia: 'vino' | 'no_vino' | null
   motivo_bloqueo: string | null
+  /** Bloqueo automático por canchas unidas: se libera cancelando o moviendo la reserva original. */
+  espejo?: boolean
+  /** Lo que se alquila aparte (ya sumado en el saldo). */
+  adicionales?: { adicional_id: string; nombre: string; cantidad: number; precio: string }[]
+  total_adicionales?: string
   // Bloqueo fijo (todas las semanas): el id es el del bloqueo, no de una reserva.
   fijo?: boolean
   minutos_para_pagar: number | null
@@ -137,6 +142,15 @@ export function useCambiarReserva(slug: string) {
   return useMutation({
     mutationFn: ({ id, ...cambios }: { id: string; asistencia?: 'vino' | 'no_vino' | null; saldo_cobrado?: boolean; saldo_en_efectivo?: boolean }) =>
       enviar<ReservaDetalle>(`${base(slug)}/reservas/${id}`, 'PATCH', cambios),
+    onSuccess: refrescar,
+  })
+}
+
+export function useCambiarAdicionales(slug: string) {
+  const refrescar = useRefrescar(slug)
+  return useMutation({
+    mutationFn: ({ id, pedidos }: { id: string; pedidos: { id: string; cantidad: number }[] }) =>
+      enviar<ReservaDetalle>(`${base(slug)}/reservas/${id}/adicionales`, 'PUT', pedidos),
     onSuccess: refrescar,
   })
 }

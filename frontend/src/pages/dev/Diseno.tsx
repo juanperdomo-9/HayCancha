@@ -72,7 +72,7 @@ export default function Diseno() {
             ))}
           </ul>
           <div className="grid gap-3 rounded-2xl bg-noche p-6 text-cal sm:p-8">
-            <span className="font-titulo text-6xl leading-none font-extrabold uppercase">¿Hay cancha?</span>
+            <span className="font-titulo text-6xl leading-none font-extrabold uppercase">¿Hay canchas?</span>
             <span className="numeros text-4xl font-bold">21:00 · 22:30 · $ 78.000</span>
             <span className="max-w-[60ch] text-cal/80">
               Títulos en Big Shoulders Display, números en Archivo condensada y el texto en Instrument Sans.

@@ -59,6 +59,19 @@ class DeporteDelComplejo(Deporte):
     canchas: list[Cancha]
 
 
+class AdicionalPublico(BaseModel):
+    id: uuid.UUID
+    nombre: str
+    precio: Decimal
+    # Si es de un solo deporte (las paletas, del pádel). None: para todos.
+    deporte: str | None = None
+
+
+class FotoPublica(BaseModel):
+    url: str
+    texto: str | None = None
+
+
 class ComplejoDetalle(BaseModel):
     slug: str
     nombre: str
@@ -69,6 +82,7 @@ class ComplejoDetalle(BaseModel):
     # Asistente de IA del complejo: None si está apagado o no hay proveedor configurado.
     asistente: dict[str, str] | None = None
     servicios: list[str]
+    reglas: list[str] = []
     logo_url: str | None
     portada_url: str | None
     color_primario: str
@@ -82,7 +96,8 @@ class ComplejoDetalle(BaseModel):
     # Si ya puede cobrar la seña online (Mercado Pago vinculado).
     reservas_online: bool
     deportes: list[DeporteDelComplejo]
-    fotos: list[str] = []
+    fotos: list[FotoPublica] = []
+    adicionales: list[AdicionalPublico] = []
 
 
 class CanchaLibre(Cancha):
