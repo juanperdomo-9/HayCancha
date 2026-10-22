@@ -19,6 +19,7 @@ from app.models import (
     Negocio,
     Pago,
     Recurso,
+    RecursoCombinado,
     Reserva,
     ReservaAdicional,
     Usuario,
@@ -120,6 +121,7 @@ def borrar_negocio(session: Session, negocio: Negocio) -> None:
         ConsultaSinRespuesta,
         Cliente,
         Horario,
+        RecursoCombinado,
         Recurso,
         Usuario,
     ):

@@ -29,3 +29,13 @@ Thumbs.db
 
 # Videos generados con frontend/scripts/grabar-recorrido.mjs
 docs/videos/
+
+# Instagram: piezas generadas y referencias de otras cuentas (no se suben)
+instagram/referencias/
+instagram/carruseles/
+instagram/destacadas/
+instagram/reels/
+instagram/fichajes/
+instagram/*.zip
+instagram/perfil-preview.png
+.playwright-mcp/
