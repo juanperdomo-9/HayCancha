@@ -67,6 +67,16 @@ class AdicionalPublico(BaseModel):
     deporte: str | None = None
 
 
+class CumpleanosPublico(BaseModel):
+    id: uuid.UUID
+    nombre: str
+    deporte: str  # código: con él se buscan las canchas
+    duracion_min: int
+    precio: Decimal
+    incluye: str | None = None
+    condiciones: str | None = None
+
+
 class FotoPublica(BaseModel):
     url: str
     texto: str | None = None
@@ -98,6 +108,9 @@ class ComplejoDetalle(BaseModel):
     deportes: list[DeporteDelComplejo]
     fotos: list[FotoPublica] = []
     adicionales: list[AdicionalPublico] = []
+    # Cumpleaños que ofrece el complejo (sin seña: se reservan aunque no tenga
+    # Mercado Pago vinculado).
+    cumpleanos: list[CumpleanosPublico] = []
 
 
 class CanchaLibre(Cancha):

@@ -20,7 +20,7 @@ La interfaz es en español de Argentina, con voseo ("Reservá", "Elegí un horar
 - **Una fase a la vez.** Hacé solo la fase que te pida. No adelantes funciones de fases siguientes.
 - **Primero el plan, después el código.** Antes de cada tarea grande, proponé un plan corto (archivos a crear o tocar, decisiones) y esperá el OK.
 - **Nada de WhatsApp.** Todo pasa en la página. Las notificaciones van por email (y push más adelante). Única excepción: el complejo puede cargar un número para un botón "Consultar por WhatsApp" en su página (solo abre un chat para dudas; reservas, pagos y avisos nunca pasan por ahí).
-- **La IA nunca confirma turnos ni valida pagos.** Un turno solo pasa a `confirmada` cuando llega un webhook de Mercado Pago válido con el pago aprobado. Nunca se aceptan capturas de comprobantes.
+- **La IA nunca confirma turnos ni valida pagos.** Un turno solo pasa a `confirmada` cuando llega un webhook de Mercado Pago válido con el pago aprobado. Nunca se aceptan capturas de comprobantes. Única excepción, decidida por el dueño del producto: los cumpleaños (por ahora sin seña) quedan confirmados al reservarlos, con un tope por teléfono y por conexión.
 - **Nunca confiar en montos del frontend.** Precios y señas se calculan siempre en el backend.
 - **Preguntá antes de sumar dependencias** que no estén en la sección Stack.
 - **Todo cambio de base de datos va por migración de Alembic.** Nada de cambios a mano.
@@ -162,6 +162,7 @@ Claves primarias `uuid` con `gen_random_uuid()`. Fechas con hora en `timestamptz
 | `reservas` | `id`, `negocio_id`, `recurso_id`, `cliente_id` (null en un bloqueo), `reserva_origen_id` (solo en las reservas espejo de canchas combinadas), `inicio`, `fin`, `estado`, `precio`, `sena`, `sena_en_efectivo` (bool), `saldo_cobrado` (bool), `asistencia` (null, `vino`, `no_vino`), `motivo_bloqueo`, `vence_a`, `mp_preference_id`, `origen` (`web`, `panel`, `bot`), `creado_por` (usuario del panel, si la cargó a mano), `creado_a` |
 | `adicionales` | `id`, `negocio_id`, `nombre`, `precio`, `deporte_id` (null: para todos), `activo`, `orden`. Lo que el complejo alquila aparte (paletas, parrilla); opcional |
 | `reservas_adicionales` | `negocio_id`, `reserva_id`, `adicional_id`, `nombre` y `precio` (copia del momento), `cantidad`. La suma va en `reservas.total_adicionales` y se cobra en la cancha con el saldo: la seña no cambia |
+| `cumpleanos` | `id`, `negocio_id`, `deporte_id`, `nombre`, `duracion_min`, `precio`, `incluye`, `condiciones`, `activo`, `orden`. Opcional: una cancha por un tiempo fijo, a precio cerrado y sin seña. La reserva (`reservas.cumpleanos_id`, con `reservas.nota`: quién cumple) cubre varios turnos seguidos de la cancha; los detalles se arreglan por WhatsApp con un mensaje armado desde la página de la reserva |
 | `pagos` | `id`, `negocio_id`, `reserva_id`, `mp_payment_id` (**único**), `monto`, `estado`, `detalle` (jsonb con la respuesta de Mercado Pago), `creado_a` |
 | `conocimiento` (fase 3) | `id`, `negocio_id`, `texto`, `embedding` (vector), `fuente` |
 | `consultas_sin_respuesta` (fase 3) | `id`, `negocio_id`, `pregunta`, `resuelta`, `creado_a` |

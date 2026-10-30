@@ -180,6 +180,43 @@ class CambiosDeAdicional(BaseModel):
     activo: bool | None = None
 
 
+class Cumpleanos(BaseModel):
+    id: uuid.UUID
+    nombre: str
+    deporte: str
+    duracion_min: int
+    precio: Decimal
+    incluye: str | None
+    condiciones: str | None
+    activo: bool
+
+
+NombreDeCumpleanos = Annotated[
+    str, StringConstraints(strip_whitespace=True, min_length=2, max_length=60)
+]
+DuracionDeCumpleanos = Annotated[int, Field(ge=30, le=480)]
+TextoDeCumpleanos = Annotated[str, StringConstraints(strip_whitespace=True, max_length=1000)]
+
+
+class NuevoCumpleanos(BaseModel):
+    nombre: NombreDeCumpleanos
+    deporte: str
+    duracion_min: DuracionDeCumpleanos
+    precio: PrecioDeAdicional
+    incluye: TextoDeCumpleanos | None = None
+    condiciones: TextoDeCumpleanos | None = None
+
+
+class CambiosDeCumpleanos(BaseModel):
+    nombre: NombreDeCumpleanos | None = None
+    deporte: str | None = None
+    duracion_min: DuracionDeCumpleanos | None = None
+    precio: PrecioDeAdicional | None = None
+    incluye: TextoDeCumpleanos | None = None
+    condiciones: TextoDeCumpleanos | None = None
+    activo: bool | None = None
+
+
 class NuevaCancha(BaseModel):
     nombre: Texto
     deporte: str

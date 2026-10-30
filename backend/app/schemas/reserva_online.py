@@ -31,6 +31,16 @@ class NuevaReserva(BaseModel):
     llegada: Literal["haycancha", "directo"] = "directo"
     # Lo que se alquila aparte (paletas, parrilla): se paga en la cancha.
     adicionales: list[PedidoDeAdicional] = Field(default_factory=list, max_length=10)
+    # Un cumpleaños del complejo (sin seña): dura lo que dura el cumpleaños.
+    cumpleanos_id: uuid.UUID | None = None
+    # Quién cumple, cuántos chicos: lo ve el dueño en la agenda.
+    nota: Annotated[str, StringConstraints(strip_whitespace=True, max_length=300)] | None = None
+
+
+class CumpleanosDeReserva(BaseModel):
+    nombre: str
+    incluye: str | None
+    condiciones: str | None
 
 
 class ReservaCreada(BaseModel):
@@ -87,6 +97,11 @@ class ReservaPublica(BaseModel):
     # Devolución de la seña: None, "pendiente" (en proceso) o "hecha".
     devolucion: Literal["pendiente", "hecha"] | None
     monto_devuelto: Decimal | None
+    # Si es un cumpleaños: lo que se reservó y el WhatsApp del complejo para arreglar los
+    # detalles (el mensaje lo arma la página).
+    cumpleanos: CumpleanosDeReserva | None = None
+    nota: str | None = None
+    whatsapp: str | None = None
 
 
 Telefono = Annotated[str, StringConstraints(strip_whitespace=True, min_length=6, max_length=40)]

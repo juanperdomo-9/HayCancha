@@ -47,6 +47,11 @@ class Reserva(Base):
             ["reservas.negocio_id", "reservas.id"],
             name="fk_reservas_origen",
         ),
+        ForeignKeyConstraint(
+            ["negocio_id", "cumpleanos_id"],
+            ["cumpleanos.negocio_id", "cumpleanos.id"],
+            name="fk_reservas_cumpleanos",
+        ),
         CheckConstraint("fin > inicio", name="fin_despues_de_inicio"),
         CheckConstraint(
             "estado IN ('pendiente_pago', 'confirmada', 'vencida', 'cancelada', 'bloqueada')",
@@ -104,5 +109,9 @@ class Reserva(Base):
     llegada: Mapped[str | None] = mapped_column(String)
     # Lo que se pidió aparte (paletas, parrilla): se paga en la cancha con el saldo.
     total_adicionales: Mapped[Decimal] = mapped_column(Numeric(12, 2), server_default="0")
+    # Si es un cumpleaños (migración 0022): dura lo que dura el cumpleaños y tiene su precio.
+    cumpleanos_id: Mapped[uuid.UUID | None]
+    # Lo que contó el jugador al reservar (quién cumple, cuántos chicos).
+    nota: Mapped[str | None] = mapped_column(String(300))
     creado_por: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("usuarios.id"))
     creado_a: Mapped[CreadoA]

@@ -74,7 +74,9 @@ function Detalle({ slug, r, agenda, onListo }: { slug: string; r: ReservaDetalle
         r.cliente && (
           <div className="grid gap-3 rounded-xl bg-superficie p-4 ring-1 ring-linea">
             <div>
+              {r.cumpleanos && <p className="text-xs font-bold tracking-[.08em] text-cesped uppercase">{r.cumpleanos}</p>}
               <b className="text-lg">{r.cliente.nombre}</b>
+              {r.nota && <p className="text-sm">Cumpleaños de: {r.nota}</p>}
               <p className="text-sm text-gris">
                 {r.cliente.telefono}
                 {r.cliente.email && ` · ${r.cliente.email}`}

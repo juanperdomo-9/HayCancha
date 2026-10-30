@@ -67,3 +67,19 @@ Fútbol 5, 7 y 11, pádel, tenis, básquet y vóley: si se alquila por turno, se
 Elegí el deporte, el día y el horario en haycanchas.com.ar (link en la bio).
 
 #HayCanchas #Padel #Tenis #Basquet #Voley #Futbol5 #Futbol7 #Futbol11 #Deportes
+
+## Reel: Cumpleaños en la cancha
+
+¿El cumple de los chicos en la cancha? 🎂⚽
+
+En los complejos que festejan cumpleaños, lo reservás desde su página de HayCanchas:
+1. Elegí el cumpleaños
+2. Elegí día y hora
+3. Mirá el precio cerrado (sin seña)
+4. Reservá con tus datos y quién cumple
+
+El horario queda reservado al instante. Después le mandás al complejo el mensaje que ya te dejamos armado por WhatsApp y arreglan los detalles: torta, invitados, quincho.
+
+Buscá tu complejo en haycanchas.com.ar (link en la bio).
+
+#HayCanchas #CumpleañosInfantil #CumpleEnLaCancha #Futbol5 #FiestaInfantil #LaPlata #Cumpleaños

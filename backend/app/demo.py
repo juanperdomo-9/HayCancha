@@ -16,7 +16,7 @@ from app.ejemplo import (
     cargar_canchas,
     cargar_reservas_de_ejemplo,
 )
-from app.models import Adicional, Negocio, Usuario
+from app.models import Adicional, Cumpleanos, Deporte, Negocio, Usuario
 from app.services.auth import hashear_clave
 
 # Usuario de prueba del complejo principal, SOLO para la base local.
@@ -53,6 +53,18 @@ COMPLEJOS = [
             "El saldo se paga en la cancha",
         ],
         "adicionales": [("Parrilla", Decimal("10000")), ("Pelota", Decimal("3000"))],
+        # Número ficticio: solo para mostrar el botón de WhatsApp en los videos.
+        "whatsapp": "5492215550100",
+        "cumpleanos": [
+            (
+                "Cumple en fútbol 5",
+                "futbol5",
+                120,
+                Decimal("140000"),
+                "Cancha 2 horas, pelota, pecheras y un profe que arma el partido.",
+                "Hasta 20 chicos. Se puede traer torta y bebidas. El quincho se arregla aparte.",
+            )
+        ],
         "canchas": {
             "futbol7": (
                 [
@@ -170,6 +182,7 @@ def cargar_demo(session: Session) -> list[Negocio]:
             longitud=datos["longitud"],
             servicios=datos["servicios"],
             reglas=datos.get("reglas", []),
+            whatsapp=datos.get("whatsapp"),
             sena_tipo="porcentaje",
             sena_valor=Decimal("20"),
             horas_cancelacion=24,
@@ -179,6 +192,21 @@ def cargar_demo(session: Session) -> list[Negocio]:
         cargar_canchas(session, negocio, datos["canchas"])
         for orden, (nombre, precio) in enumerate(datos.get("adicionales", [])):
             session.add(Adicional(negocio_id=negocio.id, nombre=nombre, precio=precio, orden=orden))
+        for orden, (nombre, deporte, duracion, precio, incluye, condiciones) in enumerate(
+            datos.get("cumpleanos", [])
+        ):
+            session.add(
+                Cumpleanos(
+                    negocio_id=negocio.id,
+                    deporte_id=session.scalar(select(Deporte.id).where(Deporte.codigo == deporte)),
+                    nombre=nombre,
+                    duracion_min=duracion,
+                    precio=precio,
+                    incluye=incluye,
+                    condiciones=condiciones,
+                    orden=orden,
+                )
+            )
         cargar_reservas_de_ejemplo(
             session,
             negocio,

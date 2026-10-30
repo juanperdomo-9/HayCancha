@@ -16,7 +16,7 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.models import Cliente, Negocio, Recurso, Reserva
+from app.models import Cliente, Cumpleanos, Negocio, Recurso, Reserva
 from app.services.disponibilidad import (
     ahora,
     canchas_del_deporte,
@@ -92,6 +92,25 @@ def turno_de_la_cancha(
     return None
 
 
+def _turno_a_reservar(
+    session: Session,
+    negocio: Negocio,
+    cancha: Recurso,
+    inicio: datetime,
+    cumpleanos: Cumpleanos | None,
+) -> Turno | None:
+    """El turno que empieza en `inicio` o, para un cumpleaños, los turnos seguidos que
+    cubren su duración (con el precio del cumpleaños)."""
+    if cumpleanos is None:
+        return turno_de_la_cancha(session, negocio, cancha, inicio)
+    from app.services.cumpleanos import fin_del_cumpleanos, turnos_alrededor
+
+    fin = fin_del_cumpleanos(
+        turnos_alrededor(session, negocio, cancha, inicio), inicio, cumpleanos.duracion_min
+    )
+    return Turno(cancha.id, inicio, fin, cumpleanos.precio) if fin else None
+
+
 def esperar_turno_para_reservar(session: Session, negocio_id: uuid.UUID) -> None:
     """Las reservas de un mismo complejo se crean de a una (lock hasta el commit).
 
@@ -117,18 +136,25 @@ def reservar(
     cobrar_sena: bool = True,
     sena_en_efectivo: bool = False,
     creado_por: uuid.UUID | None = None,
+    cumpleanos: Cumpleanos | None = None,
+    nota: str | None = None,
 ) -> Reserva:
-    """Crea la reserva en `session` (del negocio, con RLS) sin hacer commit."""
+    """Crea la reserva en `session` (del negocio, con RLS) sin hacer commit. Con
+    `cumpleanos`, la reserva dura lo que dura el cumpleaños y tiene su precio."""
     canchas = canchas_del_deporte(session, negocio.id, deporte_codigo)
     if recurso_id is not None:
         canchas = [c for c in canchas if c.id == recurso_id]
     if not canchas:
         raise TurnoInvalido("Esa cancha no existe o no es de ese deporte.")
 
-    turnos = {c.id: turno_de_la_cancha(session, negocio, c, inicio) for c in canchas}
+    turnos = {c.id: _turno_a_reservar(session, negocio, c, inicio, cumpleanos) for c in canchas}
     candidatas = [c for c in canchas if turnos[c.id] is not None]
     if not candidatas:
-        raise TurnoInvalido("Ese horario no es un turno de esa cancha.")
+        raise TurnoInvalido(
+            "Ese horario no alcanza para el cumpleaños en esa cancha."
+            if cumpleanos
+            else "Ese horario no es un turno de esa cancha."
+        )
     from app.services.bloqueos_fijos import esta_bloqueado
 
     sin_bloqueo = [
@@ -148,6 +174,8 @@ def reservar(
         turno = turnos[cancha.id]
         assert turno is not None
         reserva = Reserva(
+            cumpleanos_id=cumpleanos.id if cumpleanos else None,
+            nota=nota,
             negocio_id=negocio.id,
             recurso_id=cancha.id,
             cliente_id=cliente_id,

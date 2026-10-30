@@ -13,11 +13,13 @@ from app.db import sesion_de_negocio
 from app.dependencias import PanelActual, PanelDeConfiguracion
 from app.models import (
     Adicional,
+    Cumpleanos,
     Deporte,
     Foto,
     Horario,
     Negocio,
     Recurso,
+    Reserva,
     ReservaAdicional,
     Usuario,
 )
@@ -453,6 +455,122 @@ def quitar_adicional(
             s.delete(adicional)
         s.commit()
         return _adicionales(s, panel.negocio_id)
+
+
+# --- Cumpleaños (una cancha por un tiempo fijo, a precio cerrado) ---
+
+
+def _cumpleanos(s, negocio_id: uuid.UUID) -> list[esquemas.Cumpleanos]:
+    codigos = {d.id: d.codigo for d in s.scalars(select(Deporte))}
+    return [
+        esquemas.Cumpleanos(
+            id=c.id,
+            nombre=c.nombre,
+            deporte=codigos[c.deporte_id],
+            duracion_min=c.duracion_min,
+            precio=c.precio,
+            incluye=c.incluye,
+            condiciones=c.condiciones,
+            activo=c.activo,
+        )
+        for c in s.scalars(
+            select(Cumpleanos)
+            .where(Cumpleanos.negocio_id == negocio_id)
+            .order_by(Cumpleanos.orden, Cumpleanos.nombre)
+        )
+    ]
+
+
+def _buscar_cumpleanos(s, panel, cumpleanos_id: uuid.UUID) -> Cumpleanos:
+    cumpleanos = s.scalar(
+        select(Cumpleanos).where(
+            Cumpleanos.id == cumpleanos_id, Cumpleanos.negocio_id == panel.negocio_id
+        )
+    )
+    if cumpleanos is None:
+        raise _no_encontrado("ese cumpleaños")
+    return cumpleanos
+
+
+@router.get("/cumpleanos")
+def listar_cumpleanos(panel: PanelDeConfiguracion) -> list[esquemas.Cumpleanos]:
+    with sesion_de_negocio(panel.negocio_id) as s:
+        return _cumpleanos(s, panel.negocio_id)
+
+
+@router.post("/cumpleanos", status_code=status.HTTP_201_CREATED)
+def crear_cumpleanos(
+    datos: esquemas.NuevoCumpleanos, panel: PanelDeConfiguracion
+) -> list[esquemas.Cumpleanos]:
+    with sesion_de_negocio(panel.negocio_id) as s:
+        ultimo = s.scalar(
+            select(func.max(Cumpleanos.orden)).where(Cumpleanos.negocio_id == panel.negocio_id)
+        )
+        s.add(
+            Cumpleanos(
+                negocio_id=panel.negocio_id,
+                nombre=datos.nombre,
+                deporte_id=_deporte_id(s, datos.deporte),
+                duracion_min=datos.duracion_min,
+                precio=datos.precio,
+                incluye=datos.incluye or None,
+                condiciones=datos.condiciones or None,
+                orden=(ultimo or 0) + 1,
+            )
+        )
+        try:
+            s.commit()
+        except IntegrityError as error:
+            raise HTTPException(
+                status.HTTP_409_CONFLICT, f"Ya hay un cumpleaños que se llama «{datos.nombre}»."
+            ) from error
+        return _cumpleanos(s, panel.negocio_id)
+
+
+@router.patch("/cumpleanos/{cumpleanos_id}")
+def cambiar_cumpleanos(
+    cumpleanos_id: uuid.UUID, cambios: esquemas.CambiosDeCumpleanos, panel: PanelDeConfiguracion
+) -> list[esquemas.Cumpleanos]:
+    """Los cambios valen para los cumpleaños que se reserven después: los ya reservados
+    guardan su horario y su precio."""
+    with sesion_de_negocio(panel.negocio_id) as s:
+        cumpleanos = _buscar_cumpleanos(s, panel, cumpleanos_id)
+        valores = cambios.model_dump(exclude_unset=True)
+        if "deporte" in valores:
+            deporte_id = _deporte_id(s, valores.pop("deporte"))
+            if deporte_id is not None:
+                cumpleanos.deporte_id = deporte_id
+        for campo, valor in valores.items():
+            if valor is None and campo not in ("incluye", "condiciones"):
+                continue
+            setattr(cumpleanos, campo, valor if valor != "" else None)
+        try:
+            s.commit()
+        except IntegrityError as error:
+            raise HTTPException(
+                status.HTTP_409_CONFLICT, "Ya hay otro cumpleaños con ese nombre."
+            ) from error
+        return _cumpleanos(s, panel.negocio_id)
+
+
+@router.delete("/cumpleanos/{cumpleanos_id}")
+def quitar_cumpleanos(
+    cumpleanos_id: uuid.UUID, panel: PanelDeConfiguracion
+) -> list[esquemas.Cumpleanos]:
+    """Si nunca se reservó, se borra; si ya tiene reservas, se desactiva."""
+    with sesion_de_negocio(panel.negocio_id) as s:
+        cumpleanos = _buscar_cumpleanos(s, panel, cumpleanos_id)
+        reservado = s.scalar(
+            select(func.count()).where(
+                Reserva.negocio_id == panel.negocio_id, Reserva.cumpleanos_id == cumpleanos_id
+            )
+        )
+        if reservado:
+            cumpleanos.activo = False
+        else:
+            s.delete(cumpleanos)
+        s.commit()
+        return _cumpleanos(s, panel.negocio_id)
 
 
 # --- Horarios ---

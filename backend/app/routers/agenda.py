@@ -15,7 +15,7 @@ from sqlalchemy.orm import Session
 
 from app.db import sesion_de_negocio
 from app.dependencias import PanelActual
-from app.models import BloqueoFijo, Cliente, Deporte, Negocio, Recurso, Reserva
+from app.models import BloqueoFijo, Cliente, Cumpleanos, Deporte, Negocio, Recurso, Reserva
 from app.schemas import agenda as esquemas
 from app.services.adicionales import AdicionalInvalido, Pedido, fijar_adicionales, pedidos_de
 from app.services.agenda import (
@@ -77,6 +77,7 @@ def ver_agenda(panel: PanelActual, fecha: date | None = None) -> esquemas.Agenda
     with sesion_de_negocio(negocio.id) as s:
         canchas = agenda_del_dia(s, negocio, fecha)
         total = resumen(canchas)
+        cumpleanos = _nombres_de_cumpleanos(s, negocio.id)
         return esquemas.Agenda(
             fecha=fecha,
             hoy=hoy_en_el_negocio(negocio),
@@ -112,6 +113,7 @@ def ver_agenda(panel: PanelActual, fecha: date | None = None) -> esquemas.Agenda
                                 asistencia=t.reserva.asistencia,
                                 motivo_bloqueo=t.reserva.motivo_bloqueo,
                                 minutos_para_pagar=minutos_para_pagar(t.reserva),
+                                cumpleanos=cumpleanos.get(t.reserva.cumpleanos_id),
                             )
                             if t.reserva
                             else _fijo_en_agenda(t.fijo)
@@ -158,6 +160,14 @@ def _buscar_reserva(s: Session, panel, reserva_id: uuid.UUID) -> Reserva:
     return reserva
 
 
+def _nombres_de_cumpleanos(s: Session, negocio_id: uuid.UUID) -> dict[uuid.UUID, str]:
+    return dict(
+        s.execute(
+            select(Cumpleanos.id, Cumpleanos.nombre).where(Cumpleanos.negocio_id == negocio_id)
+        ).all()
+    )
+
+
 def _detalle(s: Session, negocio: Negocio, reserva: Reserva) -> esquemas.ReservaDetalle:
     recurso, deporte = s.execute(
         select(Recurso, Deporte)
@@ -197,6 +207,8 @@ def _detalle(s: Session, negocio: Negocio, reserva: Reserva) -> esquemas.Reserva
             for p in pedidos_de(s, reserva)
         ],
         total_adicionales=reserva.total_adicionales,
+        cumpleanos=_nombres_de_cumpleanos(s, negocio.id).get(reserva.cumpleanos_id),
+        nota=reserva.nota,
         minutos_para_pagar=minutos_para_pagar(reserva),
         cliente=esquemas.Cliente(
             nombre=cliente.nombre, telefono=cliente.telefono, email=cliente.email
@@ -326,6 +338,11 @@ def mover_reserva(
         if reserva.estado not in ("pendiente_pago", "confirmada"):
             raise HTTPException(
                 status.HTTP_422_UNPROCESSABLE_CONTENT, "Solo se mueven reservas activas."
+            )
+        if reserva.cumpleanos_id is not None:
+            raise HTTPException(
+                status.HTTP_422_UNPROCESSABLE_CONTENT,
+                "Un cumpleaños no se mueve: cancelalo y que lo vuelvan a reservar.",
             )
         _, deporte_actual = _cancha(s, panel, reserva.recurso_id)
         cancha, deporte = _cancha(s, panel, destino.recurso_id)

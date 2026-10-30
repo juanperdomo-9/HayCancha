@@ -64,6 +64,17 @@ export type Foto = { url: string; texto: string | null }
 /** Algo que el complejo alquila aparte. Si tiene deporte, es solo de ese (paletas: pádel). */
 export type AdicionalPublico = { id: string; nombre: string; precio: string; deporte: string | null }
 
+/** Un cumpleaños del complejo: una cancha por un tiempo fijo, a precio cerrado y sin seña. */
+export type CumpleanosPublico = {
+  id: string
+  nombre: string
+  deporte: string
+  duracion_min: number
+  precio: string
+  incluye: string | null
+  condiciones: string | null
+}
+
 export type ComplejoDetalle = {
   fotos: Foto[]
   asistente: { nombre: string; bienvenida: string } | null
@@ -76,6 +87,7 @@ export type ComplejoDetalle = {
   servicios: string[]
   reglas: string[]
   adicionales: AdicionalPublico[]
+  cumpleanos: CumpleanosPublico[]
   logo_url: string | null
   portada_url: string | null
   color_primario: string
@@ -121,10 +133,15 @@ export function useComplejo(slug: string) {
   })
 }
 
-export function useDisponibilidad(slug: string, deporte: string | undefined, fecha: string) {
+/** Con `cumpleanos`, los horarios en que puede empezar ese cumpleaños. */
+export function useDisponibilidad(slug: string, deporte: string | undefined, fecha: string, cumpleanos?: string | null) {
   return useQuery({
-    queryKey: ['disponibilidad', slug, deporte, fecha],
-    queryFn: () => pedir<Disponibilidad>(`/publico/complejos/${encodeURIComponent(slug)}/disponibilidad?` + new URLSearchParams({ deporte: deporte ?? '', fecha })),
+    queryKey: ['disponibilidad', slug, deporte, fecha, cumpleanos ?? null],
+    queryFn: () =>
+      pedir<Disponibilidad>(
+        `/publico/complejos/${encodeURIComponent(slug)}/disponibilidad?` +
+          new URLSearchParams({ deporte: deporte ?? '', fecha, ...(cumpleanos ? { cumpleanos } : {}) }),
+      ),
     enabled: Boolean(deporte),
     // Los horarios cambian mientras el jugador mira: se refrescan solos.
     refetchInterval: 60_000,
@@ -143,6 +160,9 @@ export type NuevaReserva = {
   email?: string
   llegada?: 'haycancha' | 'directo'
   adicionales?: { id: string; cantidad: number }[]
+  cumpleanos_id?: string
+  /** Quién cumple, cuántos chicos. */
+  nota?: string
 }
 
 export type ReservaPublica = {
@@ -185,6 +205,10 @@ export type ReservaPublica = {
   ya_cambio_horario: boolean
   devolucion: 'pendiente' | 'hecha' | null
   monto_devuelto: string | null
+  /** Si es un cumpleaños: los detalles se arreglan por WhatsApp con el complejo. */
+  cumpleanos: { nombre: string; incluye: string | null; condiciones: string | null } | null
+  nota: string | null
+  whatsapp: string | null
 }
 
 const reservas = (slug: string) => `/publico/complejos/${encodeURIComponent(slug)}/reservas`

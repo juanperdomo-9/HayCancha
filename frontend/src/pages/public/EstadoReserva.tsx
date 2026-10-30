@@ -1,4 +1,4 @@
-import { Check, Copy } from 'lucide-react'
+import { Check, Copy, MessageCircle } from 'lucide-react'
 import { motion } from 'motion/react'
 import { type ReactNode, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router'
@@ -59,7 +59,8 @@ function Pagina({ reserva: r }: { reserva: ReservaPublica }) {
               ['Cancha', r.cancha],
               ['Día', fechaLarga(r.fecha)],
               ['Horario', `${r.hora} a ${r.hora_fin}`],
-              ['Seña', plata(r.sena)],
+              ...(r.cumpleanos ? [['Cumpleaños', r.cumpleanos.nombre]] : [['Seña', plata(r.sena)]]),
+              ...(r.nota ? [['Quién cumple', r.nota]] : []),
               ...(r.adicionales?.length ? [['Adicionales', r.adicionales.map((a) => `${a.cantidad > 1 ? `${a.cantidad} × ` : ''}${a.nombre}`).join(', ')]] : []),
               ['En la cancha', r.saldo_efectivo ? `${plata(r.saldo)} (${plata(r.saldo_efectivo)} en efectivo)` : plata(r.saldo)],
             ].map(([dt, dd]) => (
@@ -87,11 +88,12 @@ function Contenido({ r }: { r: ReservaPublica }) {
     return (
       <>
         <Pastilla color="bg-complejo">Confirmado</Pastilla>
-        <Titulo>¡Listo, {r.jugador}! El turno es tuyo</Titulo>
+        <Titulo>¡Listo, {r.jugador}! {r.cumpleanos ? 'El cumpleaños está reservado' : 'El turno es tuyo'}</Titulo>
         <p className="mx-auto max-w-[42ch] text-tenue">
-          El resto, <b className="text-tinta">{plata(r.saldo)}</b>, lo pagás en la cancha
+          {r.cumpleanos ? 'El precio' : 'El resto'}, <b className="text-tinta">{plata(r.saldo)}</b>, lo pagás en {r.cumpleanos ? 'el complejo' : 'la cancha'}
           {r.saldo_efectivo ? <> (o <b className="text-tinta">{plata(r.saldo_efectivo)}</b> si pagás en efectivo)</> : ''}.
         </p>
+        {r.cumpleanos && <AvisarCumpleanos r={r} />}
         <GuardarLink link={r.link} complejo={r.complejo} />
         <GestionReserva r={r} />
       </>
@@ -120,6 +122,43 @@ function Contenido({ r }: { r: ReservaPublica }) {
               : 'El turno quedó libre para otro jugador.'}
       </p>
     </>
+  )
+}
+
+/** El cumpleaños se reserva sin seña: los detalles (torta, invitados, comida) se arreglan
+ * por WhatsApp con el complejo, con un mensaje ya armado. */
+function AvisarCumpleanos({ r }: { r: ReservaPublica }) {
+  const link = `${window.location.origin}${r.link}`
+  const texto = [
+    `¡Hola! Reservé el ${r.cumpleanos!.nombre} en ${r.complejo} por HayCanchas.`,
+    `${fechaLarga(r.fecha)}, de ${r.hora} a ${r.hora_fin} (${r.cancha}). Precio: ${plata(r.precio)}.`,
+    r.nota ? `Cumpleaños de: ${r.nota}.` : '',
+    `Mi reserva: ${link}`,
+    'Quiero arreglar los detalles del festejo.',
+  ]
+    .filter(Boolean)
+    .join('\n')
+  return (
+    <div className="mx-auto mt-5 max-w-[46ch] rounded-xl bg-complejo-suave/60 px-4 py-3.5 text-left text-[14px] ring-1 ring-complejo-linea">
+      <p className="font-semibold">Ahora avisale al complejo</p>
+      <p className="mt-1 text-tenue">
+        Escribiles para arreglar los detalles del festejo. Precio: <b className="text-tinta">{plata(r.precio)}</b>, se paga en el complejo.
+      </p>
+      {r.cumpleanos!.condiciones && <p className="mt-1.5 whitespace-pre-line text-tenue">Condiciones: {r.cumpleanos!.condiciones}</p>}
+      {r.whatsapp ? (
+        <a
+          href={`https://wa.me/${r.whatsapp}?text=${encodeURIComponent(texto)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-3 flex items-center justify-center gap-2 rounded-xl bg-complejo px-4 py-3 font-bold text-complejo-sobre"
+        >
+          <MessageCircle className="size-4" aria-hidden="true" />
+          Avisar por WhatsApp
+        </a>
+      ) : (
+        <p className="mt-2 text-tenue">El complejo ya recibió el aviso de tu reserva y se va a comunicar con vos.</p>
+      )}
+    </div>
   )
 }
 

@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>HayCanchas · Propuesta comercial</title>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800;900&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  @page { size: A4; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Instrument Sans', sans-serif; color: #14231A; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .pagina { width: 210mm; height: 297mm; padding: 16mm 16mm 20mm; position: relative; overflow: hidden; page-break-after: always; background: #F1E9D8; }
+  .pagina:last-child { page-break-after: auto; }
+  .oscura { background: #14231A; color: #F6F1E6; }
+  h1, h2, .grande { font-family: 'Big Shoulders Display', sans-serif; font-weight: 900; text-transform: uppercase; line-height: .9; letter-spacing: -.01em; }
+  h1 { font-size: 60pt; }
+  h2 { font-size: 36pt; margin-bottom: 3mm; }
+  h3 { font-size: 12pt; font-weight: 700; margin-bottom: 1mm; }
+  p, li { font-size: 10pt; line-height: 1.42; }
+  .bajada { font-size: 11.5pt; margin-bottom: 7mm; max-width: 150mm; }
+  .verde { color: #1E7A3E; } .claro { color: #57C986; }
+  .etiqueta { display: inline-block; font-size: 8.5pt; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #1E7A3E; margin-bottom: 2mm; }
+  .oscura .etiqueta { color: #57C986; }
+  .marca { display: flex; align-items: center; gap: 3mm; font-family: 'Big Shoulders Display'; font-weight: 900; font-size: 20pt; }
+  .marca img { width: 12mm; height: 12mm; }
+  .cel { border-radius: 7mm; padding: 1.8mm; background: #0a0f0c; box-shadow: 0 5mm 12mm -6mm rgba(20,35,26,.55); }
+  .cel img { width: 100%; display: block; border-radius: 5.5mm; }
+  .pie { position: absolute; left: 16mm; right: 16mm; bottom: 9mm; display: flex; justify-content: space-between; font-size: 8pt; opacity: .7; }
+  .grilla2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 8mm; }
+  .grilla3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6mm; }
+  .item { padding: 3.2mm 0; border-top: .5mm solid #E6DAC2; }
+  .oscura .item { border-color: #2c3d33; }
+  .item p { opacity: .88; }
+  .pasos { counter-reset: paso; }
+  .pasos .cap { margin-top: 3.5mm; }
+  .cap b { display: block; font-size: 11pt; margin-bottom: .8mm; }
+  .cap .n { font-family: 'Big Shoulders Display'; font-weight: 900; font-size: 22pt; color: #1E7A3E; line-height: 1; }
+  .datos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4mm; margin: 6mm 0; }
+  .dato { background: #14231A; color: #F6F1E6; border-radius: 3mm; padding: 4mm; }
+  .dato .grande { font-size: 30pt; color: #57C986; }
+  .dato p { font-size: 9pt; margin-top: 1.5mm; }
+  .comparar { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; }
+  .col { border-radius: 4mm; padding: 5mm 6mm; }
+  .col ul { list-style: none; }
+  .col li { padding: 1.8mm 0 1.8mm 6mm; position: relative; border-top: .4mm solid rgba(20,35,26,.12); }
+  .col li:first-child { border-top: 0; }
+  .col li::before { position: absolute; left: 0; font-weight: 700; }
+  .hoy { background: #E6DAC2; } .hoy li::before { content: "✕"; color: #9b3a2a; }
+  .con { background: #fff; } .con li::before { content: "✓"; color: #1E7A3E; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 2.8mm 4mm; font-size: 10.5pt; }
+  thead th { background: #14231A; color: #F6F1E6; font-weight: 600; }
+  tbody tr:nth-child(odd) td { background: #E6DAC2; }
+  td.num { font-family: 'Big Shoulders Display'; font-weight: 800; font-size: 16pt; }
+  .gratis { background: #1E7A3E; color: #fff; border-radius: 4mm; padding: 5mm 6mm; display: flex; align-items: center; gap: 6mm; margin-bottom: 6mm; }
+  .gratis .grande { font-size: 34pt; }
+  .caja { background: #fff; border-radius: 4mm; padding: 4.5mm 5.5mm; }
+  .caja table td, .caja table th { text-align: center; padding: 2.4mm 2mm; }
+  .caja table td:first-child, .caja table th:first-child { text-align: left; }
+  .paso { display: flex; gap: 5mm; align-items: flex-start; margin-bottom: 5mm; }
+  .paso .n { font-family: 'Big Shoulders Display'; font-weight: 900; font-size: 38pt; line-height: .8; color: #57C986; min-width: 11mm; }
+  .faq h3 { font-size: 10.5pt; }
+  .faq .item { padding: 2.6mm 0; }
+</style>
+</head>
+<body>
+
+<!-- 1. Portada -->
+<section class="pagina oscura">
+  <div class="marca"><img src="../../frontend/public/logo-haycanchas.png"><span><span class="claro">HAY</span>CANCHAS</span></div>
+  <div style="position:absolute; left:16mm; top:50mm; width:100mm">
+    <p class="etiqueta">Propuesta comercial</p>
+    <h1>Tu complejo, con reservas y seña online</h1>
+    <p style="font-size:12.5pt; margin-top:7mm; opacity:.92">Tus jugadores ven los horarios libres de verdad, reservan desde el celular y pagan la seña con Mercado Pago. Vos dejás de contestar mensajes para dar turnos.</p>
+    <div style="margin-top:9mm; display:inline-block; background:#57C986; color:#14231A; border-radius:3mm; padding:3mm 5mm">
+      <span class="grande" style="font-size:24pt">El primer mes es gratis</span>
+    </div>
+    <p style="font-size:10.5pt; margin-top:4mm; opacity:.85">Sin costo de instalación · Sin permanencia · Precios fijos hasta el 1/5/2027</p>
+  </div>
+  <div style="position:absolute; right:16mm; top:42mm; width:62mm"><div class="cel"><img src="../../video/public/demo/3-horarios.png"></div></div>
+  <div class="pie"><span>haycanchas.com.ar</span><span>haycanchas6@gmail.com</span></div>
+</section>
+
+<!-- 2. Problema y solución -->
+<section class="pagina">
+  <p class="etiqueta">Por qué HayCanchas</p>
+  <h2>Menos mensajes, más turnos cobrados</h2>
+  <p class="bajada">Cada complejo tiene su propia página en HayCanchas, con su logo y sus colores. Ahí los jugadores reservan solos, a cualquier hora, y dejan la seña antes de que el turno sea suyo.</p>
+  <div class="comparar">
+    <div class="col hoy">
+      <h3>Hoy</h3>
+      <ul>
+        <li>Contestás "¿hay cancha a las 21?" todo el día, también de noche.</li>
+        <li>El turno se pierde si no respondés a tiempo.</li>
+        <li>Reservas sin seña: no vienen y la cancha queda vacía.</li>
+        <li>Agenda en un cuaderno o en la cabeza; los turnos se pisan.</li>
+        <li>No sabés cuánto te queda por cobrar en el día.</li>
+      </ul>
+    </div>
+    <div class="col con">
+      <h3>Con HayCanchas</h3>
+      <ul>
+        <li>El jugador ve los horarios libres y reserva solo, las 24 horas.</li>
+        <li>La seña se paga con Mercado Pago y entra en tu cuenta.</li>
+        <li>Si no paga en los minutos que vos definas, el turno se libera solo.</li>
+        <li>Una sola agenda: la web y las reservas por teléfono nunca se pisan.</li>
+        <li>Ves en el celular quién reservó, qué pagó y cuánto falta cobrar.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="datos">
+    <div class="dato"><div class="grande">24/7</div><p>Reservas online, sin atender el teléfono</p></div>
+    <div class="dato"><div class="grande">0%</div><p>De comisión de HayCanchas por reserva</p></div>
+    <div class="dato"><div class="grande">24 h</div><p>Para tener tu página andando</p></div>
+    <div class="dato"><div class="grande">1 mes</div><p>Gratis para probarlo, siempre</p></div>
+  </div>
+  <p style="font-size:9pt; opacity:.75">Sirve para fútbol 5, 7 y 11, pádel, tenis, básquet, vóley y cualquier deporte que se alquile por turno. Cada cancha con su duración y su precio.</p>
+  <div class="pie"><span>HAYCANCHAS · Propuesta comercial</span><span>2</span></div>
+</section>
+
+<!-- 3. Jugador -->
+<section class="pagina">
+  <p class="etiqueta">Para tus jugadores</p>
+  <h2>Reservar lleva un minuto</h2>
+  <p class="bajada">Entran a <b>haycanchas.com.ar/tu-complejo</b> desde el link de tu Instagram, tu WhatsApp o el QR del mostrador. Sin descargar nada y sin crear cuenta.</p>
+  <div class="grilla3">
+    <div><div class="cel"><img src="../../video/public/demo/3-horarios.png"></div>
+      <div class="cap"><span class="n">1</span><b>Elige deporte, día y horario</b><p>Ve cuántas canchas quedan libres en cada horario y su precio.</p></div></div>
+    <div><div class="cel"><img src="../../video/public/demo/6-datos.png"></div>
+      <div class="cap"><span class="n">2</span><b>Deja sus datos y paga la seña</b><p>Nombre y teléfono, y la seña con Mercado Pago. Antes de pagar ve tus reglas y tu política de cancelación.</p></div></div>
+    <div><div class="cel"><img src="../../video/public/demo/7-confirmado.png"></div>
+      <div class="cap"><span class="n">3</span><b>El turno es suyo</b><p>Se confirma solo cuando el pago se acredita. El resto lo paga en la cancha.</p></div></div>
+  </div>
+  <div class="grilla2" style="margin-top:6mm">
+    <div class="item"><h3>Cancela o cambia solo</h3><p>Desde el link de su reserva. Si lo hace con la anticipación que vos fijás, la seña se le devuelve sola.</p></div>
+    <div class="item"><h3>Nadie traba turnos</h3><p>Hay un tope de reservas sin pagar por persona, y las que no se pagan a tiempo se liberan.</p></div>
+  </div>
+  <div class="pie"><span>HAYCANCHAS · Propuesta comercial</span><span>3</span></div>
+</section>
+
+<!-- 4. Dueño -->
+<section class="pagina">
+  <p class="etiqueta">Para vos</p>
+  <h2>Tu complejo en el celular</h2>
+  <p class="bajada">Un panel pensado para usarlo en la cancha. Las reservas nuevas aparecen solas, sin recargar.</p>
+  <div class="grilla3">
+    <div><div class="cel"><img src="../../video/public/demo/dueno-2-agenda.png"></div>
+      <div class="cap"><b>Agenda del día y de la semana</b><p>Una columna por cancha: libre, esperando el pago, reservado o bloqueado. Arriba, las señas cobradas y lo que falta cobrar.</p></div></div>
+    <div><div class="cel"><img src="../../video/public/demo/dueno-3-detalle.png"></div>
+      <div class="cap"><b>Cada reserva a mano</b><p>Llamás o escribís al jugador con un toque, marcás si vino y si pagó el saldo, la movés o la cancelás.</p></div></div>
+    <div><div class="cel"><img src="../../video/public/demo/dueno-7-bloqueado.png"></div>
+      <div class="cap"><b>Bloqueos y reservas por teléfono</b><p>Cerrás turnos por lluvia, torneo o mantenimiento. Lo que cargás vos ya no se ofrece en la web.</p></div></div>
+  </div>
+  <div class="grilla2" style="margin-top:7mm">
+    <div class="item"><h3>Reservas cargadas a mano</h3><p>El que llama o viene en persona: nombre, teléfono y, si dejó, la seña en efectivo. Queda confirmada al instante.</p></div>
+    <div class="item"><h3>Quién viene y quién falta</h3><p>Marcás si el jugador vino o no, y sabés quiénes suelen faltar.</p></div>
+    <div class="item"><h3>Mover sin llamadas</h3><p>Pasás una reserva a otra cancha o a otro horario libre en dos toques.</p></div>
+    <div class="item"><h3>Configurás todo vos</h3><p>Canchas, horarios, precios, seña, fotos y colores, cuando quieras y desde el celular.</p></div>
+  </div>
+  <div class="pie"><span>HAYCANCHAS · Propuesta comercial</span><span>4</span></div>
+</section>
+
+<!-- 5. Todo lo que incluye -->
+<section class="pagina">
+  <p class="etiqueta">Todo lo que incluye</p>
+  <h2>Hecho para complejos de verdad</h2>
+  <div class="grilla2" style="margin-top:5mm">
+    <div>
+      <div class="item"><h3>Tu página propia</h3><p>Con tu logo, tus colores, fotos, dirección con mapa, servicios y reglas del predio.</p></div>
+      <div class="item"><h3>Seña a tu medida</h3><p>Monto fijo o porcentaje, y cuántos minutos tiene el jugador para pagar.</p></div>
+      <div class="item"><h3>Tu política de cancelación</h3><p>Vos decidís con cuántas horas se devuelve la seña. Se aplica sola.</p></div>
+      <div class="item"><h3>Precios por franja</h3><p>Cada cancha con sus horarios y precios; por ejemplo, más cara de noche.</p></div>
+      <div class="item"><h3>Turnos fijos</h3><p>Bloqueos que se repiten todas las semanas para tus clientes de siempre.</p></div>
+      <div class="item"><h3>Anticipación mínima</h3><p>Definís con cuánto tiempo antes se puede reservar online.</p></div>
+      <div class="item"><h3>Canchas que se unen</h3><p>Si dos de fútbol 5 forman una de 7, reservar una bloquea las otras.</p></div>
+    </div>
+    <div>
+      <div class="item"><h3>Cumpleaños</h3><p>Si festejás cumpleaños, se reservan desde tu página a precio cerrado, y los detalles se arreglan por WhatsApp.</p></div>
+      <div class="item"><h3>Adicionales</h3><p>Paletas, pelotas, parrilla: el jugador los suma al reservar y se cobran en la cancha.</p></div>
+      <div class="item"><h3>Avisos por email</h3><p>Te llega un aviso por cada reserva, cancelación y cambio de horario.</p></div>
+      <div class="item"><h3>Tu equipo, con permisos</h3><p>Los empleados manejan la agenda, sin entrar a la configuración ni a los pagos.</p></div>
+      <div class="item"><h3>Link para compartir y QR</h3><p>Tu link se ve con tu foto en WhatsApp, y el QR se imprime para el mostrador.</p></div>
+      <div class="item"><h3>Botón de WhatsApp</h3><p>Para que te consulten dudas, si querés tenerlo.</p></div>
+      <div class="item"><h3>Te encuentran en HayCanchas</h3><p>Tu complejo aparece en el listado de haycanchas.com.ar, con su próximo turno libre.</p></div>
+      <div class="item"><h3>Carga y acompañamiento</h3><p>Cargamos todo por vos y te acompañamos los primeros días. Las mejoras llegan sin costo.</p></div>
+    </div>
+  </div>
+  <div class="pie"><span>HAYCANCHAS · Propuesta comercial</span><span>5</span></div>
+</section>
+
+<!-- 6. Precios -->
+<section class="pagina">
+  <p class="etiqueta">Planes y precios</p>
+  <h2>Un abono mensual, sin comisiones</h2>
+  <div class="gratis">
+    <span class="grande">El primer mes es gratis</span>
+    <p style="font-size:10.5pt">Para todos los complejos, siempre. Lo probás con tus jugadores reales y decidís.</p>
+  </div>
+  <p style="margin-bottom:2.5mm">Según la cantidad de canchas (suman todos los deportes). Precios fijos hasta el 1/5/2027.</p>
+  <table>
+    <thead><tr><th>Canchas</th><th>Plan Básico</th><th>Plan Pro</th></tr></thead>
+    <tbody>
+      <tr><td>Hasta 2</td><td class="num">$60.000</td><td class="num">$70.000</td></tr>
+      <tr><td>Hasta 4</td><td class="num">$80.000</td><td class="num">$90.000</td></tr>
+      <tr><td>Hasta 6</td><td class="num">$100.000</td><td class="num">$110.000</td></tr>
+      <tr><td>Más de 6</td><td class="num">$120.000</td><td class="num">$130.000</td></tr>
+    </tbody>
+  </table>
+  <p style="margin:3mm 0 5mm"><b>Básico:</b> todo lo de la página anterior. <b>Pro:</b> suma la pestaña Resultados, con los números de cada mes comparados con el anterior: reservas, facturación, señas cobradas online, ocupación (también por día), horarios más pedidos, cuántas reservas entraron sin que intervengas, faltas, y cuántos jugadores y cuánta plata te trajo HayCanchas.</p>
+  <div class="caja">
+    <h3 class="verde">Beneficio de lanzamiento · solo los primeros 5 complejos</h3>
+    <table style="margin-top:2mm">
+      <thead><tr><th></th><th>Mes 1</th><th>Mes 2</th><th>Mes 3</th><th>Mes 4</th><th>Mes 5 en adelante</th></tr></thead>
+      <tbody>
+        <tr><td>Descuento</td><td><b>Gratis</b></td><td>75%</td><td>50%</td><td>25%</td><td>—</td></tr>
+        <tr><td>Ej.: 4 canchas, Básico</td><td><b>$0</b></td><td>$20.000</td><td>$40.000</td><td>$60.000</td><td>$80.000</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:3mm; font-size:9.5pt">Desde el sexto complejo: primer mes gratis y 50% de descuento el segundo.</p>
+  </div>
+  <div class="grilla2" style="margin-top:4mm">
+    <div class="item"><h3>Sin costo de instalación</h3><p>Cargamos canchas, horarios, precios, fotos y logo.</p></div>
+    <div class="item"><h3>Sin permanencia</h3><p>Mes a mes: si no te sirve, lo dejás. Mercado Pago cobra sus propias tarifas por cada pago.</p></div>
+  </div>
+  <p style="margin-top:2mm; font-size:9.5pt"><b>Pago fuera de término:</b> si el abono se paga después del vencimiento, se suma un recargo del 1% por cada día de atraso.</p>
+  <div class="pie"><span>HAYCANCHAS · Propuesta comercial</span><span>6</span></div>
+</section>
+
+<!-- 7. Preguntas y cómo empezamos -->
+<section class="pagina oscura">
+  <p class="etiqueta">Preguntas frecuentes</p>
+  <div class="grilla2 faq" style="margin-top:1mm">
+    <div>
+      <div class="item"><h3>¿Mis jugadores tienen que bajar una app?</h3><p>No. Es una página: entran desde un link y reservan.</p></div>
+      <div class="item"><h3>¿Y los que reservan por teléfono?</h3><p>Los cargás en la agenda y ese turno ya no se ofrece en la web.</p></div>
+      <div class="item"><h3>¿Quién cobra la seña?</h3><p>Vos, directo en tu cuenta de Mercado Pago. Nosotros no tocamos la plata.</p></div>
+    </div>
+    <div>
+      <div class="item"><h3>¿Puedo cambiar precios u horarios?</h3><p>Sí, cuando quieras, desde tu panel. O nos pedís que lo hagamos.</p></div>
+      <div class="item"><h3>¿Y si el jugador no paga?</h3><p>El turno se libera solo cuando vence el tiempo para pagar.</p></div>
+      <div class="item"><h3>¿Y si no me sirve?</h3><p>El primer mes es gratis y no hay permanencia.</p></div>
+    </div>
+  </div>
+  <h2 style="margin-top:9mm; margin-bottom:5mm">Cómo empezamos</h2>
+  <div class="paso"><div class="n">1</div><div><h3>Nos contás tu complejo</h3><p style="opacity:.88">Canchas, deportes, horarios, precios, seña, política de cancelación y logo.</p></div></div>
+  <div class="paso"><div class="n">2</div><div><h3>Lo cargamos en 24 horas</h3><p style="opacity:.88">Tu página queda en haycanchas.com.ar/tu-complejo y te llega el acceso a tu panel.</p></div></div>
+  <div class="paso"><div class="n">3</div><div><h3>Vinculás tu Mercado Pago y listo</h3><p style="opacity:.88">Un minuto desde tu panel. Ponés el link en tu Instagram y te anunciamos en el nuestro.</p></div></div>
+  <div style="position:absolute; left:16mm; right:16mm; bottom:20mm; display:flex; gap:8mm; align-items:center; padding-top:6mm; border-top:.5mm solid #2c3d33">
+    <img src="qr-haycanchas.png" style="width:32mm; height:32mm; background:#fff; padding:2mm; border-radius:2mm">
+    <div>
+      <p class="grande" style="font-size:26pt">haycanchas.com.ar</p>
+      <p style="margin-top:2mm; font-size:11pt">haycanchas6@gmail.com</p>
+    </div>
+  </div>
+  <div class="pie"><span>HAYCANCHAS · Propuesta comercial</span><span>7</span></div>
+</section>
+</body>
+</html>

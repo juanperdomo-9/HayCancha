@@ -3,6 +3,7 @@ from app.models.base import Base
 from app.models.bloqueo_fijo import BloqueoFijo
 from app.models.cliente import Cliente
 from app.models.consulta import ConsultaSinRespuesta
+from app.models.cumpleanos import Cumpleanos
 from app.models.deporte import Deporte
 from app.models.foto import Foto
 from app.models.horario import Horario
@@ -20,6 +21,7 @@ __all__ = [
     "BloqueoFijo",
     "Cliente",
     "ConsultaSinRespuesta",
+    "Cumpleanos",
     "Deporte",
     "Foto",
     "Horario",

@@ -336,15 +336,19 @@ export type Escena = { compases: number; tono: keyof typeof LUCES; toques?: numb
 
 /** Arma el video: cada escena dura sus compases (cortes en el beat), con su fondo, un
  * whoosh en cada corte, un clic en cada toque y la música de fondo. */
-export const Montaje: React.FC<{ escenas: Escena[] }> = ({ escenas }) => {
+export type Musica = { src: string; inicio: number; compas: number };
+const MUSICA: Musica = { src: "musica.mp3", inicio: INICIO_MUSICA, compas: COMPAS };
+
+export const Montaje: React.FC<{ escenas: Escena[]; musica?: Musica }> = ({ escenas, musica = MUSICA }) => {
   const { fps, durationInFrames } = useVideoConfig();
+  const enCuadros = (compases: number) => Math.round(compases * musica.compas * fps);
   let compas = 0;
   return (
     <AbsoluteFill style={{ backgroundColor: "#14231a" }}>
       {escenas.map((e, i) => {
-        const desde = f(compas, fps);
+        const desde = enCuadros(compas);
         compas += e.compases;
-        const largo = f(compas, fps) - desde;
+        const largo = enCuadros(compas) - desde;
         return (
           <Sequence key={i} from={desde} durationInFrames={largo} premountFor={fps}>
             <Fondo tono={e.tono} />
@@ -359,8 +363,8 @@ export const Montaje: React.FC<{ escenas: Escena[] }> = ({ escenas }) => {
         );
       })}
       <Audio
-        src={staticFile("musica.mp3")}
-        trimBefore={Math.round(INICIO_MUSICA * fps)}
+        src={staticFile(musica.src)}
+        trimBefore={Math.round(musica.inicio * fps)}
         volume={(fr) => interpolate(fr, [0, 6, durationInFrames - fps, durationInFrames], [0, 0.6, 0.6, 0], clamp)}
       />
     </AbsoluteFill>

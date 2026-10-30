@@ -15,6 +15,7 @@ import {
 } from "./instagram/reels";
 import { COMPAS } from "./marca";
 import { COMPASES_DEMO, DemoJugador } from "./demo/DemoJugador";
+import { DemoCumple, SEGUNDOS_CUMPLE } from "./demo/DemoCumple";
 import { DemoDueno } from "./demo/DemoDueno";
 import { calcularFichaje, Fichaje, FichajeHistoria } from "./instagram/fichaje";
 import { COMPASES_FICHAJE, FichajeReel } from "./instagram/fichajeReel";
@@ -49,6 +50,14 @@ export const RemotionRoot: React.FC = () => {
         id="JugadorV2"
         component={DemoJugador}
         durationInFrames={Math.round(COMPASES_DEMO * COMPAS * FPS)}
+        fps={FPS}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="CumpleV1"
+        component={DemoCumple}
+        durationInFrames={Math.round(SEGUNDOS_CUMPLE * FPS)}
         fps={FPS}
         width={1080}
         height={1920}

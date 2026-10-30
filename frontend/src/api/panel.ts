@@ -405,6 +405,37 @@ export function useCambiarInteresado() {
 }
 
 /** Lo que el complejo alquila aparte (paletas, pelotas, parrilla). */
+export type CumpleanosPanel = {
+  id: string
+  nombre: string
+  deporte: string
+  duracion_min: number
+  precio: string
+  incluye: string | null
+  condiciones: string | null
+  activo: boolean
+}
+
+type DatosDeCumpleanos = Omit<CumpleanosPanel, 'id' | 'activo'>
+
+export function useCumpleanos(slug: string) {
+  return useQuery({ queryKey: ['panel', slug, 'cumpleanos'], queryFn: () => pedir<CumpleanosPanel[]>(`${base(slug)}/cumpleanos`) })
+}
+
+function useCambiarCumpleanosDelComplejo<T>(slug: string, hacer: (valor: T) => Promise<CumpleanosPanel[]>) {
+  const cliente = useQueryClient()
+  return useMutation({ mutationFn: hacer, onSuccess: (lista) => cliente.setQueryData(['panel', slug, 'cumpleanos'], lista) })
+}
+
+export const useCrearCumpleanos = (slug: string) =>
+  useCambiarCumpleanosDelComplejo(slug, (datos: DatosDeCumpleanos) => enviar<CumpleanosPanel[]>(`${base(slug)}/cumpleanos`, 'POST', datos))
+export const useCambiarCumpleanos = (slug: string) =>
+  useCambiarCumpleanosDelComplejo(slug, ({ id, ...cambios }: { id: string } & Partial<DatosDeCumpleanos & { activo: boolean }>) =>
+    enviar<CumpleanosPanel[]>(`${base(slug)}/cumpleanos/${id}`, 'PATCH', cambios),
+  )
+export const useQuitarCumpleanos = (slug: string) =>
+  useCambiarCumpleanosDelComplejo(slug, (id: string) => pedir<CumpleanosPanel[]>(`${base(slug)}/cumpleanos/${id}`, { method: 'DELETE' }))
+
 export type AdicionalPanel = { id: string; nombre: string; precio: string; deporte: string | null; activo: boolean }
 
 export function useAdicionales(slug: string) {

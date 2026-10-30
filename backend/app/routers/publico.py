@@ -13,12 +13,15 @@ from sqlalchemy.orm import Session
 
 from app.config import get_settings
 from app.db import get_session, sesion_de_negocio
-from app.models import Deporte, Foto, Horario, Negocio, Recurso
+from app.models import Cumpleanos, Deporte, Foto, Horario, Negocio, Recurso
 from app.schemas import publico as esquemas
 from app.services import ia
 from app.services.adicionales import ofrecidos
 from app.services.cobros import proveedor_para
+from app.services.cumpleanos import disponibilidad_cumpleanos
+from app.services.cumpleanos import ofrecidos as cumpleanos_ofrecidos
 from app.services.disponibilidad import (
+    canchas_del_deporte,
     disponibilidad,
     hoy_en_el_negocio,
     proximo_turno_libre,
@@ -148,6 +151,18 @@ def ver_complejo(slug: str, session: SesionPublica) -> esquemas.ComplejoDetalle:
             )
             for a in ofrecidos(s, negocio.id)
         ]
+        cumpleanos = [
+            esquemas.CumpleanosPublico(
+                id=c.id,
+                nombre=c.nombre,
+                deporte=codigos[c.deporte_id],
+                duracion_min=c.duracion_min,
+                precio=c.precio,
+                incluye=c.incluye,
+                condiciones=c.condiciones,
+            )
+            for c in cumpleanos_ofrecidos(s, negocio.id)
+        ]
         fotos = [
             esquemas.FotoPublica(url=f.url, texto=f.texto)
             for f in s.scalars(
@@ -173,6 +188,7 @@ def ver_complejo(slug: str, session: SesionPublica) -> esquemas.ComplejoDetalle:
         servicios=negocio.servicios,
         reglas=negocio.reglas,
         adicionales=adicionales,
+        cumpleanos=cumpleanos,
         logo_url=negocio.logo_url,
         portada_url=negocio.portada_url,
         color_primario=negocio.color_primario,
@@ -261,7 +277,10 @@ def ver_disponibilidad(
     session: SesionPublica,
     deporte: Annotated[str, Query(min_length=1)],
     fecha: date | None = None,
+    cumpleanos: uuid.UUID | None = None,
 ) -> esquemas.Disponibilidad:
+    """Los turnos libres de un deporte o, con `cumpleanos`, los horarios en que puede
+    empezar ese cumpleaños (con turnos seguidos libres que cubran su duración)."""
     negocio = buscar_negocio(session, slug)
     hoy = hoy_en_el_negocio(negocio)
     fecha = fecha or hoy
@@ -273,7 +292,23 @@ def ver_disponibilidad(
 
     zona = zona_del_negocio(negocio)
     with sesion_de_negocio(negocio.id) as s:
-        turnos = disponibilidad(s, negocio, deporte, fecha)
+        if cumpleanos is None:
+            turnos = disponibilidad(s, negocio, deporte, fecha)
+        else:
+            cumple = s.scalar(
+                select(Cumpleanos).where(
+                    Cumpleanos.id == cumpleanos,
+                    Cumpleanos.negocio_id == negocio.id,
+                    Cumpleanos.activo,
+                )
+            )
+            codigo = cumple and s.scalar(
+                select(Deporte.codigo).where(Deporte.id == cumple.deporte_id)
+            )
+            if cumple is None or codigo != deporte:
+                raise HTTPException(status.HTTP_404_NOT_FOUND, "No encontramos ese cumpleaños.")
+            canchas = canchas_del_deporte(s, negocio.id, deporte)
+            turnos = disponibilidad_cumpleanos(s, negocio, cumple, canchas, fecha)
         return esquemas.Disponibilidad(
             fecha=fecha,
             deporte=deporte,

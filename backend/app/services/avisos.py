@@ -18,6 +18,8 @@ def _datos(s, negocio_id: uuid.UUID, reserva_id: uuid.UUID):
     reserva = s.get(Reserva, reserva_id)
     cliente = s.get(Cliente, reserva.cliente_id) if reserva and reserva.cliente_id else None
     cancha = s.get(Recurso, reserva.recurso_id).nombre if reserva else ""
+    if reserva and reserva.cumpleanos_id:
+        cancha += f" (cumpleaños: {reserva.nota})" if reserva.nota else " (cumpleaños)"
     return negocio, reserva, cliente, cancha
 
 

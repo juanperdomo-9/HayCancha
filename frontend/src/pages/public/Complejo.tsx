@@ -1,10 +1,10 @@
-import { MessageCircle } from 'lucide-react'
+import { Cake, MessageCircle } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router'
 
 import { ErrorApi } from '../../api/client'
-import { type ComplejoDetalle, useComplejo, useDisponibilidad } from '../../api/publico'
+import { type ComplejoDetalle, type CumpleanosPublico, useComplejo, useDisponibilidad } from '../../api/publico'
 import { BotonCompartir } from '../../components/complejo/Compartir'
 import { BotonVerFotos, GaleriaFotos, VisorDeFotos } from '../../components/complejo/GaleriaFotos'
 import { GrillaTurnos } from '../../components/complejo/GrillaTurnos'
@@ -57,14 +57,17 @@ function PaginaComplejo({ complejo }: { complejo: ComplejoDetalle }) {
   const [inicio, setInicio] = useState<string | null>(null)
   const [canchaId, setCanchaId] = useState<string | null>(null)
   const [hojaAbierta, setHojaAbierta] = useState(false)
-  const { data: disponibilidad, isPending } = useDisponibilidad(complejo.slug, deporte, fecha)
+  // Un cumpleaños del complejo en vez de un turno (usa las canchas de su deporte).
+  const [cumpleId, setCumpleId] = useState<string | null>(null)
+  const cumple = complejo.cumpleanos?.find((c) => c.id === cumpleId)
+  const { data: disponibilidad, isPending, isPlaceholderData } = useDisponibilidad(complejo.slug, deporte, fecha, cumpleId)
 
   useEffect(() => {
     document.title = `${complejo.nombre} · HayCanchas`
   }, [complejo.nombre])
 
   const deporteActual = complejo.deportes.find((d) => d.codigo === deporte)
-  const vigente = disponibilidad?.fecha === fecha && disponibilidad.deporte === deporte
+  const vigente = !isPlaceholderData && disponibilidad?.fecha === fecha && disponibilidad.deporte === deporte
   const turnos = vigente ? disponibilidad.turnos : undefined
   const turno = turnos?.find((t) => t.inicio === inicio && t.libres.length > 0)
   const cancha = turno && (canchaId ? turno.libres.find((c) => c.id === canchaId) : turno.libres[0])
@@ -143,15 +146,16 @@ function PaginaComplejo({ complejo }: { complejo: ComplejoDetalle }) {
           </h2>
           <p className="mt-1.5 text-tenue">Elegí {complejo.deportes.length > 1 ? 'el deporte, ' : ''}el día y el horario.</p>
 
-          {complejo.deportes.length > 1 && (
+          {(complejo.deportes.length > 1 || complejo.cumpleanos?.length > 0) && (
             <div className="-mx-0.5 mt-5 flex gap-2 overflow-x-auto p-0.5 [scrollbar-width:none]" aria-label="Deporte">
               {complejo.deportes.map((d) => (
                 <button
                   key={d.codigo}
                   type="button"
-                  aria-pressed={d.codigo === deporte}
+                  aria-pressed={d.codigo === deporte && !cumple}
                   onClick={() => {
                     setDeporte(d.codigo)
+                    setCumpleId(null)
                     limpiarSeleccion()
                   }}
                   className="grid min-w-[136px] flex-none gap-px rounded-xl border-[1.5px] border-borde bg-superficie px-4 py-2.5 text-left transition-colors hover:border-complejo-linea aria-pressed:border-complejo aria-pressed:bg-complejo-suave aria-pressed:shadow-[inset_0_0_0_1px_var(--complejo)]"
@@ -162,8 +166,31 @@ function PaginaComplejo({ complejo }: { complejo: ComplejoDetalle }) {
                   </span>
                 </button>
               ))}
+              {complejo.cumpleanos?.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  aria-pressed={c.id === cumpleId}
+                  onClick={() => {
+                    setDeporte(c.deporte)
+                    setCumpleId(c.id)
+                    limpiarSeleccion()
+                  }}
+                  className="grid min-w-[136px] flex-none gap-px rounded-xl border-[1.5px] border-borde bg-superficie px-4 py-2.5 text-left transition-colors hover:border-complejo-linea aria-pressed:border-complejo aria-pressed:bg-complejo-suave aria-pressed:shadow-[inset_0_0_0_1px_var(--complejo)]"
+                >
+                  <b className="flex items-center gap-1.5 text-[15.5px]">
+                    <Cake className="size-4 text-complejo-texto" aria-hidden="true" />
+                    {c.nombre}
+                  </b>
+                  <span className="text-[12.5px] text-tenue tabular-nums">
+                    {duracionTexto(c.duracion_min)} · {plata(c.precio)}
+                  </span>
+                </button>
+              ))}
             </div>
           )}
+
+          {cumple && <InfoCumpleanos cumple={cumple} />}
 
           <TiraDeFechas
             hoy={complejo.hoy}
@@ -187,7 +214,7 @@ function PaginaComplejo({ complejo }: { complejo: ComplejoDetalle }) {
           </div>
 
           <GrillaTurnos
-            key={`${deporte}-${fecha}`}
+            key={`${deporte}-${cumpleId}-${fecha}`}
             turnos={turnos}
             cargando={isPending || !vigente}
             seleccionado={turno?.inicio ?? null}
@@ -213,6 +240,7 @@ function PaginaComplejo({ complejo }: { complejo: ComplejoDetalle }) {
               minutosParaPagar={complejo.minutos_para_pagar}
               reglas={complejo.reglas ?? []}
               adicionales={complejo.adicionales ?? []}
+              cumpleanos={cumple}
             />
           ) : (
             <SinTurnoElegido complejo={complejo} />
@@ -304,6 +332,7 @@ function PaginaComplejo({ complejo }: { complejo: ComplejoDetalle }) {
                     minutosParaPagar={complejo.minutos_para_pagar}
               reglas={complejo.reglas ?? []}
               adicionales={complejo.adicionales ?? []}
+                    cumpleanos={cumple}
                     turno={turno}
                     fecha={fecha}
                     deporte={deporteActual}
@@ -320,7 +349,7 @@ function PaginaComplejo({ complejo }: { complejo: ComplejoDetalle }) {
                       {DIAS_CORTOS[desdeIso(fecha).getDay()]} {desdeIso(fecha).getDate()}/{desdeIso(fecha).getMonth() + 1} · {turno.hora}
                     </b>
                     <span className="text-[13px] text-tenue">
-                      {deporteActual.nombre} · seña {plata(cancha.sena)}
+                      {cumple ? `${cumple.nombre} · ${plata(cumple.precio)}` : `${deporteActual.nombre} · seña ${plata(cancha.sena)}`}
                     </span>
                   </div>
                   <button
@@ -337,6 +366,29 @@ function PaginaComplejo({ complejo }: { complejo: ComplejoDetalle }) {
         )}
       </AnimatePresence>
     </TemaComplejo>
+  )
+}
+
+function duracionTexto(minutos: number): string {
+  if (minutos % 60) return `${minutos} min`
+  return minutos === 60 ? '1 hora' : `${minutos / 60} horas`
+}
+
+/** Qué incluye el cumpleaños y las condiciones del complejo para festejarlo. */
+function InfoCumpleanos({ cumple }: { cumple: CumpleanosPublico }) {
+  return (
+    <div className="mt-4 rounded-xl bg-complejo-suave/60 px-4 py-3 text-[14px] ring-1 ring-complejo-linea">
+      <p>
+        <b>{cumple.nombre}</b>: {duracionTexto(cumple.duracion_min)} de cancha por {plata(cumple.precio)}, sin seña. Elegí el día y a qué hora
+        empieza.
+      </p>
+      {cumple.incluye && <p className="mt-1.5 whitespace-pre-line text-tenue">Incluye: {cumple.incluye}</p>}
+      {cumple.condiciones && (
+        <p className="mt-1.5 whitespace-pre-line text-tenue">
+          <b className="text-tinta">Condiciones del complejo:</b> {cumple.condiciones}
+        </p>
+      )}
+    </div>
   )
 }
 

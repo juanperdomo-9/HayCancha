@@ -1,4 +1,4 @@
-import { Plus, Trash2 } from 'lucide-react'
+import { Cake, Plus, Trash2 } from 'lucide-react'
 import { type FormEvent, useState } from 'react'
 import { Link, useParams } from 'react-router'
 
@@ -8,13 +8,17 @@ import {
   type ReservaQueSePisa,
   useAdicionales,
   useCambiarAdicional,
+  useCambiarCumpleanos,
   useCambiarCancha,
   useCambiarPartes,
   useCanchas,
   useCrearAdicional,
+  useCrearCumpleanos,
+  useCumpleanos,
   useCrearCancha,
   useDeportes,
   useQuitarAdicional,
+  useQuitarCumpleanos,
 } from '../../api/panel'
 import { Aviso, Boton, Campo, Tarjeta } from '../../components/ui/Formulario'
 import { plata } from '../../utils/formato'
@@ -103,6 +107,7 @@ export default function Canchas() {
       {canchas.data && canchas.data.filter((c) => c.activo).length > 2 && <CanchasUnidas slug={slug} canchas={canchas.data.filter((c) => c.activo)} />}
 
       {canchas.data && canchas.data.length > 0 && <Adicionales slug={slug} deportes={[...new Map(canchas.data.map((c) => [c.deporte, c.deporte_nombre])).entries()]} />}
+      {canchas.data && canchas.data.length > 0 && <Cumpleanos slug={slug} deportes={[...new Map(canchas.data.map((c) => [c.deporte, c.deporte_nombre])).entries()]} />}
 
       {canchas.data && canchas.data.length > 0 && (
         <Link to={`/panel/${slug}/horarios`} className="justify-self-start font-semibold text-complejo-texto underline underline-offset-3">
@@ -368,6 +373,124 @@ function Adicionales({ slug, deportes }: { slug: string; deportes: [string, stri
           <Plus className="size-4" aria-hidden="true" />
           Agregar
         </Boton>
+      </form>
+      {error && <Aviso>{mensaje(error)}</Aviso>}
+    </Tarjeta>
+  )
+}
+
+const DURACIONES = [60, 90, 120, 150, 180]
+const vacio = { nombre: '', deporte: '', duracion_min: 120, precio: '', incluye: '', condiciones: '' }
+const claseTexto = 'w-full rounded-[10px] border-[1.5px] border-linea bg-superficie px-3 py-2.5 text-[16px]'
+
+/** Cumpleaños (opcional): una cancha por un tiempo fijo, a precio cerrado y sin seña. El
+ * jugador lo reserva desde la página y después le avisa al complejo por WhatsApp para
+ * arreglar los detalles. */
+function Cumpleanos({ slug, deportes }: { slug: string; deportes: [string, string][] }) {
+  const cumpleanos = useCumpleanos(slug)
+  const crear = useCrearCumpleanos(slug)
+  const cambiar = useCambiarCumpleanos(slug)
+  const quitar = useQuitarCumpleanos(slug)
+  const [nuevo, setNuevo] = useState({ ...vacio, deporte: deportes[0]?.[0] ?? '' })
+  const nombreDeporte = (codigo: string) => deportes.find(([c]) => c === codigo)?.[1] ?? codigo
+
+  function agregar(e: FormEvent) {
+    e.preventDefault()
+    crear.mutate(
+      {
+        nombre: nuevo.nombre.trim(),
+        deporte: nuevo.deporte,
+        duracion_min: nuevo.duracion_min,
+        precio: nuevo.precio || '0',
+        incluye: nuevo.incluye.trim() || null,
+        condiciones: nuevo.condiciones.trim() || null,
+      },
+      { onSuccess: () => setNuevo({ ...vacio, deporte: nuevo.deporte }) },
+    )
+  }
+
+  const error = crear.error ?? cambiar.error ?? quitar.error ?? cumpleanos.error
+  return (
+    <Tarjeta
+      titulo="Cumpleaños (opcional)"
+      descripcion="Si festejás cumpleaños, el jugador los reserva desde tu página: una cancha por el tiempo que elijas, a precio cerrado y sin seña. Después te escribe por WhatsApp para arreglar los detalles."
+    >
+      {cumpleanos.data && cumpleanos.data.length > 0 && (
+        <ul className="mb-4 divide-y divide-linea">
+          {cumpleanos.data.map((c) => (
+            <li key={c.id} className="flex flex-wrap items-start gap-3 py-2.5">
+              <Cake className="mt-1 size-4 flex-none text-cesped" aria-hidden="true" />
+              <span className="min-w-0 flex-1">
+                <b className={c.activo ? '' : 'text-gris line-through'}>{c.nombre}</b>
+                <span className="ml-2 text-sm text-gris tabular-nums">
+                  {nombreDeporte(c.deporte)} · {c.duracion_min} min · {plata(c.precio)}
+                </span>
+                {c.incluye && <span className="block text-sm text-gris">Incluye: {c.incluye}</span>}
+                {c.condiciones && <span className="block text-sm text-gris">Condiciones: {c.condiciones}</span>}
+              </span>
+              {!c.activo && (
+                <Boton variante="suave" onClick={() => cambiar.mutate({ id: c.id, activo: true })}>
+                  Activar
+                </Boton>
+              )}
+              {c.activo && (
+                <button type="button" onClick={() => quitar.mutate(c.id)} aria-label={`Quitar ${c.nombre}`} className="grid size-9 place-items-center rounded-full text-gris hover:bg-crema-oscuro">
+                  <Trash2 className="size-4" aria-hidden="true" />
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+      <form onSubmit={agregar} className="grid gap-3">
+        <div className="grid gap-3 sm:grid-cols-[1fr_180px_140px_140px] sm:items-end">
+          <Campo etiqueta="Nombre" placeholder="Cumpleaños en fútbol 5" required minLength={2} maxLength={60} value={nuevo.nombre} onChange={(e) => setNuevo({ ...nuevo, nombre: e.target.value })} />
+          <div className="grid gap-1.5">
+            <label htmlFor="deporte-cumple" className="text-[13px] font-semibold">
+              Cancha de
+            </label>
+            <select id="deporte-cumple" value={nuevo.deporte} onChange={(e) => setNuevo({ ...nuevo, deporte: e.target.value })} className="rounded-[10px] border-[1.5px] border-linea bg-superficie px-3 py-[11px] text-[16px]">
+              {deportes.map(([codigo, nombre]) => (
+                <option key={codigo} value={codigo}>
+                  {nombre}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="grid gap-1.5">
+            <label htmlFor="duracion-cumple" className="text-[13px] font-semibold">
+              Duración
+            </label>
+            <select id="duracion-cumple" value={nuevo.duracion_min} onChange={(e) => setNuevo({ ...nuevo, duracion_min: Number(e.target.value) })} className="rounded-[10px] border-[1.5px] border-linea bg-superficie px-3 py-[11px] text-[16px]">
+              {DURACIONES.map((d) => (
+                <option key={d} value={d}>
+                  {d % 60 ? `${d} min` : `${d / 60} ${d === 60 ? 'hora' : 'horas'}`}
+                </option>
+              ))}
+            </select>
+          </div>
+          <Campo etiqueta="Precio" inputMode="numeric" placeholder="150000" required value={nuevo.precio} onChange={(e) => setNuevo({ ...nuevo, precio: e.target.value.replace(/[^0-9]/g, '') })} />
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-1.5">
+            <label htmlFor="incluye-cumple" className="text-[13px] font-semibold">
+              Qué incluye (opcional)
+            </label>
+            <textarea id="incluye-cumple" rows={3} maxLength={1000} placeholder="Pelota, pecheras y un profe que arma el partido." value={nuevo.incluye} onChange={(e) => setNuevo({ ...nuevo, incluye: e.target.value })} className={claseTexto} />
+          </div>
+          <div className="grid gap-1.5">
+            <label htmlFor="condiciones-cumple" className="text-[13px] font-semibold">
+              Condiciones para festejar (opcional)
+            </label>
+            <textarea id="condiciones-cumple" rows={3} maxLength={1000} placeholder="Máximo 20 chicos. Se puede traer torta y bebidas. No se permite cotillón con papel picado." value={nuevo.condiciones} onChange={(e) => setNuevo({ ...nuevo, condiciones: e.target.value })} className={claseTexto} />
+          </div>
+        </div>
+        <div>
+          <Boton type="submit" cargando={crear.isPending}>
+            <Plus className="size-4" aria-hidden="true" />
+            Agregar cumpleaños
+          </Boton>
+        </div>
       </form>
       {error && <Aviso>{mensaje(error)}</Aviso>}
     </Tarjeta>

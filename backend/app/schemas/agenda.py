@@ -27,6 +27,8 @@ class ReservaEnAgenda(BaseModel):
     asistencia: Literal["vino", "no_vino"] | None
     motivo_bloqueo: str | None
     minutos_para_pagar: int | None
+    # El nombre del cumpleaños, si la reserva es uno.
+    cumpleanos: str | None = None
     # Bloqueo fijo (todas las semanas): el id es el del bloqueo, no el de una reserva.
     fijo: bool = False
 
@@ -101,6 +103,9 @@ class ReservaDetalle(BaseModel):
     # Lo que se alquila aparte (paletas, parrilla): ya está sumado en el saldo.
     adicionales: list[AdicionalDeReserva] = []
     total_adicionales: Decimal = Decimal("0")
+    cumpleanos: str | None = None
+    # Lo que contó el jugador al reservar el cumpleaños (quién cumple, cuántos chicos).
+    nota: str | None = None
     cancha_id: uuid.UUID
     cancha: str
     deporte: str

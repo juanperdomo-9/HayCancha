@@ -29,6 +29,8 @@ export type ReservaEnAgenda = {
   // Bloqueo fijo (todas las semanas): el id es el del bloqueo, no de una reserva.
   fijo?: boolean
   minutos_para_pagar: number | null
+  /** El nombre del cumpleaños, si la reserva es uno. */
+  cumpleanos?: string | null
 }
 
 export type TurnoEnAgenda = {
@@ -71,6 +73,8 @@ export type ReservaDetalle = Omit<ReservaEnAgenda, 'cliente'> & {
   hora: string
   hora_fin: string
   cliente: { nombre: string; telefono: string; email: string | null } | null
+  /** Lo que contó el jugador al reservar el cumpleaños. */
+  nota?: string | null
   creado_a: string
   sena_online: boolean
   devolucion: 'pendiente' | 'hecha' | null

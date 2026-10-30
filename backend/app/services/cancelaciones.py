@@ -145,6 +145,8 @@ def cambiar_como_jugador(
     política del complejo. El turno nuevo tiene que ser futuro."""
     if reserva.estado != "confirmada":
         raise CambioNoPermitido("Solo se puede cambiar el horario de una reserva confirmada.")
+    if reserva.cumpleanos_id is not None:
+        raise CambioNoPermitido("Para cambiar el horario de un cumpleaños, escribile al complejo.")
     if reserva.cambios_de_horario >= MAX_CAMBIOS_DE_HORARIO:
         raise CambioNoPermitido("Esta reserva ya cambió de horario una vez.")
     if not a_tiempo(negocio, reserva):

@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>HayCanchas · Formulario de alta</title>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800;900&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  @page { size: A4; margin: 14mm 15mm 16mm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Instrument Sans', sans-serif; color: #14231A; font-size: 10pt; line-height: 1.4; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .marca { display: flex; align-items: center; gap: 2.5mm; font-family: 'Big Shoulders Display'; font-weight: 900; font-size: 16pt; }
+  .marca img { width: 10mm; height: 10mm; }
+  h1 { font-family: 'Big Shoulders Display'; font-weight: 900; font-size: 34pt; text-transform: uppercase; line-height: .9; margin: 5mm 0 3mm; }
+  h2 { font-family: 'Big Shoulders Display'; font-weight: 900; font-size: 16pt; text-transform: uppercase; color: #1E7A3E; margin: 7mm 0 1mm; break-after: avoid; }
+  .intro { background: #F1E9D8; border-radius: 3mm; padding: 4mm 5mm; }
+  .q { margin-top: 3.2mm; break-inside: avoid; }
+  .q > b { font-weight: 600; }
+  .linea { border-bottom: .35mm solid #b9ad94; height: 7mm; }
+  .opciones { display: flex; flex-wrap: wrap; gap: 1.5mm 6mm; margin-top: 2mm; }
+  .opciones span::before { content: ""; display: inline-block; width: 3.2mm; height: 3.2mm; border: .35mm solid #14231A; border-radius: .6mm; margin-right: 1.6mm; vertical-align: -0.5mm; }
+  .dato { color: #8a8270; font-size: 8pt; margin-top: .8mm; }
+  .ayuda { font-size: 9pt; opacity: .8; }
+  table { width: 100%; border-collapse: collapse; margin-top: 2mm; break-inside: avoid; }
+  th { text-align: left; font-size: 8.5pt; font-weight: 600; background: #14231A; color: #F6F1E6; padding: 1.8mm 2.5mm; }
+  td { border-bottom: .35mm solid #d9cdb4; height: 8mm; }
+  .nuevo { display: inline-block; font-size: 7pt; font-weight: 700; letter-spacing: .06em; color: #fff; background: #1E7A3E; border-radius: 1mm; padding: .2mm 1.4mm; margin-left: 1.5mm; vertical-align: 1px; }
+  .condiciones { background: #14231A; color: #F6F1E6; border-radius: 3mm; padding: 4mm 5mm; margin-top: 3mm; break-inside: avoid; }
+  .condiciones li { margin: 1mm 0 1mm 4.5mm; }
+  .firma { display: grid; grid-template-columns: 1fr 1fr; gap: 10mm; margin-top: 10mm; break-inside: avoid; }
+  .firma div { border-top: .35mm solid #14231A; padding-top: 1.5mm; font-size: 9pt; }
+</style>
+</head>
+<body>
+<div class="marca"><img src="../../frontend/public/logo-haycanchas.png"><span><span style="color:#1E7A3E">HAY</span>CANCHAS</span></div>
+<h1>Formulario de alta</h1>
+<div class="intro">
+  <p><b>¡Bienvenido a HayCanchas!</b> Con estos datos armamos tu página de reservas y tu panel: vos no tenés que configurar nada. Te lleva unos 15 minutos. Si algo no lo sabés ahora, dejalo en blanco y lo vemos juntos.</p>
+  <p class="dato" style="margin-top:2mm">En gris, el dato del sistema donde se carga cada respuesta (es para el equipo de HayCanchas).</p>
+</div>
+
+<h2>1. Tu complejo</h2>
+<div class="q"><b>1. Nombre del complejo</b>, tal como lo conocen los jugadores.<div class="linea"></div><p class="dato">negocios.nombre</p></div>
+<div class="q"><b>2. Dirección y barrio.</b><div class="linea"></div><p class="dato">direccion, barrio (y la ubicación en el mapa)</p></div>
+<div class="q"><b>3. ¿Cómo se llega?</b> Una referencia, por ejemplo "al lado de la YPF". <span class="nuevo">NUEVO</span><div class="linea"></div><p class="dato">referencia</p></div>
+<div class="q"><b>4. ¿Cómo querés que sea el link de tu página?</b> haycanchas.com.ar/__________ (en minúsculas y con guiones, por ejemplo el-potrero).<p class="dato">slug</p></div>
+<div class="q"><b>5. ¿Qué servicios tiene el complejo?</b> Marcá todos los que correspondan.
+  <div class="opciones"><span>Vestuarios</span><span>Duchas</span><span>Estacionamiento</span><span>Buffet</span><span>Parrilla</span><span>Wi-Fi</span><span>Alquiler de pelotas o paletas</span><span>Otro: __________</span></div><p class="dato">servicios</p></div>
+<div class="q"><b>6. WhatsApp para consultas</b> (opcional). En tu página aparece un botón "Consultar por WhatsApp" para dudas; las reservas y los pagos van siempre por la página. <span class="nuevo">NUEVO</span><div class="linea"></div><p class="dato">whatsapp</p></div>
+<div class="q"><b>7. Instagram del complejo</b>, para anunciarte en el nuestro y etiquetarte. <span class="nuevo">NUEVO</span><div class="linea"></div><p class="dato">no se guarda: publicación de bienvenida ("Nuevo fichaje")</p></div>
+<div class="q"><b>8. Tu nombre, teléfono y email.</b> Con ese email entrás a tu panel y te llegan los avisos de cada reserva.<div class="linea"></div><div class="linea"></div><p class="dato">usuario con rol dueño</p></div>
+
+<h2>2. Tus canchas</h2>
+<p class="ayuda">Una fila por cancha. Características: techada o descubierta, piso (sintético, cemento, parquet, polvo de ladrillo…), paredes de pádel (blindex o muro).</p>
+<table>
+  <tr><th style="width:26%">Nombre (Cancha 1, Pádel 2…)</th><th style="width:22%">Deporte</th><th>Características</th></tr>
+  <tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr>
+  <tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr>
+  <tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr>
+</table>
+<p class="dato">recursos: nombre, deporte (Fútbol 5, 7 u 11, Pádel, Tenis, Básquet, Vóley u otro), caracteristicas</p>
+<div class="q"><b>9. ¿Unen canchas?</b> Por ejemplo, dos de fútbol 5 que juntas forman una de fútbol 7. ¿Cuáles? Si se reserva una, las otras quedan bloqueadas solas.<div class="linea"></div><p class="dato">recursos_combinados (Canchas → Canchas unidas)</p></div>
+
+<h2>3. Horarios y precios</h2>
+<p class="ayuda">Una fila por franja. Si el precio cambia según la hora o el día, usá una fila para cada precio (por ejemplo, $70.000 hasta las 18 y $85.000 de 18 a 24). Fútbol suele ser de 60 minutos y pádel de 90.</p>
+<table>
+  <tr><th style="width:26%">Cancha o deporte</th><th style="width:20%">Días</th><th style="width:20%">Desde – hasta</th><th style="width:14%">Duración</th><th>Precio del turno</th></tr>
+  <tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr>
+  <tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr>
+  <tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr>
+</table>
+<p class="dato">horarios: dia_semana, desde, hasta (si cierra pasada la medianoche, termina al día siguiente), duracion_turno_min, precio</p>
+
+<div class="q"><b>10. Turnos fijos.</b> Horarios que ya están tomados todas las semanas (clientes de siempre, escuelita, torneos). La web nunca los ofrece. <span class="nuevo">NUEVO</span>
+<table>
+  <tr><th style="width:20%">Día</th><th style="width:20%">Desde – hasta</th><th style="width:25%">Cancha</th><th>Para quién o motivo</th></tr>
+  <tr><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td></tr>
+  <tr><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td></tr>
+</table><p class="dato">bloqueos_fijos (Agenda → Bloqueos fijos)</p></div>
+<div class="q"><b>11. ¿Con cuánta anticipación mínima se puede reservar online?</b> Por ejemplo, 2 horas antes. Si no te importa, dejalo en blanco. <span class="nuevo">NUEVO</span>
+  <div class="opciones"><span>Sin mínimo</span><span>1 hora</span><span>2 horas</span><span>Otra: ______</span></div><p class="dato">horas_anticipacion</p></div>
+
+<h2>4. Seña y cancelación</h2>
+<div class="q"><b>12. ¿Cuánto cobrás de seña para reservar?</b> La paga el jugador con Mercado Pago y el resto lo paga en la cancha.
+  <div class="opciones"><span>Porcentaje del turno: ____ % (lo habitual es 20%)</span><span>Monto fijo: $ ________</span></div><p class="dato">sena_tipo, sena_valor</p></div>
+<div class="q"><b>13. ¿Con cuántas horas de anticipación puede cancelar un jugador y recuperar la seña?</b> Si cancela con menos, la seña queda para vos. Con la misma anticipación puede cambiar el horario una vez.<div class="linea" style="width:50%"></div><p class="dato">horas_cancelacion (obligatorio)</p></div>
+<div class="q"><b>14. ¿Cuántos minutos le damos al jugador para pagar la seña antes de liberar el turno?</b> Recomendamos 10.<div class="linea" style="width:50%"></div><p class="dato">minutos_para_pagar</p></div>
+
+<h2>5. Reglas y adicionales</h2>
+<div class="q"><b>15. Reglas del predio.</b> El jugador las ve antes de pagar la seña (por ejemplo: "No se permiten botines con tapones de aluminio", "Prohibido ingresar con bebidas alcohólicas"). <span class="nuevo">NUEVO</span><div class="linea"></div><div class="linea"></div><div class="linea"></div><p class="dato">reglas (una por línea)</p></div>
+<div class="q"><b>16. Adicionales.</b> Lo que alquilás o vendés aparte: paletas, pelotas, parrilla, pecheras. El jugador los suma al reservar y los paga en la cancha (la seña no cambia). <span class="nuevo">NUEVO</span>
+<table>
+  <tr><th style="width:40%">Adicional</th><th style="width:25%">Precio</th><th>Para qué deporte (o todos)</th></tr>
+  <tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr>
+</table><p class="dato">adicionales: nombre, precio, deporte_id</p></div>
+<div class="q"><b>17. ¿Qué te preguntan siempre los jugadores?</b> Por ejemplo, si hay estacionamiento, si se puede llevar la pelota o hasta qué hora hay buffet. <span class="nuevo">NUEVO</span><div class="linea"></div><div class="linea"></div><div class="linea"></div><p class="dato">asistente_conocimiento</p></div>
+
+<div class="q"><b>18. ¿Festejás cumpleaños?</b> El jugador los reserva desde tu página: una cancha por un tiempo fijo, a precio cerrado y sin seña. Después te escribe por WhatsApp para arreglar los detalles. <span class="nuevo">NUEVO</span>
+<table>
+  <tr><th style="width:22%">Deporte</th><th style="width:16%">Duración</th><th style="width:16%">Precio</th><th>Qué incluye y condiciones (máximo de chicos, torta, comida…)</th></tr>
+  <tr><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td></tr>
+</table><p class="dato">cumpleanos: deporte_id, duracion_min, precio, incluye, condiciones (Canchas → Cumpleaños)</p></div>
+
+<h2>6. Tu marca</h2>
+<div class="q"><b>19. Logo</b>, idealmente en PNG o SVG con fondo transparente. Mandalo a haycanchas6@gmail.com.<p class="dato">logo_url</p></div>
+<div class="q"><b>20. Fotos del complejo para la portada:</b> horizontales, de día y con buena luz. Si no tenés, usamos un dibujo de tu cancha con tus colores.<p class="dato">portada_url</p></div>
+<div class="q"><b>21. Colores del complejo</b> (si no tienen, los sacamos del logo).<div class="linea" style="width:60%"></div><p class="dato">color_primario, color_secundario</p></div>
+
+<h2>7. Tu equipo</h2>
+<p class="ayuda">Las personas que van a manejar la agenda. Reciben un mail para entrar; ven y cargan reservas, pero no entran a la configuración, a los pagos ni a los resultados.</p>
+<table>
+  <tr><th style="width:40%">Nombre</th><th>Email</th></tr>
+  <tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr>
+</table>
+<p class="dato">usuarios con rol empleado</p>
+
+<h2>8. Cobro de las señas</h2>
+<div class="q"><b>22. ¿Tenés una cuenta de Mercado Pago a nombre del complejo?</b> Las señas entran directo ahí; HayCanchas no cobra comisión por reserva. El día del alta la vinculás desde tu panel (Cobros) en un minuto: tené a mano el usuario y la contraseña de esa cuenta.
+  <div class="opciones"><span>Sí</span><span>No, la creamos</span></div><p class="dato">vinculación por OAuth: mp_user_id y tokens encriptados</p></div>
+
+<h2>9. Tu plan</h2>
+<div class="q"><b>23. ¿Qué plan elegís?</b> El precio depende de la cantidad de canchas (ver la propuesta).
+  <div class="opciones"><span>Básico</span><span>Pro: suma la pestaña Resultados, con los números de cada mes</span></div><p class="dato">negocios.plan (casilla "Pro" en /admin)</p></div>
+<div class="q"><b>24. ¿A quién le escribimos por el cobro del abono?</b> Nombre y email o teléfono.<div class="linea"></div><p class="dato">para el equipo de HayCanchas</p></div>
+<div class="condiciones">
+  <b>Condiciones</b>
+  <ul>
+    <li>El primer mes es gratis. Después, abono mensual según la cantidad de canchas, con precios fijos hasta el 1/5/2027.</li>
+    <li>Sin costo de instalación y sin permanencia: renovación mes a mes.</li>
+    <li>Si el abono se paga después del vencimiento, se suma un recargo del 1% por cada día de atraso.</li>
+    <li>Mercado Pago cobra sus propias tarifas por cada pago de seña.</li>
+  </ul>
+</div>
+
+<h2>10. Algo más</h2>
+<div class="q"><b>25. ¿Hay algo que quieras que sepamos?</b> Torneos, días que cerrás, cómo trabajan hoy…<div class="linea"></div><div class="linea"></div></div>
+
+<div class="firma"><div>Firma y aclaración</div><div>Fecha</div></div>
+<p class="ayuda" style="margin-top:6mm">HayCanchas · haycanchas.com.ar · haycanchas6@gmail.com</p>
+</body>
+</html>

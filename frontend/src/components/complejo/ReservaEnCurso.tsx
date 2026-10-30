@@ -6,7 +6,7 @@ import { llegadaDe } from '../../utils/llegada'
 import { ElegirCancha } from './ElegirCancha'
 
 import { mensaje } from '../../api/client'
-import { type AdicionalPublico, type CanchaLibre, type DeporteDelComplejo, type Turno, useCrearReserva } from '../../api/publico'
+import { type AdicionalPublico, type CanchaLibre, type CumpleanosPublico, type DeporteDelComplejo, type Turno, useCrearReserva } from '../../api/publico'
 import { fechaLarga, plata } from '../../utils/formato'
 
 type Props = {
@@ -23,10 +23,12 @@ type Props = {
   reglas: string[]
   /** Lo que el complejo alquila aparte: se paga en la cancha. */
   adicionales: AdicionalPublico[]
+  /** Si se está reservando un cumpleaños (sin seña). */
+  cumpleanos?: CumpleanosPublico
   onCerrar?: () => void
 }
 
-type Datos = { nombre: string; telefono: string; email: string }
+type Datos = { nombre: string; telefono: string; email: string; nota: string }
 
 function validar(datos: Datos): Partial<Record<keyof Datos, string>> {
   const errores: Partial<Record<keyof Datos, string>> = {}
@@ -37,14 +39,16 @@ function validar(datos: Datos): Partial<Record<keyof Datos, string>> {
 }
 
 /** Resumen del turno elegido y los datos del jugador. Los montos vienen del backend. */
-export function ReservaEnCurso({ slug, turno, fecha, deporte, cancha, canchaElegida, onElegirCancha, reservasOnline, minutosParaPagar, reglas, adicionales, onCerrar }: Props) {
+export function ReservaEnCurso({ slug, turno, fecha, deporte, cancha, canchaElegida, onElegirCancha, reservasOnline, minutosParaPagar, reglas, adicionales, cumpleanos, onCerrar }: Props) {
   const id = useId()
   const navegar = useNavigate()
   const crear = useCrearReserva(slug)
-  const [datos, setDatos] = useState<Datos>({ nombre: '', telefono: '', email: '' })
+  const [datos, setDatos] = useState<Datos>({ nombre: '', telefono: '', email: '', nota: '' })
   const [errores, setErrores] = useState<Partial<Record<keyof Datos, string>>>({})
   const [pedidos, setPedidos] = useState<Record<string, number>>({})
-  const ofrecidos = adicionales.filter((a) => !a.deporte || a.deporte === deporte.codigo)
+  // El cumpleaños no lleva seña ni adicionales: se paga todo en la cancha.
+  const ofrecidos = cumpleanos ? [] : adicionales.filter((a) => !a.deporte || a.deporte === deporte.codigo)
+  const tomaReservas = reservasOnline || Boolean(cumpleanos)
   const totalAdicionales = ofrecidos.reduce((total, a) => total + Number(a.precio) * (pedidos[a.id] ?? 0), 0)
   const saldo = Number(cancha.precio) - Number(cancha.sena) + totalAdicionales
   const cambiarPedido = (id: string, paso: number) => setPedidos((actuales) => ({ ...actuales, [id]: Math.min(20, Math.max(0, (actuales[id] ?? 0) + paso)) }))
@@ -67,6 +71,7 @@ export function ReservaEnCurso({ slug, turno, fecha, deporte, cancha, canchaEleg
         adicionales: Object.entries(pedidos)
           .filter(([, cantidad]) => cantidad > 0)
           .map(([id, cantidad]) => ({ id, cantidad })),
+        ...(cumpleanos ? { cumpleanos_id: cumpleanos.id, nota: datos.nota.trim() || undefined } : {}),
       },
       {
         onSuccess: ({ url_pago, link }) => {
@@ -99,7 +104,7 @@ export function ReservaEnCurso({ slug, turno, fecha, deporte, cancha, canchaEleg
   return (
     <div>
       <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold tracking-[.1em] text-tenue uppercase">Tu turno</p>
+        <p className="text-xs font-semibold tracking-[.1em] text-tenue uppercase">{cumpleanos ? 'Tu cumpleaños' : 'Tu turno'}</p>
         {onCerrar && (
           <button type="button" onClick={onCerrar} aria-label="Cerrar" className="grid size-9 place-items-center rounded-full bg-lienzo">
             <X className="size-5" aria-hidden="true" />
@@ -111,9 +116,21 @@ export function ReservaEnCurso({ slug, turno, fecha, deporte, cancha, canchaEleg
       </p>
       <p className="mt-1 font-semibold">{fechaLarga(fecha)}</p>
       <p className="mt-0.5 mb-4 text-[14.5px] text-tenue">
-        {deporte.nombre} · {canchaTexto}
+        {cumpleanos ? cumpleanos.nombre : deporte.nombre} · {canchaTexto}
       </p>
 
+      {cumpleanos ? (
+        <dl className="mb-4 grid gap-2 border-y border-borde py-3.5 tabular-nums">
+          <div className="flex justify-between gap-3 text-[17px] font-bold">
+            <dt>Precio del cumpleaños</dt>
+            <dd className="text-complejo-texto">{plata(cumpleanos.precio)}</dd>
+          </div>
+          <div className="flex justify-between gap-3">
+            <dt className="text-tenue">Seña</dt>
+            <dd>Sin seña: se paga en el complejo</dd>
+          </div>
+        </dl>
+      ) : (
       <dl className="mb-4 grid gap-2 border-y border-borde py-3.5 tabular-nums">
         <div className="flex justify-between gap-3">
           <dt className="text-tenue">Turno de {turno.duracion_min} min</dt>
@@ -136,12 +153,13 @@ export function ReservaEnCurso({ slug, turno, fecha, deporte, cancha, canchaEleg
           </dd>
         </div>
       </dl>
+      )}
 
       {deporte.canchas.length > 1 && (
         <ElegirCancha canchas={deporte.canchas} turno={turno} elegida={canchaElegida ? cancha.id : null} onElegir={onElegirCancha} />
       )}
 
-      {reservasOnline && ofrecidos.length > 0 && (
+      {tomaReservas && ofrecidos.length > 0 && (
         <section aria-labelledby={`${id}-adicionales`} className="mb-4">
           <h3 id={`${id}-adicionales`} className="font-semibold">
             ¿Algo más?
@@ -172,11 +190,12 @@ export function ReservaEnCurso({ slug, turno, fecha, deporte, cancha, canchaEleg
         </section>
       )}
 
-      {reservasOnline ? (
+      {tomaReservas ? (
         <form className="grid gap-3" onSubmit={enviar} noValidate>
           {campo('nombre', 'Nombre y apellido', 'text', 'name')}
           {campo('telefono', 'Teléfono', 'tel', 'tel')}
           {campo('email', 'Email (opcional)', 'email', 'email')}
+          {cumpleanos && campo('nota', '¿Quién cumple? (nombre, edad y cuántos chicos, opcional)', 'text', 'off')}
           {crear.error && (
             <p role="alert" className="rounded-xl bg-red-50 px-3.5 py-2.5 text-sm text-red-800 ring-1 ring-red-200">
               {mensaje(crear.error)}
@@ -203,10 +222,12 @@ export function ReservaEnCurso({ slug, turno, fecha, deporte, cancha, canchaEleg
             disabled={crear.isPending}
             className="mt-1 rounded-xl bg-complejo px-4 py-[15px] font-bold text-complejo-sobre transition hover:brightness-105 active:scale-[.98] disabled:opacity-60"
           >
-            {crear.isPending ? 'Reservando…' : `Pagar seña de ${plata(cancha.sena)}`}
+            {crear.isPending ? 'Reservando…' : cumpleanos ? 'Reservar el cumpleaños' : `Pagar seña de ${plata(cancha.sena)}`}
           </button>
           <p className="text-center text-[12.5px] text-tenue">
-            Te guardamos el turno {minutosParaPagar} minutos para que pagues la seña con Mercado Pago. No hace falta crear una cuenta.
+            {cumpleanos
+              ? 'El horario queda reservado al instante. Después le avisás al complejo por WhatsApp para arreglar los detalles.'
+              : `Te guardamos el turno ${minutosParaPagar} minutos para que pagues la seña con Mercado Pago. No hace falta crear una cuenta.`}
           </p>
           <p className="text-center text-[12.5px] text-tenue">
             Después de pagar te damos <b className="text-tinta">el link de tu reserva: guardalo</b>, lo vas a necesitar para cancelar o cambiar el horario.

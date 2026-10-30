@@ -10,6 +10,7 @@ out
 public/*.mp4
 public/steps-*.json
 public/musica.mp3
+public/musica-cumple.mp3
 public/logo-haycanchas.png
 build
 build-ig

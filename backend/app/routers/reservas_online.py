@@ -18,7 +18,7 @@ from sqlalchemy.orm import Session
 
 from app.config import get_settings
 from app.db import get_session, sesion_de_negocio
-from app.models import Cliente, Deporte, Negocio, Recurso, Reserva
+from app.models import Cliente, Cumpleanos, Deporte, Negocio, Recurso, Reserva
 from app.routers.publico import DIAS_RESERVABLES, buscar_negocio
 from app.schemas import reserva_online as esquemas
 from app.services import avisos
@@ -97,23 +97,28 @@ def _pendientes(session: Session, negocio: Negocio, *condiciones) -> int:
     )
 
 
+# Cumpleaños por venir al mismo tiempo (no llevan seña): por teléfono y por conexión.
+MAX_CUMPLEANOS_POR_TELEFONO = 1
+MAX_CUMPLEANOS_POR_CONEXION = 2
+
+
 @router.post("", status_code=status.HTTP_201_CREATED)
 def reservar_online(
-    slug: str, datos: esquemas.NuevaReserva, request: Request, session: SesionPublica
+    slug: str,
+    datos: esquemas.NuevaReserva,
+    request: Request,
+    session: SesionPublica,
+    tareas: BackgroundTasks,
 ) -> esquemas.ReservaCreada:
-    return crear_reserva_online(buscar_negocio(session, slug), datos, _conexion(request))
+    negocio = buscar_negocio(session, slug)
+    if datos.cumpleanos_id is not None:
+        creada = crear_cumpleanos_online(negocio, datos, _conexion(request))
+        tareas.add_task(avisos.reserva_confirmada, negocio.id, creada.id)
+        return creada
+    return crear_reserva_online(negocio, datos, _conexion(request))
 
 
-def crear_reserva_online(
-    negocio: Negocio, datos: esquemas.NuevaReserva, conexion: str, origen: str = "web"
-) -> esquemas.ReservaCreada:
-    """La reserva pendiente de pago. La usan la página y el asistente del complejo (con
-    los mismos topes y validaciones). Lanza HTTPException con el motivo si no se puede."""
-    proveedor = proveedor_para(negocio)
-    if proveedor is None:
-        raise HTTPException(
-            status.HTTP_409_CONFLICT, "Este complejo todavía no toma reservas online."
-        )
+def _validar_inicio(negocio: Negocio, datos: esquemas.NuevaReserva) -> None:
     # La página solo ofrece turnos por venir dentro del plazo; el backend lo exige igual.
     if datos.inicio <= ahora():
         raise HTTPException(
@@ -132,6 +137,94 @@ def crear_reserva_online(
             f"Se puede reservar hasta {DIAS_RESERVABLES} días para adelante.",
         )
 
+
+def _cumpleanos_por_venir(session: Session, negocio: Negocio, *condiciones) -> int:
+    return session.scalar(
+        select(func.count())
+        .select_from(Reserva)
+        .join(Cliente, Cliente.id == Reserva.cliente_id)
+        .where(
+            Reserva.negocio_id == negocio.id,
+            Reserva.cumpleanos_id.is_not(None),
+            Reserva.estado == "confirmada",
+            Reserva.inicio > ahora(),
+            *condiciones,
+        )
+    )
+
+
+def crear_cumpleanos_online(
+    negocio: Negocio, datos: esquemas.NuevaReserva, conexion: str
+) -> esquemas.ReservaCreada:
+    """Un cumpleaños: por ahora sin seña, así que queda confirmado al reservarlo (es la
+    única reserva online que no pasa por Mercado Pago). Para que nadie trabe horarios hay
+    un tope por teléfono y por conexión, y el dueño lo ve en la agenda y lo puede cancelar.
+    Los detalles se terminan de arreglar por WhatsApp desde la página de la reserva."""
+    _validar_inicio(negocio, datos)
+    telefono = normalizar_telefono(datos.telefono)
+    with sesion_de_negocio(negocio.id) as s:
+        cumpleanos = s.scalar(
+            select(Cumpleanos).where(
+                Cumpleanos.id == datos.cumpleanos_id,
+                Cumpleanos.negocio_id == negocio.id,
+                Cumpleanos.activo,
+            )
+        )
+        if cumpleanos is None:
+            raise HTTPException(
+                status.HTTP_404_NOT_FOUND, "Este complejo no ofrece ese cumpleaños."
+            )
+        if (
+            _cumpleanos_por_venir(s, negocio, Cliente.telefono == telefono)
+            >= MAX_CUMPLEANOS_POR_TELEFONO
+            or _cumpleanos_por_venir(s, negocio, Reserva.conexion == conexion)
+            >= MAX_CUMPLEANOS_POR_CONEXION
+        ):
+            raise HTTPException(
+                status.HTTP_429_TOO_MANY_REQUESTS,
+                "Ya tenés un cumpleaños reservado en este complejo. Si querés otro, escribiles.",
+            )
+        deporte = s.scalar(select(Deporte.codigo).where(Deporte.id == cumpleanos.deporte_id))
+        try:
+            reserva = reservar(
+                s,
+                negocio,
+                deporte_codigo=deporte,
+                inicio=datos.inicio,
+                recurso_id=datos.recurso_id,
+                cliente=DatosCliente(datos.nombre, datos.telefono, datos.email),
+                origen="web",
+                estado="confirmada",
+                cobrar_sena=False,
+                cumpleanos=cumpleanos,
+                nota=datos.nota,
+            )
+        except TurnoNoDisponible as error:
+            raise HTTPException(
+                status.HTTP_409_CONFLICT, "Ese horario ya no está disponible. Elegí otro."
+            ) from error
+        except (TurnoInvalido, ValueError) as error:
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(error)) from error
+        reserva.conexion = conexion
+        reserva.llegada = datos.llegada
+        reserva.codigo = nuevo_codigo(negocio, reserva)
+        s.commit()
+        return esquemas.ReservaCreada(
+            id=reserva.id, url_pago=None, link=link_de_la_reserva(negocio, reserva)
+        )
+
+
+def crear_reserva_online(
+    negocio: Negocio, datos: esquemas.NuevaReserva, conexion: str, origen: str = "web"
+) -> esquemas.ReservaCreada:
+    """La reserva pendiente de pago. La usan la página y el asistente del complejo (con
+    los mismos topes y validaciones). Lanza HTTPException con el motivo si no se puede."""
+    proveedor = proveedor_para(negocio)
+    if proveedor is None:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT, "Este complejo todavía no toma reservas online."
+        )
+    _validar_inicio(negocio, datos)
     telefono = normalizar_telefono(datos.telefono)
     with sesion_de_negocio(negocio.id) as s:
         if (
@@ -272,10 +365,22 @@ def _publica(s: Session, negocio: Negocio, reserva: Reserva) -> esquemas.Reserva
         cancelable_hasta=limite_para_cancelar(negocio, reserva),
         puede_cancelar=activa,
         recupera_sena=pagada and a_tiempo(negocio, reserva),
-        puede_cambiar=activa and puede_cambiar(negocio, reserva),
+        puede_cambiar=activa and reserva.cumpleanos_id is None and puede_cambiar(negocio, reserva),
         ya_cambio_horario=reserva.cambios_de_horario > 0,
         devolucion=devuelto.devolucion if devuelto else None,
         monto_devuelto=devuelto.monto if devuelto else None,
+        cumpleanos=_cumpleanos_publico(s, reserva),
+        nota=reserva.nota,
+        whatsapp=negocio.whatsapp,
+    )
+
+
+def _cumpleanos_publico(s: Session, reserva: Reserva) -> esquemas.CumpleanosDeReserva | None:
+    if reserva.cumpleanos_id is None:
+        return None
+    cumpleanos = s.get(Cumpleanos, reserva.cumpleanos_id)
+    return esquemas.CumpleanosDeReserva(
+        nombre=cumpleanos.nombre, incluye=cumpleanos.incluye, condiciones=cumpleanos.condiciones
     )
 
 
