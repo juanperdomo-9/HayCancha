@@ -1,5 +1,5 @@
 // "Nuevo fichaje": el anuncio de cada complejo que se suma, como el de un refuerzo.
-// Carrusel de 3 slides (1080x1350) + historia (1080x1920), con los datos reales que carga
+// Carrusel de 3 slides (1080x1440, el 3:4 de Instagram) + historia (1080x1920), con los datos reales que carga
 // el complejo (public/fichajes/<slug>.json, lo baja scripts/fichaje.mjs).
 import type React from "react";
 import { AbsoluteFill, type CalculateMetadataFunction, Img, staticFile, useCurrentFrame } from "remotion";
@@ -90,7 +90,10 @@ export function ficha(d: DatosFichaje): [string, string][] {
   const filas: [string, string][] = [];
   if (d.barrio) filas.push(["Dónde", d.barrio]);
   filas.push(["Deportes", deportes]);
-  if (caracteristicas.length) filas.push(["Canchas", caracteristicas.join(", ")]);
+  if (caracteristicas.length) {
+    const texto = caracteristicas.join(", ");
+    filas.push(["Canchas", texto.charAt(0).toUpperCase() + texto.slice(1)]);
+  }
   if (d.servicios.length) filas.push(["Servicios", d.servicios.join(", ")]);
   return filas;
 }
@@ -164,10 +167,13 @@ export const Fichaje: React.FC<PropsFichaje> = ({ datos }) => {
   if (!datos) return null;
   return (
     <AbsoluteFill style={{ backgroundColor: n === 2 ? C.campo : C.noche, overflow: "hidden" }}>
-      <div style={{ position: "absolute", top: 0, left: -n * 1080, width: 3 * 1080, height: 1350 }}>
-        <CanchaDeFondo ancho={3 * 1080} alto={1350} />
+      <div style={{ position: "absolute", top: 0, left: -n * 1080, width: 3 * 1080, height: 1440 }}>
+        <CanchaDeFondo ancho={3 * 1080} alto={1440} />
       </div>
-      <Slide d={datos} n={n} />
+      {/* Las slides se diseñaron en 4:5: en 3:4 van un poco más abajo, con aire arriba. */}
+      <div style={{ position: "absolute", inset: 0, top: 50 }}>
+        <Slide d={datos} n={n} />
+      </div>
     </AbsoluteFill>
   );
 };

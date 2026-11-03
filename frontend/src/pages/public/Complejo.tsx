@@ -259,7 +259,14 @@ function PaginaComplejo({ complejo }: { complejo: ComplejoDetalle }) {
           <h3 className="numeros mb-3 text-[23px] font-bold" style={{ fontStretch: '80%' }}>
             Dónde queda
           </h3>
-          <MapaComplejo nombre={complejo.nombre} direccion={complejo.direccion} barrio={complejo.barrio} referencia={complejo.referencia} />
+          <MapaComplejo
+            nombre={complejo.nombre}
+            direccion={complejo.direccion}
+            barrio={complejo.barrio}
+            referencia={complejo.referencia}
+            latitud={complejo.latitud}
+            longitud={complejo.longitud}
+          />
           {complejo.whatsapp && (
             <a
               href={`https://wa.me/${complejo.whatsapp}`}
@@ -374,6 +381,12 @@ function duracionTexto(minutos: number): string {
   return minutos === 60 ? '1 hora' : `${minutos / 60} horas`
 }
 
+const DIAS_PLURAL = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábados', 'domingos']
+
+function textoFranjas(franjas: NonNullable<CumpleanosPublico['franjas']>): string {
+  return franjas.map((f) => `${DIAS_PLURAL[f.dia_semana]} de ${f.desde.slice(0, 5)} a ${f.hasta.slice(0, 5)}`).join(', ')
+}
+
 /** Qué incluye el cumpleaños y las condiciones del complejo para festejarlo. */
 function InfoCumpleanos({ cumple }: { cumple: CumpleanosPublico }) {
   return (
@@ -382,6 +395,7 @@ function InfoCumpleanos({ cumple }: { cumple: CumpleanosPublico }) {
         <b>{cumple.nombre}</b>: {duracionTexto(cumple.duracion_min)} de cancha por {plata(cumple.precio)}, sin seña. Elegí el día y a qué hora
         empieza.
       </p>
+      {cumple.franjas && cumple.franjas.length > 0 && <p className="mt-1.5 text-tenue">Se festeja: {textoFranjas(cumple.franjas)}.</p>}
       {cumple.incluye && <p className="mt-1.5 whitespace-pre-line text-tenue">Incluye: {cumple.incluye}</p>}
       {cumple.condiciones && (
         <p className="mt-1.5 whitespace-pre-line text-tenue">

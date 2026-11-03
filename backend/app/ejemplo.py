@@ -23,6 +23,7 @@ from app.models import (
     RecursoCombinado,
     Reserva,
     ReservaAdicional,
+    TurnoFijo,
     Usuario,
 )
 from app.services.auth import hashear_clave
@@ -116,6 +117,7 @@ def borrar_negocio(session: Session, negocio: Negocio) -> None:
         Pago,
         ReservaAdicional,
         Reserva,
+        TurnoFijo,
         Adicional,
         Cumpleanos,
         BloqueoFijo,

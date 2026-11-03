@@ -15,7 +15,16 @@ from sqlalchemy.orm import Session
 
 from app.db import sesion_de_negocio
 from app.dependencias import PanelActual
-from app.models import BloqueoFijo, Cliente, Cumpleanos, Deporte, Negocio, Recurso, Reserva
+from app.models import (
+    BloqueoFijo,
+    Cliente,
+    Cumpleanos,
+    Deporte,
+    Negocio,
+    Recurso,
+    Reserva,
+    TurnoFijo,
+)
 from app.schemas import agenda as esquemas
 from app.services.adicionales import AdicionalInvalido, Pedido, fijar_adicionales, pedidos_de
 from app.services.agenda import (
@@ -39,6 +48,7 @@ from app.services.reservas import (
     DatosCliente,
     TurnoInvalido,
     TurnoNoDisponible,
+    buscar_o_crear_cliente,
     esperar_turno_para_reservar,
     reservar,
     turno_de_la_cancha,
@@ -114,6 +124,7 @@ def ver_agenda(panel: PanelActual, fecha: date | None = None) -> esquemas.Agenda
                                 motivo_bloqueo=t.reserva.motivo_bloqueo,
                                 minutos_para_pagar=minutos_para_pagar(t.reserva),
                                 cumpleanos=cumpleanos.get(t.reserva.cumpleanos_id),
+                                turno_fijo=t.reserva.turno_fijo_id is not None,
                             )
                             if t.reserva
                             else _fijo_en_agenda(t.fijo)
@@ -168,6 +179,18 @@ def _nombres_de_cumpleanos(s: Session, negocio_id: uuid.UUID) -> dict[uuid.UUID,
     )
 
 
+DIAS = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábados", "domingos"]
+
+
+def _texto_turno_fijo(s: Session, turno_fijo_id: uuid.UUID | None) -> str | None:
+    fijo = s.get(TurnoFijo, turno_fijo_id) if turno_fijo_id else None
+    if fijo is None:
+        return None
+    return f"Todos los {DIAS[fijo.dia_semana]} a las {fijo.desde:%H:%M}" + (
+        "" if fijo.activo else " (dado de baja)"
+    )
+
+
 def _detalle(s: Session, negocio: Negocio, reserva: Reserva) -> esquemas.ReservaDetalle:
     recurso, deporte = s.execute(
         select(Recurso, Deporte)
@@ -209,6 +232,8 @@ def _detalle(s: Session, negocio: Negocio, reserva: Reserva) -> esquemas.Reserva
         total_adicionales=reserva.total_adicionales,
         cumpleanos=_nombres_de_cumpleanos(s, negocio.id).get(reserva.cumpleanos_id),
         nota=reserva.nota,
+        turno_fijo_id=reserva.turno_fijo_id,
+        turno_fijo=_texto_turno_fijo(s, reserva.turno_fijo_id),
         minutos_para_pagar=minutos_para_pagar(reserva),
         cliente=esquemas.Cliente(
             nombre=cliente.nombre, telefono=cliente.telefono, email=cliente.email
@@ -255,8 +280,20 @@ def cargar_reserva(datos: esquemas.ReservaManual, panel: PanelActual) -> esquema
             raise HTTPException(status.HTTP_409_CONFLICT, "Ese turno ya está ocupado.") from error
         except (TurnoInvalido, ValueError) as error:
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(error)) from error
+        if datos.sena_en_efectivo and datos.sena_monto is not None:
+            _fijar_sena_en_efectivo(reserva, datos.sena_monto)
         s.commit()
         return _detalle(s, panel.negocio, reserva)
+
+
+def _fijar_sena_en_efectivo(reserva: Reserva, monto: Decimal) -> None:
+    """Lo que dejó de seña en efectivo, aunque no sea la seña calculada (0: no dejó)."""
+    if reserva.precio is not None and monto > reserva.precio:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT, "La seña no puede ser más que el turno."
+        )
+    reserva.sena = monto.quantize(Decimal("0.01"))
+    reserva.sena_en_efectivo = monto > 0
 
 
 @router.get("/reservas/{reserva_id}")
@@ -276,7 +313,16 @@ def cambiar_reserva(
             raise HTTPException(
                 status.HTTP_422_UNPROCESSABLE_CONTENT, "Solo se marcan las reservas confirmadas."
             )
-        for campo, valor in cambios.model_dump(exclude_unset=True).items():
+        valores = cambios.model_dump(exclude_unset=True)
+        if "sena_efectivo" in valores:
+            monto = valores.pop("sena_efectivo")
+            if pago_aprobado_de(s, panel.negocio, reserva) is not None:
+                raise HTTPException(
+                    status.HTTP_422_UNPROCESSABLE_CONTENT,
+                    "La seña ya se pagó por Mercado Pago.",
+                )
+            _fijar_sena_en_efectivo(reserva, monto if monto is not None else Decimal("0"))
+        for campo, valor in valores.items():
             setattr(reserva, campo, valor)
         s.commit()
         return _detalle(s, panel.negocio, reserva)
@@ -520,4 +566,90 @@ def borrar_bloqueo_fijo(bloqueo_id: uuid.UUID, panel: PanelActual) -> None:
         if bloqueo is None:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "No encontramos ese bloqueo.")
         s.delete(bloqueo)
+        s.commit()
+
+
+# --- Turnos fijos de juego (un cliente que juega todas las semanas) ---
+
+
+def _turno_fijo(s: Session, fijo: TurnoFijo, canchas: dict[uuid.UUID, str]) -> esquemas.TurnoFijo:
+    cliente = s.get(Cliente, fijo.cliente_id)
+    return esquemas.TurnoFijo(
+        id=fijo.id,
+        dia_semana=fijo.dia_semana,
+        desde=fijo.desde,
+        recurso_id=fijo.recurso_id,
+        cancha=canchas.get(fijo.recurso_id, ""),
+        cliente=cliente.nombre,
+        telefono=cliente.telefono,
+    )
+
+
+@router.get("/turnos-fijos")
+def ver_turnos_fijos(panel: PanelActual) -> list[esquemas.TurnoFijo]:
+    with sesion_de_negocio(panel.negocio_id) as s:
+        canchas = _nombres_de_canchas(s, panel.negocio_id)
+        filas = s.scalars(
+            select(TurnoFijo)
+            .where(TurnoFijo.negocio_id == panel.negocio_id, TurnoFijo.activo)
+            .order_by(TurnoFijo.dia_semana, TurnoFijo.desde)
+        )
+        return [_turno_fijo(s, f, canchas) for f in filas]
+
+
+@router.post("/turnos-fijos", status_code=status.HTTP_201_CREATED)
+def crear_turno_fijo(
+    datos: esquemas.NuevoTurnoFijo, panel: PanelActual
+) -> esquemas.TurnoFijoCreado:
+    """Reserva ese turno a nombre del cliente todas las semanas (las próximas 4, y la tarea
+    periódica sigue con las demás). Las fechas que ya están ocupadas se saltean."""
+    from app.services.turnos_fijos import generar, inicio_en
+
+    with sesion_de_negocio(panel.negocio_id) as s:
+        cancha, _ = _cancha(s, panel, datos.recurso_id)
+        hoy = hoy_en_el_negocio(panel.negocio)
+        proximo = hoy + timedelta(days=(datos.dia_semana - hoy.weekday()) % 7)
+        if not any(
+            inicio_en(s, panel.negocio, cancha, proximo + timedelta(weeks=i), datos.desde)
+            for i in range(2)
+        ):
+            raise HTTPException(
+                status.HTTP_422_UNPROCESSABLE_CONTENT,
+                "Esa hora no es un turno de esa cancha ese día. Revisá los horarios.",
+            )
+        cliente_id = buscar_o_crear_cliente(
+            s, panel.negocio_id, DatosCliente(datos.nombre, datos.telefono)
+        )
+        fijo = TurnoFijo(
+            negocio_id=panel.negocio_id,
+            recurso_id=cancha.id,
+            cliente_id=cliente_id,
+            dia_semana=datos.dia_semana,
+            desde=datos.desde,
+        )
+        s.add(fijo)
+        s.flush()
+        resultado = generar(s, panel.negocio, fijo)
+        s.commit()
+        return esquemas.TurnoFijoCreado(
+            turno_fijo=_turno_fijo(s, fijo, _nombres_de_canchas(s, panel.negocio_id)),
+            creadas=resultado.creadas,
+            omitidas=resultado.omitidas,
+        )
+
+
+@router.delete("/turnos-fijos/{turno_fijo_id}", status_code=status.HTTP_204_NO_CONTENT)
+def liberar_turno_fijo(turno_fijo_id: uuid.UUID, panel: PanelActual) -> None:
+    """Liberar para siempre: cancela las reservas que vienen y no crea más."""
+    from app.services.turnos_fijos import dar_de_baja
+
+    with sesion_de_negocio(panel.negocio_id) as s:
+        fijo = s.scalar(
+            select(TurnoFijo).where(
+                TurnoFijo.id == turno_fijo_id, TurnoFijo.negocio_id == panel.negocio_id
+            )
+        )
+        if fijo is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "No encontramos ese turno fijo.")
+        dar_de_baja(s, fijo)
         s.commit()

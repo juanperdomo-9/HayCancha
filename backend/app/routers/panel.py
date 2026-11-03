@@ -471,6 +471,7 @@ def _cumpleanos(s, negocio_id: uuid.UUID) -> list[esquemas.Cumpleanos]:
             precio=c.precio,
             incluye=c.incluye,
             condiciones=c.condiciones,
+            franjas=c.franjas,
             activo=c.activo,
         )
         for c in s.scalars(
@@ -515,6 +516,7 @@ def crear_cumpleanos(
                 precio=datos.precio,
                 incluye=datos.incluye or None,
                 condiciones=datos.condiciones or None,
+                franjas=[f.model_dump(mode="json") for f in datos.franjas],
                 orden=(ultimo or 0) + 1,
             )
         )
@@ -536,6 +538,9 @@ def cambiar_cumpleanos(
     with sesion_de_negocio(panel.negocio_id) as s:
         cumpleanos = _buscar_cumpleanos(s, panel, cumpleanos_id)
         valores = cambios.model_dump(exclude_unset=True)
+        if "franjas" in valores:
+            valores.pop("franjas")
+            cumpleanos.franjas = [f.model_dump(mode="json") for f in cambios.franjas or []]
         if "deporte" in valores:
             deporte_id = _deporte_id(s, valores.pop("deporte"))
             if deporte_id is not None:

@@ -7,7 +7,7 @@ dos turnos). La regla de superposición de la base hace el resto, igual que con 
 
 import uuid
 from collections import defaultdict
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 
 from sqlalchemy import select
@@ -34,6 +34,23 @@ def ofrecidos(session: Session, negocio_id: uuid.UUID) -> list[Cumpleanos]:
             .order_by(Cumpleanos.orden, Cumpleanos.nombre)
         )
     )
+
+
+def en_sus_franjas(cumpleanos: Cumpleanos, inicio: datetime, fin: datetime, zona) -> bool:
+    """Si el cumpleaños entero cae en alguna de sus franjas (sin franjas: siempre)."""
+    if not cumpleanos.franjas:
+        return True
+    local, hasta_local = inicio.astimezone(zona), fin.astimezone(zona)
+    for franja in cumpleanos.franjas:
+        if franja["dia_semana"] != local.weekday():
+            continue
+        desde = datetime.combine(local.date(), time.fromisoformat(franja["desde"]), tzinfo=zona)
+        hasta = datetime.combine(local.date(), time.fromisoformat(franja["hasta"]), tzinfo=zona)
+        if hasta <= desde:
+            hasta += timedelta(days=1)  # hasta medianoche (00:00) o más tarde
+        if desde <= local and hasta_local <= hasta:
+            return True
+    return False
 
 
 def fin_del_cumpleanos(turnos: list[Turno], inicio: datetime, duracion_min: int) -> datetime | None:
@@ -88,6 +105,7 @@ def disponibilidad_cumpleanos(
 
     fijos = ocurrencias(session, negocio, [c.id for c in canchas], desde, hasta)
     primero = ahora() + timedelta(hours=negocio.horas_anticipacion or 0)
+    zona = zona_del_negocio(negocio)
     # Por ahora los cumpleaños no llevan seña: el precio entero se paga en la cancha.
     sena = Decimal("0.00")
     agrupados: dict[tuple[datetime, datetime], TurnoDisponible] = {}
@@ -96,7 +114,7 @@ def disponibilidad_cumpleanos(
             if turno.inicio <= primero:
                 continue
             fin = fin_del_cumpleanos(por_cancha[cancha.id], turno.inicio, cumpleanos.duracion_min)
-            if fin is None:
+            if fin is None or not en_sus_franjas(cumpleanos, turno.inicio, fin, zona):
                 continue
             grupo = agrupados.setdefault((turno.inicio, fin), TurnoDisponible(turno.inicio, fin, 0))
             grupo.canchas_total += 1

@@ -29,6 +29,8 @@ class ReservaEnAgenda(BaseModel):
     minutos_para_pagar: int | None
     # El nombre del cumpleaños, si la reserva es uno.
     cumpleanos: str | None = None
+    # Si es de un turno fijo de juego (se repite todas las semanas).
+    turno_fijo: bool = False
     # Bloqueo fijo (todas las semanas): el id es el del bloqueo, no el de una reserva.
     fijo: bool = False
 
@@ -106,6 +108,9 @@ class ReservaDetalle(BaseModel):
     cumpleanos: str | None = None
     # Lo que contó el jugador al reservar el cumpleaños (quién cumple, cuántos chicos).
     nota: str | None = None
+    # Si es de un turno fijo de juego: su id y "Todos los martes a las 21:00".
+    turno_fijo_id: uuid.UUID | None = None
+    turno_fijo: str | None = None
     cancha_id: uuid.UUID
     cancha: str
     deporte: str
@@ -135,6 +140,10 @@ class ReservaDetalle(BaseModel):
     devolucion: Literal["pendiente", "hecha"] | None
 
 
+# Lo que dejó de seña en efectivo (puede ser distinto de la seña calculada).
+MontoDeSena = Annotated[Decimal, Field(ge=0, max_digits=12, decimal_places=2)]
+
+
 class ReservaManual(BaseModel):
     """Alguien que llamó o vino en persona. Queda confirmada al instante."""
 
@@ -144,12 +153,16 @@ class ReservaManual(BaseModel):
     telefono: Annotated[str, StringConstraints(strip_whitespace=True, min_length=6, max_length=40)]
     email: EmailStr | None = None
     sena_en_efectivo: bool = False
+    # Si dejó otro monto que la seña calculada. None: la calculada.
+    sena_monto: MontoDeSena | None = None
 
 
 class CambiosDeReserva(BaseModel):
     asistencia: Literal["vino", "no_vino"] | None = None
     saldo_cobrado: bool | None = None
     saldo_en_efectivo: bool | None = None
+    # La seña que dejó en efectivo (0: no dejó). No se puede si la pagó online.
+    sena_efectivo: MontoDeSena | None = None
 
 
 class Cancelacion(BaseModel):
@@ -194,6 +207,33 @@ class BloqueoFijo(BaseModel):
     recurso_id: uuid.UUID | None
     cancha: str | None
     motivo: str
+
+
+class NuevoTurnoFijo(BaseModel):
+    """Un cliente que juega todas las semanas en la misma cancha y hora."""
+
+    recurso_id: uuid.UUID
+    dia_semana: Annotated[int, Field(ge=0, le=6)]
+    desde: time
+    nombre: Annotated[str, StringConstraints(strip_whitespace=True, min_length=2, max_length=120)]
+    telefono: Annotated[str, StringConstraints(strip_whitespace=True, min_length=6, max_length=40)]
+
+
+class TurnoFijo(BaseModel):
+    id: uuid.UUID
+    dia_semana: int
+    desde: time
+    recurso_id: uuid.UUID
+    cancha: str
+    cliente: str
+    telefono: str
+
+
+class TurnoFijoCreado(BaseModel):
+    turno_fijo: TurnoFijo
+    # Reservas creadas para las próximas semanas, y las fechas que ya estaban ocupadas.
+    creadas: int
+    omitidas: list[datetime]
 
 
 class BloqueoFijoCreado(BaseModel):

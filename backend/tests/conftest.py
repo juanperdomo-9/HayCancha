@@ -56,7 +56,7 @@ def base_de_pruebas() -> Iterator[str]:
                 "TRUNCATE interesados, reservas_adicionales, adicionales, cumpleanos, "
                 "bloqueos_fijos, fotos, "
                 "consultas_sin_respuesta, pagos, "
-                "reservas, "
+                "reservas, turnos_fijos, "
                 "recursos_combinados, "
                 "horarios, "
                 "clientes, recursos, "

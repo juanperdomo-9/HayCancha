@@ -180,6 +180,14 @@ class CambiosDeAdicional(BaseModel):
     activo: bool | None = None
 
 
+class FranjaDeCumpleanos(BaseModel):
+    """Un día y horario en que se festejan cumpleaños (hasta <= desde: pasa la medianoche)."""
+
+    dia_semana: Annotated[int, Field(ge=0, le=6)]
+    desde: time
+    hasta: time
+
+
 class Cumpleanos(BaseModel):
     id: uuid.UUID
     nombre: str
@@ -188,6 +196,7 @@ class Cumpleanos(BaseModel):
     precio: Decimal
     incluye: str | None
     condiciones: str | None
+    franjas: list[FranjaDeCumpleanos] = []
     activo: bool
 
 
@@ -205,6 +214,7 @@ class NuevoCumpleanos(BaseModel):
     precio: PrecioDeAdicional
     incluye: TextoDeCumpleanos | None = None
     condiciones: TextoDeCumpleanos | None = None
+    franjas: list[FranjaDeCumpleanos] = Field(default_factory=list, max_length=14)
 
 
 class CambiosDeCumpleanos(BaseModel):
@@ -214,6 +224,7 @@ class CambiosDeCumpleanos(BaseModel):
     precio: PrecioDeAdicional | None = None
     incluye: TextoDeCumpleanos | None = None
     condiciones: TextoDeCumpleanos | None = None
+    franjas: list[FranjaDeCumpleanos] | None = Field(default=None, max_length=14)
     activo: bool | None = None
 
 

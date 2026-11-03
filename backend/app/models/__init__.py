@@ -12,6 +12,7 @@ from app.models.negocio import Negocio
 from app.models.pago import Pago
 from app.models.recurso import Recurso, RecursoCombinado
 from app.models.reserva import ESTADOS_QUE_OCUPAN, Reserva
+from app.models.turno_fijo import TurnoFijo
 from app.models.usuario import Usuario
 
 __all__ = [
@@ -32,5 +33,6 @@ __all__ = [
     "RecursoCombinado",
     "Reserva",
     "ReservaAdicional",
+    "TurnoFijo",
     "Usuario",
 ]

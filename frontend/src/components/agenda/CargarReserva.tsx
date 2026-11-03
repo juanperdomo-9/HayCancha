@@ -17,7 +17,7 @@ type Props = {
  * deja de ofrecerse en la página. */
 export function CargarReserva({ slug, fecha, cancha, turno, onListo }: Props) {
   const cargar = useCargarReserva(slug)
-  const [datos, setDatos] = useState({ nombre: '', telefono: '', email: '', sena_en_efectivo: false })
+  const [datos, setDatos] = useState({ nombre: '', telefono: '', email: '', sena_en_efectivo: false, sena_monto: String(Math.round(Number(turno.sena))) })
 
   function enviar(e: FormEvent) {
     e.preventDefault()
@@ -29,6 +29,7 @@ export function CargarReserva({ slug, fecha, cancha, turno, onListo }: Props) {
         telefono: datos.telefono,
         email: datos.email || undefined,
         sena_en_efectivo: datos.sena_en_efectivo,
+        sena_monto: datos.sena_en_efectivo ? datos.sena_monto || '0' : undefined,
       },
       { onSuccess: onListo },
     )
@@ -64,9 +65,18 @@ export function CargarReserva({ slug, fecha, cancha, turno, onListo }: Props) {
           className="size-4 accent-[var(--complejo)]"
         />
         <span>
-          <b>Dejó la seña en efectivo</b> <span className="text-gris">({plata(turno.sena)})</span>
+          <b>Dejó seña en efectivo</b>
         </span>
       </label>
+      {datos.sena_en_efectivo && (
+        <Campo
+          etiqueta="¿Cuánto dejó?"
+          inputMode="numeric"
+          value={datos.sena_monto}
+          onChange={(e) => setDatos({ ...datos, sena_monto: e.target.value.replace(/[^0-9]/g, '') })}
+          ayuda={`La seña del complejo para este turno es ${plata(turno.sena)}.`}
+        />
+      )}
       {cargar.error && <Aviso>{mensaje(cargar.error)}</Aviso>}
       <Boton type="submit" cargando={cargar.isPending} className="py-3 text-base">
         Reservar

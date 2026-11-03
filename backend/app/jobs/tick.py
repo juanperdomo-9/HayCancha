@@ -5,6 +5,7 @@
   agenda al día aunque nadie reserve.)
 - Cada 10 minutos, reintenta las devoluciones de señas que Mercado Pago no aceptó.
 - Una vez por hora, renueva los tokens de Mercado Pago que están por vencer.
+- Una vez por hora, crea las semanas que faltan de los turnos fijos de juego.
 """
 
 import logging
@@ -14,11 +15,17 @@ from app.services.cobros import reintentar_devoluciones
 from app.services.disponibilidad import ahora
 from app.services.mercadopago import renovar_tokens_por_vencer
 from app.services.reservas import vencer_pendientes
+from app.services.turnos_fijos import completar_todos
 
 logger = logging.getLogger(__name__)
 
 
-def main(*, renovar_tokens: bool | None = None, devoluciones: bool | None = None) -> None:
+def main(
+    *,
+    renovar_tokens: bool | None = None,
+    devoluciones: bool | None = None,
+    turnos_fijos: bool | None = None,
+) -> None:
     with sesion_admin() as session, session.begin():
         vencidas = vencer_pendientes(session)
     logger.info("tick: %s reservas vencidas", vencidas)
@@ -34,6 +41,11 @@ def main(*, renovar_tokens: bool | None = None, devoluciones: bool | None = None
         with sesion_admin() as session, session.begin():
             resultado = renovar_tokens_por_vencer(session)
         logger.info("tick: tokens de Mercado Pago %s", resultado)
+
+    if turnos_fijos if turnos_fijos is not None else ahora().minute == 30:
+        with sesion_admin() as session:
+            creadas = completar_todos(session)
+        logger.info("tick: %s reservas de turnos fijos creadas", creadas)
 
 
 if __name__ == "__main__":

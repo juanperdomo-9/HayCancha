@@ -103,12 +103,14 @@ def _turno_a_reservar(
     cubren su duración (con el precio del cumpleaños)."""
     if cumpleanos is None:
         return turno_de_la_cancha(session, negocio, cancha, inicio)
-    from app.services.cumpleanos import fin_del_cumpleanos, turnos_alrededor
+    from app.services.cumpleanos import en_sus_franjas, fin_del_cumpleanos, turnos_alrededor
 
     fin = fin_del_cumpleanos(
         turnos_alrededor(session, negocio, cancha, inicio), inicio, cumpleanos.duracion_min
     )
-    return Turno(cancha.id, inicio, fin, cumpleanos.precio) if fin else None
+    if fin is None or not en_sus_franjas(cumpleanos, inicio, fin, zona_del_negocio(negocio)):
+        return None
+    return Turno(cancha.id, inicio, fin, cumpleanos.precio)
 
 
 def esperar_turno_para_reservar(session: Session, negocio_id: uuid.UUID) -> None:

@@ -146,3 +146,29 @@ def test_topes_y_cumpleanos_desactivados(complejo) -> None:  # noqa: F811
 def test_el_empleado_no_configura_cumpleanos(complejo) -> None:  # noqa: F811
     empleado = entrar(complejo["empleado"])
     assert empleado.get(f"/panel/{complejo['slug']}/cumpleanos").status_code == 403
+
+
+def test_dias_y_horarios_propios(complejo) -> None:  # noqa: F811
+    dia = complejo["fecha"].weekday()
+    cumple = crear_cumple(
+        complejo, franjas=[{"dia_semana": dia, "desde": "19:00", "hasta": "22:00"}]
+    )
+    # De 2 horas, entre las 19 y las 22: solo puede empezar a las 19 o a las 20.
+    assert list(horarios(complejo, cumple)) == ["19:00", "20:00"]
+    assert reservar_cumple(complejo, cumple, 18).status_code == 422
+
+    # Otro día de la semana no se ofrece.
+    dueno = entrar(complejo["dueno"])
+    otro = (dia + 1) % 7
+    dueno.patch(
+        f"/panel/{complejo['slug']}/cumpleanos/{cumple['id']}",
+        json={"franjas": [{"dia_semana": otro, "desde": "19:00", "hasta": "22:00"}]},
+    )
+    assert horarios(complejo, cumple) == {}
+
+    # Sin franjas, vuelve a cualquier turno de la cancha.
+    lista = dueno.patch(
+        f"/panel/{complejo['slug']}/cumpleanos/{cumple['id']}", json={"franjas": []}
+    )
+    assert lista.json()[0]["franjas"] == []
+    assert len(horarios(complejo, cumple)) == 5

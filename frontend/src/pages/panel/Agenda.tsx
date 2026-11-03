@@ -213,7 +213,7 @@ export default function Agenda() {
                 </Boton>
                 <Boton variante="secundario" onClick={() => setVerFijos(!verFijos)}>
                   <Repeat className="size-4" aria-hidden="true" />
-                  Bloqueos fijos
+                  Fijos
                 </Boton>
               </span>
             )}

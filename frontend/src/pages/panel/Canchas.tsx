@@ -5,6 +5,7 @@ import { Link, useParams } from 'react-router'
 import { mensaje } from '../../api/client'
 import {
   type CanchaPanel,
+  type FranjaCumpleanos,
   type ReservaQueSePisa,
   useAdicionales,
   useCambiarAdicional,
@@ -380,7 +381,10 @@ function Adicionales({ slug, deportes }: { slug: string; deportes: [string, stri
 }
 
 const DURACIONES = [60, 90, 120, 150, 180]
-const vacio = { nombre: '', deporte: '', duracion_min: 120, precio: '', incluye: '', condiciones: '' }
+const vacio = { nombre: '', deporte: '', duracion_min: 120, precio: '', incluye: '', condiciones: '', franjas: [] as FranjaCumpleanos[] }
+const DIAS_CUMPLE = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+const HORAS_CUMPLE = Array.from({ length: 48 }, (_, i) => `${String(Math.floor(i / 2)).padStart(2, '0')}:${i % 2 ? '30' : '00'}`)
+const textoFranja = (f: FranjaCumpleanos) => `${DIAS_CUMPLE[f.dia_semana]} de ${f.desde.slice(0, 5)} a ${f.hasta.slice(0, 5)}`
 const claseTexto = 'w-full rounded-[10px] border-[1.5px] border-linea bg-superficie px-3 py-2.5 text-[16px]'
 
 /** Cumpleaños (opcional): una cancha por un tiempo fijo, a precio cerrado y sin seña. El
@@ -404,6 +408,7 @@ function Cumpleanos({ slug, deportes }: { slug: string; deportes: [string, strin
         precio: nuevo.precio || '0',
         incluye: nuevo.incluye.trim() || null,
         condiciones: nuevo.condiciones.trim() || null,
+        franjas: nuevo.franjas,
       },
       { onSuccess: () => setNuevo({ ...vacio, deporte: nuevo.deporte }) },
     )
@@ -427,6 +432,10 @@ function Cumpleanos({ slug, deportes }: { slug: string; deportes: [string, strin
                 </span>
                 {c.incluye && <span className="block text-sm text-gris">Incluye: {c.incluye}</span>}
                 {c.condiciones && <span className="block text-sm text-gris">Condiciones: {c.condiciones}</span>}
+                <span className="block text-sm text-gris">{c.franjas.length ? `Se festeja: ${c.franjas.map(textoFranja).join(', ')}` : 'En cualquier turno de la cancha'}</span>
+                {c.activo && (
+                  <EditarFranjas franjas={c.franjas} cargando={cambiar.isPending} onGuardar={(franjas) => cambiar.mutate({ id: c.id, franjas })} />
+                )}
               </span>
               {!c.activo && (
                 <Boton variante="suave" onClick={() => cambiar.mutate({ id: c.id, activo: true })}>
@@ -485,6 +494,7 @@ function Cumpleanos({ slug, deportes }: { slug: string; deportes: [string, strin
             <textarea id="condiciones-cumple" rows={3} maxLength={1000} placeholder="Máximo 20 chicos. Se puede traer torta y bebidas. No se permite cotillón con papel picado." value={nuevo.condiciones} onChange={(e) => setNuevo({ ...nuevo, condiciones: e.target.value })} className={claseTexto} />
           </div>
         </div>
+        <Franjas franjas={nuevo.franjas} onCambiar={(franjas) => setNuevo({ ...nuevo, franjas })} />
         <div>
           <Boton type="submit" cargando={crear.isPending}>
             <Plus className="size-4" aria-hidden="true" />
@@ -494,5 +504,76 @@ function Cumpleanos({ slug, deportes }: { slug: string; deportes: [string, strin
       </form>
       {error && <Aviso>{mensaje(error)}</Aviso>}
     </Tarjeta>
+  )
+}
+
+/** Días y horarios en que se festejan cumpleaños. Sin ninguno: en cualquier turno. */
+function Franjas({ franjas, onCambiar }: { franjas: FranjaCumpleanos[]; onCambiar: (franjas: FranjaCumpleanos[]) => void }) {
+  const cambiar = (i: number, cambios: Partial<FranjaCumpleanos>) => onCambiar(franjas.map((f, j) => (j === i ? { ...f, ...cambios } : f)))
+  const select = 'rounded-[10px] border-[1.5px] border-linea bg-superficie px-2.5 py-2 text-[15px]'
+  return (
+    <div className="grid gap-2">
+      <span className="text-[13px] font-semibold">Días y horarios (opcional)</span>
+      <span className="text-sm text-gris">Si no cargás ninguno, se puede reservar en cualquier turno de la cancha.</span>
+      {franjas.map((f, i) => (
+        <div key={i} className="flex flex-wrap items-center gap-2">
+          <select aria-label="Día" value={f.dia_semana} onChange={(e) => cambiar(i, { dia_semana: Number(e.target.value) })} className={select}>
+            {DIAS_CUMPLE.map((d, n) => (
+              <option key={d} value={n}>
+                {d}
+              </option>
+            ))}
+          </select>
+          de
+          <select aria-label="Desde" value={f.desde.slice(0, 5)} onChange={(e) => cambiar(i, { desde: e.target.value })} className={select}>
+            {HORAS_CUMPLE.map((h) => (
+              <option key={h}>{h}</option>
+            ))}
+          </select>
+          a
+          <select aria-label="Hasta" value={f.hasta.slice(0, 5)} onChange={(e) => cambiar(i, { hasta: e.target.value })} className={select}>
+            {HORAS_CUMPLE.map((h) => (
+              <option key={h}>{h}</option>
+            ))}
+          </select>
+          <button type="button" onClick={() => onCambiar(franjas.filter((_, j) => j !== i))} aria-label="Quitar este horario" className="grid size-9 place-items-center rounded-full text-gris hover:bg-crema-oscuro">
+            <Trash2 className="size-4" aria-hidden="true" />
+          </button>
+        </div>
+      ))}
+      <button
+        type="button"
+        onClick={() => onCambiar([...franjas, { dia_semana: 5, desde: '14:00', hasta: '20:00' }])}
+        className="justify-self-start text-sm font-semibold text-cesped underline-offset-2 hover:underline"
+      >
+        + Agregar día y horario
+      </button>
+    </div>
+  )
+}
+
+/** Cambiar los días y horarios de un cumpleaños que ya existe. */
+function EditarFranjas({ franjas, cargando, onGuardar }: { franjas: FranjaCumpleanos[]; cargando: boolean; onGuardar: (franjas: FranjaCumpleanos[]) => void }) {
+  const [abierto, setAbierto] = useState(false)
+  const [lista, setLista] = useState(franjas)
+  if (!abierto) {
+    return (
+      <button type="button" onClick={() => { setLista(franjas); setAbierto(true) }} className="mt-1 text-sm font-semibold text-cesped underline-offset-2 hover:underline">
+        Editar días y horarios
+      </button>
+    )
+  }
+  return (
+    <div className="mt-2 grid gap-2 rounded-xl bg-cal p-3 ring-1 ring-linea">
+      <Franjas franjas={lista} onCambiar={setLista} />
+      <div className="flex gap-2">
+        <Boton cargando={cargando} onClick={() => { onGuardar(lista); setAbierto(false) }}>
+          Guardar
+        </Boton>
+        <Boton variante="suave" onClick={() => setAbierto(false)}>
+          Cancelar
+        </Boton>
+      </div>
+    </div>
   )
 }

@@ -75,6 +75,8 @@ class CumpleanosPublico(BaseModel):
     precio: Decimal
     incluye: str | None = None
     condiciones: str | None = None
+    # Días y horarios en que se festeja: {dia_semana, desde, hasta}. Vacía: siempre.
+    franjas: list[dict] = []
 
 
 class FotoPublica(BaseModel):
@@ -89,6 +91,9 @@ class ComplejoDetalle(BaseModel):
     direccion: str | None
     referencia: str | None
     whatsapp: str | None
+    # Ubicación exacta para el mapa de la página (la dirección escrita a veces se ubica mal).
+    latitud: float | None = None
+    longitud: float | None = None
     # Asistente de IA del complejo: None si está apagado o no hay proveedor configurado.
     asistente: dict[str, str] | None = None
     servicios: list[str]

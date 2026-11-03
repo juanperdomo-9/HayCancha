@@ -7,13 +7,17 @@ type Props = {
   direccion: string | null
   barrio: string | null
   referencia?: string | null
+  /** Ubicación exacta: si está, el mapa la usa en vez de buscar la dirección escrita. */
+  latitud?: number | null
+  longitud?: number | null
 }
 
 const CLAVE_MAPS = import.meta.env.VITE_GOOGLE_MAPS_KEY
 
 /** Dónde queda el complejo: mapa de Google y botón para ir con Maps. */
-export function MapaComplejo({ nombre, direccion, barrio, referencia }: Props) {
+export function MapaComplejo({ nombre, direccion, barrio, referencia, latitud, longitud }: Props) {
   const consulta = consultaMaps({ direccion, barrio })
+  const punto = latitud != null && longitud != null ? `${latitud},${longitud}` : consulta
   if (!consulta) {
     return <p className="text-tenue">Dirección a confirmar.</p>
   }
@@ -22,7 +26,7 @@ export function MapaComplejo({ nombre, direccion, barrio, referencia }: Props) {
     <div className="grid gap-3">
       <iframe
         title={`Mapa de ${nombre}`}
-        src={urlMapaEmbebido(consulta, CLAVE_MAPS)}
+        src={urlMapaEmbebido(punto ?? consulta, CLAVE_MAPS)}
         loading="lazy"
         referrerPolicy="no-referrer-when-downgrade"
         allowFullScreen

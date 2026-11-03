@@ -2,6 +2,7 @@ import uuid
 from decimal import Decimal
 
 from sqlalchemy import CheckConstraint, ForeignKey, Numeric, String, Text, UniqueConstraint, text
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base, CreadoA, UuidPk
@@ -31,6 +32,9 @@ class Cumpleanos(Base):
     # condiciones antes de pagar la seña.
     incluye: Mapped[str | None] = mapped_column(Text)
     condiciones: Mapped[str | None] = mapped_column(Text)
+    # Días y horarios en que se festeja: [{"dia_semana": 5, "desde": "14:00", "hasta":
+    # "20:00"}] (hora local). Vacía: en cualquier turno de la cancha.
+    franjas: Mapped[list[dict]] = mapped_column(JSONB, server_default=text("'[]'::jsonb"))
     activo: Mapped[bool] = mapped_column(server_default=text("true"))
     orden: Mapped[int] = mapped_column(server_default=text("0"))
     creado_a: Mapped[CreadoA]

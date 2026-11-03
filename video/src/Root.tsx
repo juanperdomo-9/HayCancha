@@ -133,7 +133,7 @@ export const RemotionRoot: React.FC = () => {
           durationInFrames={3}
           fps={FPS}
           width={1080}
-          height={1350}
+          height={1440}
           defaultProps={{ slug: "los-ceibos" }}
           calculateMetadata={calcularFichaje}
         />

@@ -31,6 +31,8 @@ export type ReservaEnAgenda = {
   minutos_para_pagar: number | null
   /** El nombre del cumpleaños, si la reserva es uno. */
   cumpleanos?: string | null
+  /** Si es de un turno fijo de juego (se repite todas las semanas). */
+  turno_fijo?: boolean
 }
 
 export type TurnoEnAgenda = {
@@ -62,7 +64,7 @@ export type Agenda = {
 
 export type DiaDeLaSemana = { fecha: string; ocupados: number; libres: number; bloqueados: number }
 
-export type ReservaDetalle = Omit<ReservaEnAgenda, 'cliente'> & {
+export type ReservaDetalle = Omit<ReservaEnAgenda, 'cliente' | 'turno_fijo'> & {
   cancha_id: string
   cancha: string
   deporte: string
@@ -75,6 +77,9 @@ export type ReservaDetalle = Omit<ReservaEnAgenda, 'cliente'> & {
   cliente: { nombre: string; telefono: string; email: string | null } | null
   /** Lo que contó el jugador al reservar el cumpleaños. */
   nota?: string | null
+  /** Turno fijo de juego: su id y "Todos los martes a las 21:00". */
+  turno_fijo_id?: string | null
+  turno_fijo?: string | null
   creado_a: string
   sena_online: boolean
   devolucion: 'pendiente' | 'hecha' | null
@@ -131,6 +136,8 @@ export type ReservaManual = {
   telefono: string
   email?: string
   sena_en_efectivo: boolean
+  /** Si dejó otro monto que la seña calculada. */
+  sena_monto?: string
 }
 
 export function useCargarReserva(slug: string) {
@@ -144,7 +151,7 @@ export function useCargarReserva(slug: string) {
 export function useCambiarReserva(slug: string) {
   const refrescar = useRefrescar(slug)
   return useMutation({
-    mutationFn: ({ id, ...cambios }: { id: string; asistencia?: 'vino' | 'no_vino' | null; saldo_cobrado?: boolean; saldo_en_efectivo?: boolean }) =>
+    mutationFn: ({ id, ...cambios }: { id: string; asistencia?: 'vino' | 'no_vino' | null; saldo_cobrado?: boolean; saldo_en_efectivo?: boolean; sena_efectivo?: string }) =>
       enviar<ReservaDetalle>(`${base(slug)}/reservas/${id}`, 'PATCH', cambios),
     onSuccess: refrescar,
   })
@@ -196,6 +203,40 @@ export type BloqueoFijo = {
   recurso_id: string | null
   cancha: string | null
   motivo: string
+}
+
+export type TurnoFijo = { id: string; dia_semana: number; desde: string; recurso_id: string; cancha: string; cliente: string; telefono: string }
+
+export type NuevoTurnoFijo = { recurso_id: string; dia_semana: number; desde: string; nombre: string; telefono: string }
+
+export function useTurnosFijos(slug: string) {
+  return useQuery({ queryKey: ['panel', slug, 'turnos-fijos'], queryFn: () => pedir<TurnoFijo[]>(`${base(slug)}/turnos-fijos`) })
+}
+
+export function useCrearTurnoFijo(slug: string) {
+  const refrescar = useRefrescar(slug)
+  const cliente = useQueryClient()
+  return useMutation({
+    mutationFn: (datos: NuevoTurnoFijo) =>
+      enviar<{ turno_fijo: TurnoFijo; creadas: number; omitidas: string[] }>(`${base(slug)}/turnos-fijos`, 'POST', datos),
+    onSuccess: () => {
+      refrescar()
+      cliente.invalidateQueries({ queryKey: ['panel', slug, 'turnos-fijos'] })
+    },
+  })
+}
+
+/** Liberar para siempre: cancela las reservas que vienen y no crea más. */
+export function useLiberarTurnoFijo(slug: string) {
+  const refrescar = useRefrescar(slug)
+  const cliente = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => pedir<void>(`${base(slug)}/turnos-fijos/${id}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      refrescar()
+      cliente.invalidateQueries({ queryKey: ['panel', slug, 'turnos-fijos'] })
+    },
+  })
 }
 
 export type NuevoBloqueoFijo = { dia_semana: number; desde: string; hasta: string; recurso_id: string | null; motivo: string }

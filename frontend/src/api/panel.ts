@@ -405,6 +405,9 @@ export function useCambiarInteresado() {
 }
 
 /** Lo que el complejo alquila aparte (paletas, pelotas, parrilla). */
+/** Día y horario en que se festejan cumpleaños (hora local, "14:00"). */
+export type FranjaCumpleanos = { dia_semana: number; desde: string; hasta: string }
+
 export type CumpleanosPanel = {
   id: string
   nombre: string
@@ -413,6 +416,7 @@ export type CumpleanosPanel = {
   precio: string
   incluye: string | null
   condiciones: string | null
+  franjas: FranjaCumpleanos[]
   activo: boolean
 }
 

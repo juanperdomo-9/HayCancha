@@ -52,6 +52,11 @@ class Reserva(Base):
             ["cumpleanos.negocio_id", "cumpleanos.id"],
             name="fk_reservas_cumpleanos",
         ),
+        ForeignKeyConstraint(
+            ["negocio_id", "turno_fijo_id"],
+            ["turnos_fijos.negocio_id", "turnos_fijos.id"],
+            name="fk_reservas_turno_fijo",
+        ),
         CheckConstraint("fin > inicio", name="fin_despues_de_inicio"),
         CheckConstraint(
             "estado IN ('pendiente_pago', 'confirmada', 'vencida', 'cancelada', 'bloqueada')",
@@ -113,5 +118,7 @@ class Reserva(Base):
     cumpleanos_id: Mapped[uuid.UUID | None]
     # Lo que contó el jugador al reservar (quién cumple, cuántos chicos).
     nota: Mapped[str | None] = mapped_column(String(300))
+    # Si es de un turno fijo de juego (migración 0023): una por fecha.
+    turno_fijo_id: Mapped[uuid.UUID | None]
     creado_por: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("usuarios.id"))
     creado_a: Mapped[CreadoA]

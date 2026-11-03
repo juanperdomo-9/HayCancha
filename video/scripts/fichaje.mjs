@@ -68,7 +68,7 @@ correr(['remotion', 'still', 'build-ig', 'IG-fichaje-historia', `"${path.join(sa
 
 // 4. El texto.
 const deportes = datos.deportes.map((d) => d.nombre).join(', ')
-const etiquetas = ['#HayCanchas', ...datos.deportes.map((d) => `#${d.nombre.normalize('NFD').replace(/[^\w]/g, '')}`), datos.barrio ? `#${datos.barrio.split(',')[0].normalize('NFD').replace(/[^\w]/g, '')}` : '']
+const etiquetas = ['#HayCanchas', ...datos.deportes.map((d) => `#${d.nombre.normalize('NFD').replace(/[^\w]/g, '')}`), ...(datos.barrio ?? '').split(/[.,;/]| y /).map((s) => s.trim()).filter(Boolean).map((s) => `#${s.normalize('NFD').replace(/[^\w]/g, '')}`)]
 writeFileSync(
   path.join(salida, 'texto.txt'),
   `🚨 OFICIAL 🚨

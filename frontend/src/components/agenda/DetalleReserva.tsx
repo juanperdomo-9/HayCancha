@@ -7,6 +7,7 @@ import {
   useCambiarAdicionales,
   useCambiarReserva,
   useCancelarReserva,
+  useLiberarTurnoFijo,
   useMoverReserva,
   useReserva,
 } from '../../api/agenda'
@@ -14,7 +15,7 @@ import { mensaje } from '../../api/client'
 import { useAdicionales } from '../../api/panel'
 import { fechaLarga, plata } from '../../utils/formato'
 import { urlLlamar, urlWhatsapp } from '../../utils/telefono'
-import { Aviso, Boton } from '../ui/Formulario'
+import { Aviso, Boton, Campo } from '../ui/Formulario'
 
 const ORIGEN = { web: 'Reservó por la página', panel: 'Cargada a mano', bot: 'Reservó con el asistente' }
 const ESTADO = {
@@ -77,6 +78,7 @@ function Detalle({ slug, r, agenda, onListo }: { slug: string; r: ReservaDetalle
               {r.cumpleanos && <p className="text-xs font-bold tracking-[.08em] text-cesped uppercase">{r.cumpleanos}</p>}
               <b className="text-lg">{r.cliente.nombre}</b>
               {r.nota && <p className="text-sm">Cumpleaños de: {r.nota}</p>}
+              {r.turno_fijo && <p className="text-sm font-semibold text-cesped">Turno fijo · {r.turno_fijo}</p>}
               <p className="text-sm text-gris">
                 {r.cliente.telefono}
                 {r.cliente.email && ` · ${r.cliente.email}`}
@@ -118,6 +120,7 @@ function Detalle({ slug, r, agenda, onListo }: { slug: string; r: ReservaDetalle
               {r.sena_online && ' (Mercado Pago)'}
             </dd>
           </div>
+          {r.estado === 'confirmada' && !r.sena_online && <EditarSena slug={slug} reservaId={r.id} sena={r.sena} />}
           {r.devolucion && (
             <div className="flex justify-between">
               <dt className="text-gris">Devolución de la seña</dt>
@@ -214,7 +217,7 @@ function Detalle({ slug, r, agenda, onListo }: { slug: string; r: ReservaDetalle
             )}
             <div className="flex gap-2">
               <Boton variante="peligro" className="flex-1" cargando={cancelar.isPending} onClick={() => cancelar.mutate({ id: r.id, devolverSena }, { onSuccess: onListo })}>
-                {r.estado === 'bloqueada' ? 'Sí, desbloquear' : 'Sí, cancelar'}
+                {r.estado === 'bloqueada' ? 'Sí, desbloquear' : r.turno_fijo_id ? 'Sí, liberar este día' : 'Sí, cancelar'}
               </Boton>
               <Boton variante="suave" className="flex-1" onClick={() => setConfirmarCancelacion(false)}>
                 No
@@ -223,9 +226,10 @@ function Detalle({ slug, r, agenda, onListo }: { slug: string; r: ReservaDetalle
           </div>
         ) : (
           <Boton variante="peligro" onClick={() => setConfirmarCancelacion(true)}>
-            {r.estado === 'bloqueada' ? 'Desbloquear' : 'Cancelar reserva'}
+            {r.estado === 'bloqueada' ? 'Desbloquear' : r.turno_fijo_id ? 'Liberar este día' : 'Cancelar reserva'}
           </Boton>
         ))}
+      {r.turno_fijo_id && r.turno_fijo && !r.turno_fijo.includes('dado de baja') && <LiberarParaSiempre slug={slug} id={r.turno_fijo_id} texto={r.turno_fijo} onListo={onListo} />}
     </div>
   )
 }
@@ -339,6 +343,63 @@ function EditarAdicionales({ slug, reservaId, pedidos }: { slug: string; reserva
         Guardar adicionales
       </Boton>
       {guardar.error && <Aviso>{mensaje(guardar.error)}</Aviso>}
+    </div>
+  )
+}
+
+/** La seña que dejó en efectivo: se carga o se corrige después (por ejemplo, si dejó otro
+ * monto que la seña del complejo). */
+function EditarSena({ slug, reservaId, sena }: { slug: string; reservaId: string; sena: string }) {
+  const cambiar = useCambiarReserva(slug)
+  const [abierto, setAbierto] = useState(false)
+  const [monto, setMonto] = useState(String(Math.round(Number(sena))))
+  if (!abierto) {
+    return (
+      <button type="button" onClick={() => setAbierto(true)} className="justify-self-end text-sm font-semibold text-cesped underline-offset-2 hover:underline">
+        {Number(sena) > 0 ? 'Cambiar la seña en efectivo' : 'Dejó seña en efectivo'}
+      </button>
+    )
+  }
+  return (
+    <form
+      className="flex items-end gap-2"
+      onSubmit={(e) => {
+        e.preventDefault()
+        cambiar.mutate({ id: reservaId, sena_efectivo: monto || '0' }, { onSuccess: () => setAbierto(false) })
+      }}
+    >
+      <Campo etiqueta="Seña en efectivo" inputMode="numeric" value={monto} onChange={(e) => setMonto(e.target.value.replace(/[^0-9]/g, ''))} className="flex-1" />
+      <Boton type="submit" cargando={cambiar.isPending}>
+        Guardar
+      </Boton>
+      {cambiar.error && <Aviso>{mensaje(cambiar.error)}</Aviso>}
+    </form>
+  )
+}
+
+/** Un turno fijo de juego que deja de venir: se cancelan las fechas que vienen. */
+function LiberarParaSiempre({ slug, id, texto, onListo }: { slug: string; id: string; texto: string; onListo: () => void }) {
+  const liberar = useLiberarTurnoFijo(slug)
+  const [confirmar, setConfirmar] = useState(false)
+  if (!confirmar) {
+    return (
+      <Boton variante="suave" onClick={() => setConfirmar(true)}>
+        Liberar para siempre
+      </Boton>
+    )
+  }
+  return (
+    <div className="grid gap-2 rounded-xl bg-red-50 p-4 ring-1 ring-red-200">
+      <p className="text-sm text-red-900">Se dejan de reservar {texto.charAt(0).toLowerCase() + texto.slice(1)} y se liberan las fechas que vienen.</p>
+      <div className="flex gap-2">
+        <Boton variante="peligro" className="flex-1" cargando={liberar.isPending} onClick={() => liberar.mutate(id, { onSuccess: onListo })}>
+          Sí, liberar para siempre
+        </Boton>
+        <Boton variante="suave" className="flex-1" onClick={() => setConfirmar(false)}>
+          No
+        </Boton>
+      </div>
+      {liberar.error && <Aviso>{mensaje(liberar.error)}</Aviso>}
     </div>
   )
 }

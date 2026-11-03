@@ -73,6 +73,8 @@ export type CumpleanosPublico = {
   precio: string
   incluye: string | null
   condiciones: string | null
+  /** Días y horarios en que se festeja. Vacía: en cualquier turno. */
+  franjas?: { dia_semana: number; desde: string; hasta: string }[]
 }
 
 export type ComplejoDetalle = {
@@ -84,6 +86,8 @@ export type ComplejoDetalle = {
   direccion: string | null
   referencia: string | null
   whatsapp: string | null
+  latitud?: number | null
+  longitud?: number | null
   servicios: string[]
   reglas: string[]
   adicionales: AdicionalPublico[]

@@ -160,6 +160,7 @@ def ver_complejo(slug: str, session: SesionPublica) -> esquemas.ComplejoDetalle:
                 precio=c.precio,
                 incluye=c.incluye,
                 condiciones=c.condiciones,
+                franjas=c.franjas,
             )
             for c in cumpleanos_ofrecidos(s, negocio.id)
         ]
@@ -178,6 +179,8 @@ def ver_complejo(slug: str, session: SesionPublica) -> esquemas.ComplejoDetalle:
         direccion=negocio.direccion,
         referencia=negocio.referencia,
         whatsapp=negocio.whatsapp,
+        latitud=negocio.latitud,
+        longitud=negocio.longitud,
         asistente={
             "nombre": negocio.asistente_nombre or "Asistente",
             "bienvenida": negocio.asistente_bienvenida
