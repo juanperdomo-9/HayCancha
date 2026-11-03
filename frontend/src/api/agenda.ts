@@ -207,7 +207,15 @@ export type BloqueoFijo = {
 
 export type TurnoFijo = { id: string; dia_semana: number; desde: string; recurso_id: string; cancha: string; cliente: string; telefono: string }
 
-export type NuevoTurnoFijo = { recurso_id: string; dia_semana: number; desde: string; nombre: string; telefono: string }
+export type NuevoTurnoFijo = {
+  recurso_id: string
+  dia_semana: number
+  desde: string
+  nombre: string
+  telefono: string
+  /** Seña en efectivo que dejó para el primer partido. */
+  sena_monto?: string
+}
 
 export function useTurnosFijos(slug: string) {
   return useQuery({ queryKey: ['panel', slug, 'turnos-fijos'], queryFn: () => pedir<TurnoFijo[]>(`${base(slug)}/turnos-fijos`) })

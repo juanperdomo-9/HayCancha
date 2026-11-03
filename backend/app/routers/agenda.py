@@ -630,6 +630,8 @@ def crear_turno_fijo(
         s.add(fijo)
         s.flush()
         resultado = generar(s, panel.negocio, fijo)
+        if datos.sena_monto and resultado.primera is not None:
+            _fijar_sena_en_efectivo(resultado.primera, datos.sena_monto)
         s.commit()
         return esquemas.TurnoFijoCreado(
             turno_fijo=_turno_fijo(s, fijo, _nombres_de_canchas(s, panel.negocio_id)),

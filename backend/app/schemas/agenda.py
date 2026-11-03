@@ -217,6 +217,9 @@ class NuevoTurnoFijo(BaseModel):
     desde: time
     nombre: Annotated[str, StringConstraints(strip_whitespace=True, min_length=2, max_length=120)]
     telefono: Annotated[str, StringConstraints(strip_whitespace=True, min_length=6, max_length=40)]
+    # Lo que dejó de seña en efectivo para el primer partido (las demás semanas se cargan
+    # en cada reserva). None: no dejó.
+    sena_monto: MontoDeSena | None = None
 
 
 class TurnoFijo(BaseModel):

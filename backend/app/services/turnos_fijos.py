@@ -30,6 +30,8 @@ class Generadas:
     creadas: int = 0
     # Fechas que no se pudieron reservar (ya estaban ocupadas o bloqueadas).
     omitidas: list[datetime] = field(default_factory=list)
+    # La primera reserva creada (la del próximo partido), si hubo alguna.
+    primera: Reserva | None = None
 
 
 def inicio_en(
@@ -80,6 +82,7 @@ def generar(
                     reserva.turno_fijo_id = fijo.id
                     session.flush()
                     resultado.creadas += 1
+                    resultado.primera = resultado.primera or reserva
                 except (TurnoNoDisponible, TurnoInvalido):
                     resultado.omitidas.append(inicio)
         dia += timedelta(days=1)

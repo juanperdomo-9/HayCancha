@@ -89,6 +89,31 @@ def test_saltea_las_fechas_ocupadas_y_valida_la_hora(complejo) -> None:  # noqa:
     assert crear_fijo(dueno, complejo, "21:30").status_code == 422
 
 
+def test_sena_en_efectivo_al_crear_el_turno_fijo(complejo) -> None:  # noqa: F811
+    dueno = entrar(complejo["dueno"])
+    creado = dueno.post(
+        f"/panel/{complejo['slug']}/turnos-fijos",
+        json={
+            "recurso_id": str(complejo["canchas"][0]),
+            "dia_semana": complejo["fecha"].weekday(),
+            "desde": "21:00",
+            "nombre": "Martín Fijo",
+            "telefono": "1155557777",
+            "sena_monto": "15000",
+        },  # fmt: skip
+    )
+    assert creado.status_code == 201, creado.text
+    primera = turno(agenda(dueno, complejo), complejo["canchas"][0], "21:00")["reserva"]
+    detalle = dueno.get(f"/panel/{complejo['slug']}/reservas/{primera['id']}").json()
+    assert (detalle["sena"], detalle["sena_en_efectivo"]) == ("15000.00", True)
+    # Las semanas siguientes quedan sin seña.
+    semana = complejo["fecha"] + timedelta(days=7)
+    otra = dueno.get(f"/panel/{complejo['slug']}/agenda", params={"fecha": semana.isoformat()})
+    siguiente = turno(otra.json(), complejo["canchas"][0], "21:00")["reserva"]
+    otro_detalle = dueno.get(f"/panel/{complejo['slug']}/reservas/{siguiente['id']}").json()
+    assert otro_detalle["sena_en_efectivo"] is False
+
+
 def test_sena_en_efectivo_con_otro_monto(complejo) -> None:  # noqa: F811
     dueno = entrar(complejo["dueno"])
     cargada = cargar(dueno, complejo, 0, 19, sena_en_efectivo=True, sena_monto="10000")

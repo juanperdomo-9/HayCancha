@@ -31,16 +31,16 @@ export function BloqueosFijos({ slug, canchas, onCerrar }: { slug: string; canch
   const turnos = useTurnosFijos(slug)
   const crearTurno = useCrearTurnoFijo(slug)
   const liberar = useLiberarTurnoFijo(slug)
-  const [jugador, setJugador] = useState({ nombre: '', telefono: '' })
+  const [jugador, setJugador] = useState({ nombre: '', telefono: '', sena: false, monto: '' })
 
   function agregarTurno(e: FormEvent) {
     e.preventDefault()
     setAviso(null)
     crearTurno.mutate(
-      { recurso_id: datos.recurso_id || canchas[0]?.id, dia_semana: Number(datos.dia_semana), desde: datos.desde, nombre: jugador.nombre, telefono: jugador.telefono },
+      { recurso_id: datos.recurso_id || canchas[0]?.id, dia_semana: Number(datos.dia_semana), desde: datos.desde, nombre: jugador.nombre, telefono: jugador.telefono, sena_monto: jugador.sena && jugador.monto ? jugador.monto : undefined },
       {
         onSuccess: ({ turno_fijo, creadas, omitidas }) => {
-          setJugador({ nombre: '', telefono: '' })
+          setJugador({ nombre: '', telefono: '', sena: false, monto: '' })
           const cuando = `todos los ${DIAS[turno_fijo.dia_semana].toLowerCase()} a las ${corta(turno_fijo.desde)} (${turno_fijo.cancha})`
           const salteadas = omitidas.map((f) => new Date(f).toLocaleDateString('es-AR', { day: 'numeric', month: 'numeric' })).join(', ')
           setAviso(
@@ -148,6 +148,19 @@ export function BloqueosFijos({ slug, canchas, onCerrar }: { slug: string; canch
             Teléfono
             <input required type="tel" inputMode="tel" minLength={6} maxLength={40} value={jugador.telefono} onChange={(e) => setJugador({ ...jugador, telefono: e.target.value })} className={campo} />
           </label>
+          <div className="flex flex-wrap items-end gap-3 sm:col-span-2 lg:col-span-5">
+            <label className="flex items-center gap-2 py-2 text-[15px]">
+              <input type="checkbox" checked={jugador.sena} onChange={(e) => setJugador({ ...jugador, sena: e.target.checked })} className="size-4 accent-[var(--complejo)]" />
+              Dejó seña en efectivo para el primer partido
+            </label>
+            {jugador.sena && (
+              <label className="grid gap-1 text-[13px] font-semibold">
+                ¿Cuánto dejó?
+                <input required inputMode="numeric" placeholder="10000" value={jugador.monto} onChange={(e) => setJugador({ ...jugador, monto: e.target.value.replace(/[^0-9]/g, '') })} className={campo} />
+              </label>
+            )}
+            <span className="basis-full text-sm text-gris">Las semanas siguientes, la seña se carga en cada reserva desde la agenda.</span>
+          </div>
           <Boton type="submit" cargando={crearTurno.isPending}>
             Guardar
           </Boton>
