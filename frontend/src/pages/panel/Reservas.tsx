@@ -67,9 +67,9 @@ function FormularioReservas({ slug, configuracion: c }: { slug: string; configur
 
   const valor = Number(datos.sena_valor) || 0
   const senaEjemplo = datos.sena_tipo === 'porcentaje' ? (TURNO_DE_EJEMPLO * valor) / 100 : Math.min(valor, TURNO_DE_EJEMPLO)
-  // Igual que en el backend: la comisión se cobra sobre el total, redondeado a $10.
+  // Igual que en el backend: la comisión se cobra sobre el total, que se redondea a $100.
   const pct = Number(datos.cargo_servicio_pct) || 0
-  const cargoEjemplo = pct > 0 && pct < 100 && senaEjemplo > 0 ? Math.ceil((senaEjemplo / (1 - pct / 100) - senaEjemplo) / 10) * 10 : 0
+  const cargoEjemplo = pct > 0 && pct < 100 && senaEjemplo > 0 ? Math.ceil(senaEjemplo / (1 - pct / 100) / 100) * 100 - senaEjemplo : 0
 
   return (
     <form onSubmit={enviar} className="grid gap-6">

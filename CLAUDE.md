@@ -210,7 +210,7 @@ Estados: `pendiente_pago`, `confirmada`, `vencida`, `cancelada`, `bloqueada`. Un
 
 **Preferencia de Checkout Pro** (una por reserva):
 - `items`: un ítem "Seña: Cancha 1, sáb 12/10 21:00", `quantity` 1, `unit_price` = `sena`, `currency_id` `ARS`, y otro "Cargo de servicio" si `cargo_servicio` > 0
-- **Cargo de servicio:** `cargo = seña ÷ (1 − pct) − seña`, redondeado hacia arriba a $10 (`services/sena.py`), así al complejo le queda la seña entera después de la comisión. Si cancela el jugador a tiempo, se devuelve solo la seña (devolución parcial con `amount`, `pagos.monto_devolucion`); si cancela el complejo o el turno ya no está, se devuelve todo
+- **Cargo de servicio:** el total (`seña ÷ (1 − pct)`) se redondea hacia arriba a $100 y el cargo es la diferencia con la seña (`services/sena.py`), así al complejo le queda la seña entera después de la comisión. Si cancela el jugador a tiempo, se devuelve solo la seña (devolución parcial con `amount`, `pagos.monto_devolucion`); si cancela el complejo o el turno ya no está, se devuelve todo
 - `external_reference`: el `id` de la reserva
 - `notification_url`: `{APP_BASE_URL}/webhooks/mercadopago/{negocio_id}` (el webhook sabe de qué complejo es y con qué token consultar)
 - `back_urls` hacia `{FRONTEND_URL}/{slug}/reserva/{id}` y `auto_return: "approved"`
