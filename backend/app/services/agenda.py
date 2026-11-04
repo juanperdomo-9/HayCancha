@@ -40,6 +40,8 @@ class ResumenDelDia:
     bloqueados: int = 0
     senas_cobradas: Decimal = CERO
     saldo_por_cobrar: Decimal = CERO
+    cobrado_efectivo: Decimal = CERO
+    cobrado_transferencia: Decimal = CERO
 
 
 def saldo_efectivo(reserva: Reserva) -> Decimal | None:
@@ -131,6 +133,8 @@ def resumen(canchas: list[CanchaDeAgenda]) -> ResumenDelDia:
                 total.senas_cobradas += t.reserva.sena
                 if not t.reserva.saldo_cobrado:
                     total.saldo_por_cobrar += saldo(t.reserva)
+                total.cobrado_efectivo += t.reserva.cobrado_efectivo or CERO
+                total.cobrado_transferencia += t.reserva.cobrado_transferencia or CERO
     return total
 
 

@@ -271,7 +271,12 @@ class ProveedorMercadoPago:
                     "title": descripcion,
                     "quantity": 1,
                     # Mercado Pago recibe un número JSON; la seña ya viene redondeada a centavos.
-                    "unit_price": float(reserva.sena),
+                    # Si el complejo muestra el cargo dentro de la seña, va todo en este ítem.
+                    "unit_price": float(
+                        reserva.sena + reserva.cargo_servicio
+                        if negocio.cargo_dentro_de_sena
+                        else reserva.sena
+                    ),
                     "currency_id": MONEDA,
                 }
             ]
@@ -285,7 +290,7 @@ class ProveedorMercadoPago:
                         "currency_id": MONEDA,
                     }
                 ]
-                if reserva.cargo_servicio > 0
+                if reserva.cargo_servicio > 0 and not negocio.cargo_dentro_de_sena
                 else []
             ),
             "external_reference": str(reserva.id),

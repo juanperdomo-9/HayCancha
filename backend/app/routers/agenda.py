@@ -119,6 +119,8 @@ def ver_agenda(panel: PanelActual, fecha: date | None = None) -> esquemas.Agenda
                                 saldo_cobrado=t.reserva.saldo_cobrado,
                                 saldo_efectivo=saldo_efectivo(t.reserva),
                                 saldo_en_efectivo=t.reserva.saldo_en_efectivo,
+                                cobrado_efectivo=t.reserva.cobrado_efectivo,
+                                cobrado_transferencia=t.reserva.cobrado_transferencia,
                                 origen=t.reserva.origen,
                                 asistencia=t.reserva.asistencia,
                                 motivo_bloqueo=t.reserva.motivo_bloqueo,
@@ -219,6 +221,8 @@ def _detalle(s: Session, negocio: Negocio, reserva: Reserva) -> esquemas.Reserva
         saldo_cobrado=reserva.saldo_cobrado,
         saldo_efectivo=saldo_efectivo(reserva),
         saldo_en_efectivo=reserva.saldo_en_efectivo,
+        cobrado_efectivo=reserva.cobrado_efectivo,
+        cobrado_transferencia=reserva.cobrado_transferencia,
         asistencia=reserva.asistencia,
         origen=reserva.origen,
         motivo_bloqueo=reserva.motivo_bloqueo,
@@ -286,6 +290,19 @@ def cargar_reserva(datos: esquemas.ReservaManual, panel: PanelActual) -> esquema
         return _detalle(s, panel.negocio, reserva)
 
 
+def _fijar_cobro(reserva: Reserva, cobro: esquemas.CobroEnCancha) -> None:
+    """El saldo cobrado en la cancha, con lo que pagó de cada forma. El precio en efectivo
+    (si el complejo lo tiene) vale solo si pagó todo en efectivo."""
+    if cobro.efectivo + cobro.transferencia <= 0:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT, "Poné cuánto pagó en efectivo o transferencia."
+        )
+    reserva.saldo_cobrado = True
+    reserva.saldo_en_efectivo = cobro.transferencia == 0
+    reserva.cobrado_efectivo = cobro.efectivo.quantize(Decimal("0.01"))
+    reserva.cobrado_transferencia = cobro.transferencia.quantize(Decimal("0.01"))
+
+
 def _fijar_sena_en_efectivo(reserva: Reserva, monto: Decimal) -> None:
     """Lo que dejó de seña en efectivo, aunque no sea la seña calculada (0: no dejó)."""
     if reserva.precio is not None and monto > reserva.precio:
@@ -322,6 +339,10 @@ def cambiar_reserva(
                     "La seña ya se pagó por Mercado Pago.",
                 )
             _fijar_sena_en_efectivo(reserva, monto if monto is not None else Decimal("0"))
+        if valores.pop("cobro", None) is not None:
+            _fijar_cobro(reserva, cambios.cobro)
+        elif valores.get("saldo_cobrado") is False:
+            reserva.cobrado_efectivo = reserva.cobrado_transferencia = None
         for campo, valor in valores.items():
             setattr(reserva, campo, valor)
         s.commit()

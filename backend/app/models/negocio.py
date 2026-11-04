@@ -54,6 +54,9 @@ class Negocio(Base):
     # que al complejo le quede la seña entera. 7,61 = 6,29% + IVA, cobrando al instante.
     # 0: sin cargo (migración 0025).
     cargo_servicio_pct: Mapped[Decimal] = mapped_column(Numeric(5, 2), server_default="7.61")
+    # El jugador ve una sola seña (seña + cargo) en vez de los dos por separado. Por dentro
+    # no cambia nada: el saldo y lo que se devuelve siguen saliendo de la seña sola.
+    cargo_dentro_de_sena: Mapped[bool] = mapped_column(server_default=text("false"))
     # Sin valor por defecto: se acuerda con cada complejo en el alta.
     horas_cancelacion: Mapped[int]
     # Reservas online solo con esta anticipación mínima (0 = sin mínimo, migración 0018).

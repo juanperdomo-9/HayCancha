@@ -123,6 +123,8 @@ class CanchaLibre(Cancha):
     sena: Decimal
     # Lo que se paga encima de la seña online (la comisión de Mercado Pago).
     cargo_servicio: Decimal = Decimal("0.00")
+    # Si el jugador ve una sola seña (seña + cargo) en vez de los dos por separado.
+    cargo_en_sena: bool = False
     precio_efectivo: Decimal | None = None
 
 

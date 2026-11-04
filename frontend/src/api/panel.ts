@@ -46,6 +46,8 @@ export type Configuracion = {
   sena_valor: string
   /** Comisión de Mercado Pago que paga el jugador como cargo de servicio (0: sin cargo). */
   cargo_servicio_pct: string
+  /** El jugador ve una sola seña (seña + cargo) en vez de los dos por separado. */
+  cargo_dentro_de_sena?: boolean
   horas_cancelacion: number
   horas_anticipacion: number
   minutos_para_pagar: number

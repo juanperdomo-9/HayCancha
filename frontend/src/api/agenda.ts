@@ -18,6 +18,9 @@ export type ReservaEnAgenda = {
   saldo_cobrado: boolean
   saldo_efectivo: string | null
   saldo_en_efectivo: boolean
+  /** Cómo se cobró el saldo en la cancha (null: se marcó antes de guardarlo). */
+  cobrado_efectivo?: string | null
+  cobrado_transferencia?: string | null
   origen: Origen
   asistencia: 'vino' | 'no_vino' | null
   motivo_bloqueo: string | null
@@ -59,7 +62,15 @@ export type Agenda = {
   fecha: string
   hoy: string
   canchas: CanchaEnAgenda[]
-  resumen: { ocupados: number; libres: number; bloqueados: number; senas_cobradas: string; saldo_por_cobrar: string }
+  resumen: {
+    ocupados: number
+    libres: number
+    bloqueados: number
+    senas_cobradas: string
+    saldo_por_cobrar: string
+    cobrado_efectivo?: string
+    cobrado_transferencia?: string
+  }
 }
 
 export type DiaDeLaSemana = { fecha: string; ocupados: number; libres: number; bloqueados: number }
@@ -151,7 +162,7 @@ export function useCargarReserva(slug: string) {
 export function useCambiarReserva(slug: string) {
   const refrescar = useRefrescar(slug)
   return useMutation({
-    mutationFn: ({ id, ...cambios }: { id: string; asistencia?: 'vino' | 'no_vino' | null; saldo_cobrado?: boolean; saldo_en_efectivo?: boolean; sena_efectivo?: string }) =>
+    mutationFn: ({ id, ...cambios }: { id: string; asistencia?: 'vino' | 'no_vino' | null; saldo_cobrado?: boolean; saldo_en_efectivo?: boolean; sena_efectivo?: string; cobro?: { efectivo: string; transferencia: string } }) =>
       enviar<ReservaDetalle>(`${base(slug)}/reservas/${id}`, 'PATCH', cambios),
     onSuccess: refrescar,
   })

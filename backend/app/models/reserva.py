@@ -99,6 +99,10 @@ class Reserva(Base):
     # Precio si el saldo se paga en efectivo (copia de la franja) y si así se cobró.
     precio_efectivo: Mapped[Decimal | None] = mapped_column(Numeric(12, 2))
     saldo_en_efectivo: Mapped[bool] = mapped_column(server_default=text("false"))
+    # Cómo se cobró el saldo en la cancha (puede ser una parte de cada forma). None en las
+    # que se marcaron como cobradas antes de la migración 0026.
+    cobrado_efectivo: Mapped[Decimal | None] = mapped_column(Numeric(12, 2))
+    cobrado_transferencia: Mapped[Decimal | None] = mapped_column(Numeric(12, 2))
     asistencia: Mapped[str | None] = mapped_column(String)
     motivo_bloqueo: Mapped[str | None] = mapped_column(String)
     vence_a: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

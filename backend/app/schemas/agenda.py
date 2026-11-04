@@ -23,6 +23,9 @@ class ReservaEnAgenda(BaseModel):
     # Si el complejo tiene precio en efectivo: lo que falta pagando así, y si se cobró así.
     saldo_efectivo: Decimal | None = None
     saldo_en_efectivo: bool = False
+    # Cómo se cobró el saldo en la cancha (None: se marcó antes de guardarlo).
+    cobrado_efectivo: Decimal | None = None
+    cobrado_transferencia: Decimal | None = None
     origen: Origen
     asistencia: Literal["vino", "no_vino"] | None
     motivo_bloqueo: str | None
@@ -62,6 +65,9 @@ class Resumen(BaseModel):
     bloqueados: int
     senas_cobradas: Decimal
     saldo_por_cobrar: Decimal
+    # Lo cobrado en la cancha ese día, en efectivo y por transferencia.
+    cobrado_efectivo: Decimal = Decimal("0")
+    cobrado_transferencia: Decimal = Decimal("0")
 
 
 class Agenda(BaseModel):
@@ -128,6 +134,9 @@ class ReservaDetalle(BaseModel):
     # Si el complejo tiene precio en efectivo: lo que falta pagando así, y si se cobró así.
     saldo_efectivo: Decimal | None = None
     saldo_en_efectivo: bool = False
+    # Cómo se cobró el saldo en la cancha (None: se marcó antes de guardarlo).
+    cobrado_efectivo: Decimal | None = None
+    cobrado_transferencia: Decimal | None = None
     asistencia: Literal["vino", "no_vino"] | None
     origen: Origen
     motivo_bloqueo: str | None
@@ -157,10 +166,22 @@ class ReservaManual(BaseModel):
     sena_monto: MontoDeSena | None = None
 
 
+Monto = Annotated[Decimal, Field(ge=0, max_digits=12, decimal_places=2)]
+
+
+class CobroEnCancha(BaseModel):
+    """Cómo pagó el saldo en la cancha: una parte de cada forma, o todo de una."""
+
+    efectivo: Monto = Decimal("0")
+    transferencia: Monto = Decimal("0")
+
+
 class CambiosDeReserva(BaseModel):
     asistencia: Literal["vino", "no_vino"] | None = None
     saldo_cobrado: bool | None = None
     saldo_en_efectivo: bool | None = None
+    # Marca el saldo como cobrado con lo que pagó de cada forma.
+    cobro: CobroEnCancha | None = None
     # La seña que dejó en efectivo (0: no dejó). No se puede si la pagó online.
     sena_efectivo: MontoDeSena | None = None
 

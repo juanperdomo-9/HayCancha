@@ -242,3 +242,25 @@ def test_las_reservas_quedan_con_quien_las_cargo(complejo, admin: Session) -> No
     reserva = admin.get(Reserva, uuid.UUID(reserva_id))
     creador = admin.get(Usuario, reserva.creado_por)
     assert creador.email == complejo["dueno"]
+
+
+def test_cobro_del_saldo_en_efectivo_y_transferencia(complejo) -> None:
+    dueno = entrar(complejo["dueno"])
+    reserva = cargar(dueno, complejo, 0, 19).json()
+    url = f"/panel/{complejo['slug']}/reservas/{reserva['id']}"
+    cobrada = dueno.patch(
+        url, json={"asistencia": "vino", "cobro": {"efectivo": "50000", "transferencia": "30000"}}
+    )
+    assert cobrada.status_code == 200, cobrada.text
+    r = cobrada.json()
+    assert (r["saldo_cobrado"], r["saldo_en_efectivo"]) == (True, False)
+    assert (r["cobrado_efectivo"], r["cobrado_transferencia"]) == ("50000.00", "30000.00")
+    resumen = agenda(dueno, complejo)["resumen"]
+    assert (resumen["cobrado_efectivo"], resumen["cobrado_transferencia"]) == (
+        "50000.00",
+        "30000.00",
+    )
+    # Sin montos no se marca; y desmarcarlo borra lo cobrado.
+    assert dueno.patch(url, json={"cobro": {}}).status_code == 422
+    vuelta = dueno.patch(url, json={"saldo_cobrado": False}).json()
+    assert (vuelta["saldo_cobrado"], vuelta["cobrado_efectivo"]) == (False, None)

@@ -52,6 +52,9 @@ export function ReservaEnCurso({ slug, turno, fecha, deporte, cancha, canchaEleg
   const totalAdicionales = ofrecidos.reduce((total, a) => total + Number(a.precio) * (pedidos[a.id] ?? 0), 0)
   const saldo = Number(cancha.precio) - Number(cancha.sena) + totalAdicionales
   const cargo = cumpleanos ? 0 : Number(cancha.cargo_servicio ?? 0)
+  // Si el complejo lo elige, el jugador ve una sola seña con el cargo adentro.
+  const enSena = cargo > 0 && Boolean(cancha.cargo_en_sena)
+  const senaVisible = Number(cancha.sena) + (enSena ? cargo : 0)
   const cambiarPedido = (id: string, paso: number) => setPedidos((actuales) => ({ ...actuales, [id]: Math.min(20, Math.max(0, (actuales[id] ?? 0) + paso)) }))
   const canchaTexto = canchaElegida ? `${cancha.nombre}${cancha.caracteristicas ? ` (${cancha.caracteristicas.toLowerCase()})` : ''}` : 'te asignamos la primera libre'
 
@@ -142,9 +145,9 @@ export function ReservaEnCurso({ slug, turno, fecha, deporte, cancha, canchaEleg
         </div>
         <div className="flex justify-between gap-3 text-[17px] font-bold">
           <dt>Seña para reservar</dt>
-          <dd className="text-complejo-texto">{plata(cancha.sena)}</dd>
+          <dd className="text-complejo-texto">{plata(senaVisible)}</dd>
         </div>
-        {cargo > 0 && (
+        {cargo > 0 && !enSena && (
           <div className="flex justify-between gap-3">
             <dt className="text-tenue">
               Cargo de servicio
@@ -232,7 +235,7 @@ export function ReservaEnCurso({ slug, turno, fecha, deporte, cancha, canchaEleg
             disabled={crear.isPending}
             className="mt-1 rounded-xl bg-complejo px-4 py-[15px] font-bold text-complejo-sobre transition hover:brightness-105 active:scale-[.98] disabled:opacity-60"
           >
-            {crear.isPending ? 'Reservando…' : cumpleanos ? 'Reservar el cumpleaños' : cargo > 0 ? `Pagar ${plata(Number(cancha.sena) + cargo)}` : `Pagar seña de ${plata(cancha.sena)}`}
+            {crear.isPending ? 'Reservando…' : cumpleanos ? 'Reservar el cumpleaños' : cargo > 0 && !enSena ? `Pagar ${plata(Number(cancha.sena) + cargo)}` : `Pagar seña de ${plata(senaVisible)}`}
           </button>
           <p className="text-center text-[12.5px] text-tenue">
             {cumpleanos

@@ -35,6 +35,7 @@ function FormularioReservas({ slug, configuracion: c }: { slug: string; configur
     sena_tipo: c.sena_tipo,
     sena_valor: String(Number(c.sena_valor)),
     cargo_servicio_pct: String(Number(c.cargo_servicio_pct ?? 0)),
+    cargo_dentro_de_sena: Boolean(c.cargo_dentro_de_sena),
     horas_cancelacion: String(c.horas_cancelacion),
     horas_anticipacion: String(c.horas_anticipacion ?? 0),
     minutos_para_pagar: String(c.minutos_para_pagar),
@@ -56,6 +57,7 @@ function FormularioReservas({ slug, configuracion: c }: { slug: string; configur
         sena_tipo: datos.sena_tipo,
         sena_valor: datos.sena_valor || '0',
         cargo_servicio_pct: datos.cargo_servicio_pct || '0',
+        cargo_dentro_de_sena: datos.cargo_dentro_de_sena,
         horas_cancelacion: Number(datos.horas_cancelacion),
         horas_anticipacion: Number(datos.horas_anticipacion || 0),
         minutos_para_pagar: Number(datos.minutos_para_pagar),
@@ -143,6 +145,31 @@ function FormularioReservas({ slug, configuracion: c }: { slug: string; configur
             )}
           </p>
         </div>
+        {cargoEjemplo > 0 && (
+          <fieldset className="mt-4 grid gap-2">
+            <legend className="mb-1.5 text-[13px] font-semibold">Cómo lo ve el jugador</legend>
+            {(
+              [
+                [false, 'Separado', `Seña ${plata(senaEjemplo)} + cargo de servicio ${plata(cargoEjemplo)}`],
+                [true, 'Dentro de la seña', `Seña ${plata(senaEjemplo + cargoEjemplo)}. En la cancha paga el turno menos ${plata(senaEjemplo)}, y si cancela a tiempo se le devuelven ${plata(senaEjemplo)}.`],
+              ] as const
+            ).map(([valor, titulo, texto]) => (
+              <label key={titulo} className="flex cursor-pointer items-start gap-2.5 rounded-xl bg-superficie px-3.5 py-2.5 ring-1 ring-linea has-checked:ring-2 has-checked:ring-complejo">
+                <input
+                  type="radio"
+                  name="cargo_dentro_de_sena"
+                  checked={datos.cargo_dentro_de_sena === valor}
+                  onChange={() => setDatos({ ...datos, cargo_dentro_de_sena: valor })}
+                  className="mt-1 accent-[var(--complejo)]"
+                />
+                <span>
+                  <b className="block">{titulo}</b>
+                  <span className="text-sm text-gris">{texto}</span>
+                </span>
+              </label>
+            ))}
+          </fieldset>
+        )}
       </Tarjeta>
       <Tarjeta titulo="Cancelación y pago">
         <div className="grid gap-4 sm:grid-cols-2">

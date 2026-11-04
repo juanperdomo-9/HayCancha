@@ -71,6 +71,7 @@ class ReservaPublica(BaseModel):
     sena: Decimal
     # Lo que pagó (o paga) encima de la seña online: no se devuelve si cancela.
     cargo_servicio: Decimal = Decimal("0")
+    cargo_en_sena: bool = False
     saldo: Decimal
     adicionales: list[AdicionalPedido] = []
     total_adicionales: Decimal = Decimal("0")

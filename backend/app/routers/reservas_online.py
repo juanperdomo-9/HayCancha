@@ -347,6 +347,7 @@ def _publica(s: Session, negocio: Negocio, reserva: Reserva) -> esquemas.Reserva
         precio=reserva.precio,
         sena=reserva.sena,
         cargo_servicio=reserva.cargo_servicio,
+        cargo_en_sena=negocio.cargo_dentro_de_sena,
         saldo=saldo(reserva),
         adicionales=[
             esquemas.AdicionalPedido(nombre=p.nombre, cantidad=p.cantidad, precio=p.precio)

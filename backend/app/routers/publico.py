@@ -332,6 +332,7 @@ def ver_disponibilidad(
                             precio=c.precio,
                             sena=c.sena,
                             cargo_servicio=c.cargo_servicio,
+                            cargo_en_sena=negocio.cargo_dentro_de_sena,
                             precio_efectivo=c.precio_efectivo,
                         )
                         for c in t.libres

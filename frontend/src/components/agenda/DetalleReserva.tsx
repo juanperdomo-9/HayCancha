@@ -42,6 +42,7 @@ function Detalle({ slug, r, agenda, onListo }: { slug: string; r: ReservaDetalle
   const [devolverSena, setDevolverSena] = useState(true)
   const [confirmarCancelacion, setConfirmarCancelacion] = useState(false)
   const [moviendo, setMoviendo] = useState(false)
+  const [cobrando, setCobrando] = useState(false)
   const activa = r.estado === 'confirmada' || r.estado === 'pendiente_pago'
   const [etiqueta, colores] = ESTADO[r.estado]
   const error = cambiar.error ?? cancelar.error
@@ -140,7 +141,7 @@ function Detalle({ slug, r, agenda, onListo }: { slug: string; r: ReservaDetalle
           <div className="flex justify-between font-bold">
             <dt>{r.saldo_cobrado ? 'Saldo' : 'Falta cobrar en la cancha'}</dt>
             <dd className="text-right">
-              {r.saldo_cobrado ? (r.saldo_en_efectivo ? 'Cobrado en efectivo' : 'Cobrado') : plata(r.saldo)}
+              {r.saldo_cobrado ? textoCobrado(r) : plata(r.saldo)}
               {!r.saldo_cobrado && r.saldo_efectivo && <span className="block text-[13px] font-normal text-gris">{plata(r.saldo_efectivo)} en efectivo</span>}
             </dd>
           </div>
@@ -165,7 +166,11 @@ function Detalle({ slug, r, agenda, onListo }: { slug: string; r: ReservaDetalle
                 type="button"
                 aria-pressed={r.asistencia === valor}
                 disabled={cambiar.isPending}
-                onClick={() => cambiar.mutate({ id: r.id, asistencia: r.asistencia === valor ? null : valor })}
+                onClick={() => {
+                  cambiar.mutate({ id: r.id, asistencia: r.asistencia === valor ? null : valor })
+                  // Si vino y falta cobrar, se pregunta cómo pagó el resto.
+                  if (valor === 'vino' && r.asistencia !== 'vino' && !r.saldo_cobrado && Number(r.saldo) > 0) setCobrando(true)
+                }}
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-superficie px-3 py-2.5 font-semibold ring-1 ring-linea aria-pressed:bg-noche aria-pressed:text-crema aria-pressed:ring-noche"
               >
                 <Icono className="size-4" aria-hidden="true" />
@@ -173,23 +178,16 @@ function Detalle({ slug, r, agenda, onListo }: { slug: string; r: ReservaDetalle
               </button>
             ))}
           </div>
-          {r.saldo_cobrado || !r.saldo_efectivo ? (
-            <Boton
-              variante={r.saldo_cobrado ? 'suave' : 'principal'}
-              cargando={cambiar.isPending}
-              onClick={() => cambiar.mutate({ id: r.id, saldo_cobrado: !r.saldo_cobrado, saldo_en_efectivo: false })}
-            >
-              {r.saldo_cobrado ? 'Marcar saldo como no cobrado' : `Cobré ${plata(r.saldo)} en la cancha`}
+          {r.saldo_cobrado ? (
+            <Boton variante="suave" cargando={cambiar.isPending} onClick={() => cambiar.mutate({ id: r.id, saldo_cobrado: false, saldo_en_efectivo: false })}>
+              Marcar saldo como no cobrado
             </Boton>
+          ) : cobrando ? (
+            <CobrarSaldo slug={slug} r={r} onListo={() => setCobrando(false)} />
           ) : (
-            <div className="grid grid-cols-2 gap-2">
-              <Boton cargando={cambiar.isPending} onClick={() => cambiar.mutate({ id: r.id, saldo_cobrado: true, saldo_en_efectivo: true })}>
-                Cobré {plata(r.saldo_efectivo)} en efectivo
-              </Boton>
-              <Boton variante="suave" cargando={cambiar.isPending} onClick={() => cambiar.mutate({ id: r.id, saldo_cobrado: true, saldo_en_efectivo: false })}>
-                Cobré {plata(r.saldo)} con otro medio
-              </Boton>
-            </div>
+            <Boton cargando={cambiar.isPending} onClick={() => setCobrando(true)}>
+              Cobré el resto en la cancha
+            </Boton>
           )}
         </div>
       )}
@@ -400,6 +398,62 @@ function LiberarParaSiempre({ slug, id, texto, onListo }: { slug: string; id: st
         </Boton>
       </div>
       {liberar.error && <Aviso>{mensaje(liberar.error)}</Aviso>}
+    </div>
+  )
+}
+
+/** "Cobrado: $50.000 en efectivo + $24.000 por transferencia". */
+function textoCobrado(r: ReservaDetalle): string {
+  const efectivo = Number(r.cobrado_efectivo ?? 0)
+  const transferencia = Number(r.cobrado_transferencia ?? 0)
+  if (r.cobrado_efectivo == null && r.cobrado_transferencia == null) return r.saldo_en_efectivo ? 'Cobrado en efectivo' : 'Cobrado'
+  const partes = [efectivo > 0 && `${plata(efectivo)} en efectivo`, transferencia > 0 && `${plata(transferencia)} por transferencia`].filter(Boolean)
+  return `Cobrado: ${partes.join(' + ')}`
+}
+
+/** Cómo pagó el resto en la cancha: todo de una forma o una parte de cada una. */
+function CobrarSaldo({ slug, r, onListo }: { slug: string; r: ReservaDetalle; onListo: () => void }) {
+  const cambiar = useCambiarReserva(slug)
+  // En efectivo puede ser menos, si el complejo tiene precio especial pagando así.
+  const enEfectivo = String(Math.round(Number(r.saldo_efectivo ?? r.saldo)))
+  const total = String(Math.round(Number(r.saldo)))
+  const [montos, setMontos] = useState({ efectivo: enEfectivo, transferencia: '0' })
+  const cobrar = (efectivo: string, transferencia: string) =>
+    cambiar.mutate({ id: r.id, cobro: { efectivo: efectivo || '0', transferencia: transferencia || '0' } }, { onSuccess: onListo })
+  const soloNumeros = (v: string) => v.replace(/[^0-9]/g, '')
+  return (
+    <div className="grid gap-3 rounded-xl bg-cal p-3.5 ring-1 ring-linea">
+      <b className="text-sm">¿Cómo pagó el resto?</b>
+      <div className="grid grid-cols-2 gap-2">
+        <Boton cargando={cambiar.isPending} onClick={() => cobrar(enEfectivo, '0')}>
+          Todo en efectivo ({plata(enEfectivo)})
+        </Boton>
+        <Boton variante="suave" cargando={cambiar.isPending} onClick={() => cobrar('0', total)}>
+          Todo por transferencia ({plata(total)})
+        </Boton>
+      </div>
+      <form
+        className="grid gap-2"
+        onSubmit={(e) => {
+          e.preventDefault()
+          cobrar(montos.efectivo, montos.transferencia)
+        }}
+      >
+        <span className="text-sm text-gris">O una parte de cada uno:</span>
+        <div className="grid grid-cols-2 gap-2">
+          <Campo etiqueta="Efectivo" prefijo="$" inputMode="numeric" value={montos.efectivo} onChange={(e) => setMontos({ ...montos, efectivo: soloNumeros(e.target.value) })} />
+          <Campo etiqueta="Transferencia" prefijo="$" inputMode="numeric" value={montos.transferencia} onChange={(e) => setMontos({ ...montos, transferencia: soloNumeros(e.target.value) })} />
+        </div>
+        <div className="flex gap-2">
+          <Boton type="submit" variante="secundario" cargando={cambiar.isPending} className="flex-1">
+            Guardar {plata(Number(montos.efectivo || 0) + Number(montos.transferencia || 0))}
+          </Boton>
+          <Boton variante="suave" onClick={onListo}>
+            Cancelar
+          </Boton>
+        </div>
+      </form>
+      {cambiar.error && <Aviso>{mensaje(cambiar.error)}</Aviso>}
     </div>
   )
 }

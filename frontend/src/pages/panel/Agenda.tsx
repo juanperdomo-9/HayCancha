@@ -172,17 +172,19 @@ export default function Agenda() {
         </Aviso>
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
             {[
               ['Ocupados', String(datos.resumen.ocupados)],
               ['Libres', String(datos.resumen.libres)],
               ['Bloqueados', String(datos.resumen.bloqueados)],
               ['Señas cobradas', plata(datos.resumen.senas_cobradas)],
               ['Falta cobrar en la cancha', plata(datos.resumen.saldo_por_cobrar)],
-            ].map(([etiqueta, valor]) => (
+              ['Cobrado en la cancha', `${plata(datos.resumen.cobrado_efectivo ?? 0)} efvo.`, `${plata(datos.resumen.cobrado_transferencia ?? 0)} transf.`],
+            ].map(([etiqueta, valor, extra]) => (
               <div key={etiqueta} className="rounded-xl bg-cal px-3.5 py-2.5 ring-1 ring-linea">
                 <span className="block text-xs text-gris">{etiqueta}</span>
-                <b className="numeros text-2xl leading-tight">{valor}</b>
+                <b className={`numeros leading-tight ${extra ? 'block text-lg' : 'text-2xl'}`}>{valor}</b>
+                {extra && <b className="numeros block text-lg leading-tight">{extra}</b>}
               </div>
             ))}
           </div>

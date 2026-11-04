@@ -59,8 +59,10 @@ function Pagina({ reserva: r }: { reserva: ReservaPublica }) {
               ['Cancha', r.cancha],
               ['Día', fechaLarga(r.fecha)],
               ['Horario', `${r.hora} a ${r.hora_fin}`],
-              ...(r.cumpleanos ? [['Cumpleaños', r.cumpleanos.nombre]] : [['Seña', plata(r.sena)]]),
-              ...(Number(r.cargo_servicio ?? 0) > 0 ? [['Cargo de servicio', plata(r.cargo_servicio ?? 0)]] : []),
+              ...(r.cumpleanos
+                ? [['Cumpleaños', r.cumpleanos.nombre]]
+                : [['Seña', plata(Number(r.sena) + (r.cargo_en_sena ? Number(r.cargo_servicio ?? 0) : 0))]]),
+              ...(Number(r.cargo_servicio ?? 0) > 0 && !r.cargo_en_sena ? [['Cargo de servicio', plata(r.cargo_servicio ?? 0)]] : []),
               ...(r.nota ? [['Quién cumple', r.nota]] : []),
               ...(r.adicionales?.length ? [['Adicionales', r.adicionales.map((a) => `${a.cantidad > 1 ? `${a.cantidad} × ` : ''}${a.nombre}`).join(', ')]] : []),
               ['En la cancha', r.saldo_efectivo ? `${plata(r.saldo)} (${plata(r.saldo_efectivo)} en efectivo)` : plata(r.saldo)],

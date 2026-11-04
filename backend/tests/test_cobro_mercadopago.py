@@ -471,3 +471,22 @@ def test_si_cancela_el_complejo_se_devuelve_todo(con_cargo, api_mp) -> None:
     assert (detalle["estado"], detalle["devolucion"]) == ("cancelada", "hecha")
     devolucion = [c for _, r, c in api_mp.pedidos if r.endswith("/refunds")][-1]
     assert devolucion == {}
+
+
+def test_el_cargo_se_puede_mostrar_dentro_de_la_sena(con_cargo, api_mp, admin) -> None:
+    complejo = con_cargo
+    negocio = admin.get(Negocio, complejo["id"])
+    negocio.cargo_dentro_de_sena = True
+    admin.commit()
+    reserva_id = reservar(complejo).json()["id"]
+    _, _, preferencia = api_mp.pedidos[0]
+    assert [i["unit_price"] for i in preferencia["items"]] == [12000.0]
+    assert avisar(complejo, api_mp.pagar(reserva_id, monto="12000.00")).status_code == 200
+    publica = TestClient(app).get(base(complejo, reserva_id)).json()
+    assert (publica["estado"], publica["cargo_en_sena"], publica["saldo"]) == (
+        "confirmada",
+        True,
+        "44000.00",
+    )
+    # Si cancela a tiempo, se le devuelve la seña sin el cargo, igual que separado.
+    assert cancelar(complejo, reserva_id).json()["monto_devuelto"] == "11000.00"

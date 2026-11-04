@@ -113,6 +113,8 @@ export type CanchaLibre = Cancha & {
   precio_efectivo: string | null
   /** Se paga encima de la seña online (la comisión de Mercado Pago); no se devuelve. */
   cargo_servicio?: string
+  /** El jugador ve una sola seña (seña + cargo). */
+  cargo_en_sena?: boolean
 }
 
 export type Turno = {
@@ -194,6 +196,7 @@ export type ReservaPublica = {
   precio: string
   sena: string
   cargo_servicio?: string
+  cargo_en_sena?: boolean
   saldo: string
   adicionales: { nombre: string; cantidad: number; precio: string }[]
   total_adicionales: string

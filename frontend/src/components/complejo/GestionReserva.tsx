@@ -88,9 +88,11 @@ function Cancelar({ r, onVolver }: { r: ReservaPublica; onVolver: () => void }) 
     <form onSubmit={enviar} className="mt-3 grid gap-3">
       <p className="rounded-xl bg-red-50 px-3.5 py-2.5 text-sm text-red-900 ring-1 ring-red-200">
         {r.recupera_sena
-          ? `Te devolvemos la seña de ${plata(r.sena)} en el mismo medio con el que pagaste.${Number(r.cargo_servicio ?? 0) > 0 ? ' El cargo de servicio no se devuelve.' : ''}`
+          ? r.cargo_en_sena
+            ? `Te devolvemos ${plata(r.sena)} en el mismo medio con el que pagaste.`
+            : `Te devolvemos la seña de ${plata(r.sena)} en el mismo medio con el que pagaste.${Number(r.cargo_servicio ?? 0) > 0 ? ' El cargo de servicio no se devuelve.' : ''}`
           : r.sena_pagada
-            ? `Si cancelás ahora, perdés la seña de ${plata(r.sena)}.`
+            ? `Si cancelás ahora, perdés la seña de ${plata(Number(r.sena) + (r.cargo_en_sena ? Number(r.cargo_servicio ?? 0) : 0))}.`
             : 'El turno se libera para otro jugador.'}
       </p>
       <CampoTelefono valor={telefono} onCambiar={setTelefono} />
