@@ -20,7 +20,7 @@ La interfaz es en español de Argentina, con voseo ("Reservá", "Elegí un horar
 - **Una fase a la vez.** Hacé solo la fase que te pida. No adelantes funciones de fases siguientes.
 - **Primero el plan, después el código.** Antes de cada tarea grande, proponé un plan corto (archivos a crear o tocar, decisiones) y esperá el OK.
 - **Nada de WhatsApp.** Todo pasa en la página. Las notificaciones van por email (y push más adelante). Única excepción: el complejo puede cargar un número para un botón "Consultar por WhatsApp" en su página (solo abre un chat para dudas; reservas, pagos y avisos nunca pasan por ahí).
-- **La IA nunca confirma turnos ni valida pagos.** Un turno solo pasa a `confirmada` cuando llega un webhook de Mercado Pago válido con el pago aprobado. Nunca se aceptan capturas de comprobantes. Única excepción, decidida por el dueño del producto: los cumpleaños (por ahora sin seña) quedan confirmados al reservarlos, con un tope por teléfono y por conexión.
+- **La IA nunca confirma turnos ni valida pagos.** Un turno solo pasa a `confirmada` cuando llega un webhook de Mercado Pago válido con el pago aprobado. Nunca se aceptan capturas de comprobantes. Excepciones, decididas por el dueño del producto: los cumpleaños (por ahora sin seña) y las reservas de los complejos que no cobran seña (`negocios.sin_sena`) quedan confirmadas al reservarlas, con un tope de reservas por venir por teléfono y por conexión; el que no viene se marca "No vino".
 - **Nunca confiar en montos del frontend.** Precios y señas se calculan siempre en el backend.
 - **Preguntá antes de sumar dependencias** que no estén en la sección Stack.
 - **Todo cambio de base de datos va por migración de Alembic.** Nada de cambios a mano.

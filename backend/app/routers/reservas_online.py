@@ -98,6 +98,11 @@ def _pendientes(session: Session, negocio: Negocio, *condiciones) -> int:
     )
 
 
+# Reservas por venir en un complejo sin seña (quedan confirmadas al reservar): por
+# teléfono y por conexión, para que nadie trabe los turnos.
+MAX_SIN_SENA_POR_TELEFONO = 2
+MAX_SIN_SENA_POR_CONEXION = 4
+
 # Cumpleaños por venir al mismo tiempo (no llevan seña): por teléfono y por conexión.
 MAX_CUMPLEANOS_POR_TELEFONO = 1
 MAX_CUMPLEANOS_POR_CONEXION = 2
@@ -116,7 +121,10 @@ def reservar_online(
         creada = crear_cumpleanos_online(negocio, datos, _conexion(request))
         tareas.add_task(avisos.reserva_confirmada, negocio.id, creada.id)
         return creada
-    return crear_reserva_online(negocio, datos, _conexion(request))
+    creada = crear_reserva_online(negocio, datos, _conexion(request))
+    if negocio.sin_sena:
+        tareas.add_task(avisos.reserva_confirmada, negocio.id, creada.id)
+    return creada
 
 
 def _validar_inicio(negocio: Negocio, datos: esquemas.NuevaReserva) -> None:
@@ -136,6 +144,75 @@ def _validar_inicio(negocio: Negocio, datos: esquemas.NuevaReserva) -> None:
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_CONTENT,
             f"Se puede reservar hasta {DIAS_RESERVABLES} días para adelante.",
+        )
+
+
+def _sin_sena_por_venir(session: Session, negocio: Negocio, *condiciones) -> int:
+    return session.scalar(
+        select(func.count())
+        .select_from(Reserva)
+        .join(Cliente, Cliente.id == Reserva.cliente_id)
+        .where(
+            Reserva.negocio_id == negocio.id,
+            Reserva.origen.in_(("web", "bot")),
+            Reserva.cumpleanos_id.is_(None),
+            Reserva.estado == "confirmada",
+            Reserva.inicio > ahora(),
+            *condiciones,
+        )
+    )
+
+
+def crear_reserva_sin_sena(
+    negocio: Negocio, datos: esquemas.NuevaReserva, conexion: str, origen: str
+) -> esquemas.ReservaCreada:
+    """Complejo que no cobra seña: la reserva queda confirmada al instante, sin Mercado
+    Pago (decisión del dueño del producto, como los cumpleaños). Para que nadie trabe los
+    turnos hay un tope de reservas por venir; el que no viene se marca "No vino"."""
+    _validar_inicio(negocio, datos)
+    telefono = normalizar_telefono(datos.telefono)
+    with sesion_de_negocio(negocio.id) as s:
+        if (
+            _sin_sena_por_venir(s, negocio, Cliente.telefono == telefono)
+            >= MAX_SIN_SENA_POR_TELEFONO
+            or _sin_sena_por_venir(s, negocio, Reserva.conexion == conexion)
+            >= MAX_SIN_SENA_POR_CONEXION
+        ):
+            raise HTTPException(
+                status.HTTP_429_TOO_MANY_REQUESTS,
+                "Ya tenés varias reservas por venir en este complejo. Si necesitás otra, "
+                "escribiles.",
+            )
+        try:
+            reserva = reservar(
+                s,
+                negocio,
+                deporte_codigo=datos.deporte,
+                inicio=datos.inicio,
+                recurso_id=datos.recurso_id,
+                cliente=DatosCliente(datos.nombre, datos.telefono, datos.email),
+                origen=origen,
+                estado="confirmada",
+                cobrar_sena=False,
+            )
+        except TurnoNoDisponible as error:
+            raise HTTPException(
+                status.HTTP_409_CONFLICT, "Ese horario ya no está disponible. Elegí otro."
+            ) from error
+        except (TurnoInvalido, ValueError) as error:
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(error)) from error
+        if datos.adicionales:
+            try:
+                fijar_adicionales(s, reserva, [Pedido(a.id, a.cantidad) for a in datos.adicionales])
+            except AdicionalInvalido as error:
+                s.rollback()
+                raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(error)) from error
+        reserva.conexion = conexion
+        reserva.llegada = datos.llegada
+        reserva.codigo = nuevo_codigo(negocio, reserva)
+        s.commit()
+        return esquemas.ReservaCreada(
+            id=reserva.id, url_pago=None, link=link_de_la_reserva(negocio, reserva)
         )
 
 
@@ -220,6 +297,8 @@ def crear_reserva_online(
 ) -> esquemas.ReservaCreada:
     """La reserva pendiente de pago. La usan la página y el asistente del complejo (con
     los mismos topes y validaciones). Lanza HTTPException con el motivo si no se puede."""
+    if negocio.sin_sena:
+        return crear_reserva_sin_sena(negocio, datos, conexion, origen)
     proveedor = proveedor_para(negocio)
     if proveedor is None:
         raise HTTPException(

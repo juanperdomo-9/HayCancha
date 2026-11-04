@@ -110,6 +110,8 @@ class ComplejoDetalle(BaseModel):
     minutos_para_pagar: int
     # Si ya puede cobrar la seña online (Mercado Pago vinculado).
     reservas_online: bool
+    # No cobra seña: el turno queda reservado al instante.
+    sin_sena: bool = False
     deportes: list[DeporteDelComplejo]
     fotos: list[FotoPublica] = []
     adicionales: list[AdicionalPublico] = []

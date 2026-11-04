@@ -36,6 +36,7 @@ function FormularioReservas({ slug, configuracion: c }: { slug: string; configur
     sena_valor: String(Number(c.sena_valor)),
     cargo_servicio_pct: String(Number(c.cargo_servicio_pct ?? 0)),
     cargo_dentro_de_sena: Boolean(c.cargo_dentro_de_sena),
+    sin_sena: Boolean(c.sin_sena),
     horas_cancelacion: String(c.horas_cancelacion),
     horas_anticipacion: String(c.horas_anticipacion ?? 0),
     minutos_para_pagar: String(c.minutos_para_pagar),
@@ -58,6 +59,7 @@ function FormularioReservas({ slug, configuracion: c }: { slug: string; configur
         sena_valor: datos.sena_valor || '0',
         cargo_servicio_pct: datos.cargo_servicio_pct || '0',
         cargo_dentro_de_sena: datos.cargo_dentro_de_sena,
+        sin_sena: datos.sin_sena,
         horas_cancelacion: Number(datos.horas_cancelacion),
         horas_anticipacion: Number(datos.horas_anticipacion || 0),
         minutos_para_pagar: Number(datos.minutos_para_pagar),
@@ -77,6 +79,21 @@ function FormularioReservas({ slug, configuracion: c }: { slug: string; configur
     <form onSubmit={enviar} className="grid gap-6">
       <EncabezadoSeccion titulo="Seña y cancelación" bajada="Cuánto paga el jugador para reservar, hasta cuándo puede cancelar sin perderla y las reglas del predio." />
       <Tarjeta titulo="Seña" descripcion="Lo habitual es un 20% del turno.">
+        <label className="mb-4 flex cursor-pointer items-start gap-2.5 rounded-xl bg-superficie px-3.5 py-2.5 ring-1 ring-linea has-checked:ring-2 has-checked:ring-complejo">
+          <input
+            type="checkbox"
+            checked={datos.sin_sena}
+            onChange={(e) => setDatos({ ...datos, sin_sena: e.target.checked })}
+            className="mt-1 size-4 accent-[var(--complejo)]"
+          />
+          <span>
+            <b className="block">No cobro seña</b>
+            <span className="text-sm text-gris">
+              El turno queda reservado al instante y el jugador paga todo en la cancha. Cada teléfono puede tener hasta 2 reservas por venir; al que no viene marcalo "No vino" en la agenda.
+            </span>
+          </span>
+        </label>
+        {!datos.sin_sena && (
         <div className="grid gap-4 sm:grid-cols-2">
           <fieldset className="grid gap-2">
             <legend className="mb-1.5 text-[13px] font-semibold">Tipo de seña</legend>
@@ -115,7 +132,9 @@ function FormularioReservas({ slug, configuracion: c }: { slug: string; configur
             </p>
           </div>
         </div>
+        )}
       </Tarjeta>
+      {!datos.sin_sena && (
       <Tarjeta
         titulo="Cargo de servicio"
         descripcion="El jugador paga la comisión de Mercado Pago encima de la seña, así te llega la seña entera. Si cancela, se le devuelve la seña pero no el cargo."
@@ -171,6 +190,7 @@ function FormularioReservas({ slug, configuracion: c }: { slug: string; configur
           </fieldset>
         )}
       </Tarjeta>
+      )}
       <Tarjeta titulo="Cancelación y pago">
         <div className="grid gap-4 sm:grid-cols-2">
           <Campo

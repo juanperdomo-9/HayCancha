@@ -55,6 +55,8 @@ export function ReservaEnCurso({ slug, turno, fecha, deporte, cancha, canchaEleg
   // Si el complejo lo elige, el jugador ve una sola seña con el cargo adentro.
   const enSena = cargo > 0 && Boolean(cancha.cargo_en_sena)
   const senaVisible = Number(cancha.sena) + (enSena ? cargo : 0)
+  // Complejo sin seña: el turno queda reservado al instante y se paga todo en la cancha.
+  const sinSena = !cumpleanos && Number(cancha.sena) === 0
   const cambiarPedido = (id: string, paso: number) => setPedidos((actuales) => ({ ...actuales, [id]: Math.min(20, Math.max(0, (actuales[id] ?? 0) + paso)) }))
   const canchaTexto = canchaElegida ? `${cancha.nombre}${cancha.caracteristicas ? ` (${cancha.caracteristicas.toLowerCase()})` : ''}` : 'te asignamos la primera libre'
 
@@ -145,7 +147,7 @@ export function ReservaEnCurso({ slug, turno, fecha, deporte, cancha, canchaEleg
         </div>
         <div className="flex justify-between gap-3 text-[17px] font-bold">
           <dt>Seña para reservar</dt>
-          <dd className="text-complejo-texto">{plata(senaVisible)}</dd>
+          <dd className="text-complejo-texto">{sinSena ? 'Sin seña' : plata(senaVisible)}</dd>
         </div>
         {cargo > 0 && !enSena && (
           <div className="flex justify-between gap-3">
@@ -235,15 +237,17 @@ export function ReservaEnCurso({ slug, turno, fecha, deporte, cancha, canchaEleg
             disabled={crear.isPending}
             className="mt-1 rounded-xl bg-complejo px-4 py-[15px] font-bold text-complejo-sobre transition hover:brightness-105 active:scale-[.98] disabled:opacity-60"
           >
-            {crear.isPending ? 'Reservando…' : cumpleanos ? 'Reservar el cumpleaños' : cargo > 0 && !enSena ? `Pagar ${plata(Number(cancha.sena) + cargo)}` : `Pagar seña de ${plata(senaVisible)}`}
+            {crear.isPending ? 'Reservando…' : cumpleanos ? 'Reservar el cumpleaños' : sinSena ? 'Reservar' : cargo > 0 && !enSena ? `Pagar ${plata(Number(cancha.sena) + cargo)}` : `Pagar seña de ${plata(senaVisible)}`}
           </button>
           <p className="text-center text-[12.5px] text-tenue">
             {cumpleanos
               ? 'El horario queda reservado al instante. Después le avisás al complejo por WhatsApp para arreglar los detalles.'
-              : `Te guardamos el turno ${minutosParaPagar} minutos para que pagues la seña con Mercado Pago. No hace falta crear una cuenta.`}
+              : sinSena
+                ? 'El turno queda reservado al instante y pagás todo en la cancha. Si no podés ir, cancelalo desde el link de tu reserva.'
+                : `Te guardamos el turno ${minutosParaPagar} minutos para que pagues la seña con Mercado Pago. No hace falta crear una cuenta.`}
           </p>
           <p className="text-center text-[12.5px] text-tenue">
-            Después de pagar te damos <b className="text-tinta">el link de tu reserva: guardalo</b>, lo vas a necesitar para cancelar o cambiar el horario.
+            {sinSena ? 'Al reservar' : 'Después de pagar'} te damos <b className="text-tinta">el link de tu reserva: guardalo</b>, lo vas a necesitar para cancelar o cambiar el horario.
           </p>
         </form>
       ) : (

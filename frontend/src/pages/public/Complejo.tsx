@@ -295,14 +295,22 @@ function PaginaComplejo({ complejo }: { complejo: ComplejoDetalle }) {
         )}
         <div>
           <h3 className="numeros mb-2 text-[23px] font-bold" style={{ fontStretch: '80%' }}>
-            Seña y cancelación
+            {complejo.sin_sena ? 'Reservas y cancelación' : 'Seña y cancelación'}
           </h3>
+          {complejo.sin_sena ? (
+            <p className="max-w-[46ch] text-tenue">
+              Este complejo no cobra seña: el turno queda reservado al instante y pagás todo en la cancha. Si no podés ir, cancelalo desde el link de tu reserva así lo puede usar otro.
+            </p>
+          ) : (
+            <>
           <p className="mb-2 max-w-[46ch] text-tenue">
             Para reservar pagás una seña {complejo.sena_tipo === 'fija' ? `de ${plata(complejo.sena_valor)}` : `del ${Number(complejo.sena_valor)}% del turno`} con Mercado Pago. El resto lo pagás en la cancha.
           </p>
           <p className="max-w-[46ch] text-tenue">
             Si cancelás con más de {complejo.horas_cancelacion} horas de anticipación, te devolvemos la seña. Con menos, se pierde.
           </p>
+            </>
+          )}
         </div>
       </section>
 

@@ -202,7 +202,8 @@ def ver_complejo(slug: str, session: SesionPublica) -> esquemas.ComplejoDetalle:
         sena_valor=negocio.sena_valor,
         horas_cancelacion=negocio.horas_cancelacion,
         minutos_para_pagar=negocio.minutos_para_pagar,
-        reservas_online=proveedor_para(negocio) is not None,
+        reservas_online=negocio.sin_sena or proveedor_para(negocio) is not None,
+        sin_sena=negocio.sin_sena,
         deportes=deportes,
         fotos=fotos,
     )

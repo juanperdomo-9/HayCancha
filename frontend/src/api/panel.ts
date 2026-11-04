@@ -48,6 +48,8 @@ export type Configuracion = {
   cargo_servicio_pct: string
   /** El jugador ve una sola seña (seña + cargo) en vez de los dos por separado. */
   cargo_dentro_de_sena?: boolean
+  /** No cobra seña: la reserva online queda confirmada al instante. */
+  sin_sena?: boolean
   horas_cancelacion: number
   horas_anticipacion: number
   minutos_para_pagar: number

@@ -57,6 +57,8 @@ class Negocio(Base):
     # El jugador ve una sola seña (seña + cargo) en vez de los dos por separado. Por dentro
     # no cambia nada: el saldo y lo que se devuelve siguen saliendo de la seña sola.
     cargo_dentro_de_sena: Mapped[bool] = mapped_column(server_default=text("false"))
+    # No cobra seña: la reserva online queda confirmada al instante (migración 0027).
+    sin_sena: Mapped[bool] = mapped_column(server_default=text("false"))
     # Sin valor por defecto: se acuerda con cada complejo en el alta.
     horas_cancelacion: Mapped[int]
     # Reservas online solo con esta anticipación mínima (0 = sin mínimo, migración 0018).

@@ -104,6 +104,7 @@ export type ComplejoDetalle = {
   minutos_para_pagar: number
   /** Si ya cobra la seña online (Mercado Pago vinculado, o pago simulado en desarrollo). */
   reservas_online: boolean
+  sin_sena?: boolean
   deportes: DeporteDelComplejo[]
 }
 

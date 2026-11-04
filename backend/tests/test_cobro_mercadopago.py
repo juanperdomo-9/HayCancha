@@ -490,3 +490,45 @@ def test_el_cargo_se_puede_mostrar_dentro_de_la_sena(con_cargo, api_mp, admin) -
     )
     # Si cancela a tiempo, se le devuelve la seña sin el cargo, igual que separado.
     assert cancelar(complejo, reserva_id).json()["monto_devuelto"] == "11000.00"
+
+
+def test_complejo_sin_sena_confirma_al_instante(complejo, api_mp, admin) -> None:
+    negocio = admin.get(Negocio, complejo["id"])
+    negocio.sin_sena = True
+    admin.commit()
+    libres = TestClient(app).get(
+        f"/publico/complejos/{complejo['slug']}/disponibilidad",
+        params={"deporte": "futbol5", "fecha": complejo["a_las"](20).date().isoformat()},
+    )
+    cancha = next(t for t in libres.json()["turnos"] if t["hora"] == "20:00")["libres"][0]
+    assert (cancha["sena"], cancha["cargo_servicio"]) == ("0.00", "0.00")
+
+    creada = reservar(complejo)
+    assert creada.status_code == 201, creada.text
+    assert creada.json()["url_pago"] is None
+    assert api_mp.pedidos == []  # sin Mercado Pago
+    publica = TestClient(app).get(base(complejo, creada.json()["id"])).json()
+    assert (publica["estado"], publica["sena"], publica["saldo"]) == (
+        "confirmada",
+        "0.00",
+        "55000.00",
+    )
+    # Tope por teléfono: 2 por venir.
+    assert reservar(complejo, hora=21).status_code == 201
+    assert reservar(complejo, hora=19).status_code == 429
+    # Cancela sin plata de por medio y el turno queda libre.
+    assert cancelar(complejo, creada.json()["id"]).status_code == 200
+    assert reservar(complejo, hora=20, telefono="11 4444-0000").status_code == 201
+
+
+def test_el_dueno_cambia_la_configuracion_de_la_sena(complejo) -> None:
+    cliente = entrar(complejo["dueno"])
+    cambios = {"cargo_servicio_pct": "4.3", "cargo_dentro_de_sena": True, "sin_sena": True}
+    guardada = cliente.patch(f"/panel/{complejo['slug']}/configuracion", json=cambios)
+    assert guardada.status_code == 200, guardada.text
+    c = guardada.json()
+    assert (c["cargo_servicio_pct"], c["cargo_dentro_de_sena"], c["sin_sena"]) == (
+        "4.30",
+        True,
+        True,
+    )

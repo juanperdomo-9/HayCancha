@@ -73,6 +73,7 @@ class Configuracion(BaseModel):
     sena_valor: Decimal
     cargo_servicio_pct: Decimal = Decimal("0")
     cargo_dentro_de_sena: bool = False
+    sin_sena: bool = False
     horas_cancelacion: int
     horas_anticipacion: int = 0
     minutos_para_pagar: int
@@ -109,6 +110,7 @@ class CambiosDeConfiguracion(BaseModel):
     sena_valor: Annotated[Decimal, Field(ge=0, max_digits=12, decimal_places=2)] | None = None
     cargo_servicio_pct: Annotated[Decimal, Field(ge=0, le=30, decimal_places=2)] | None = None
     cargo_dentro_de_sena: bool | None = None
+    sin_sena: bool | None = None
     horas_cancelacion: Annotated[int, Field(ge=0, le=24 * 30)] | None = None
     horas_anticipacion: Annotated[int, Field(ge=0, le=72)] | None = None
     minutos_para_pagar: Annotated[int, Field(ge=1, le=120)] | None = None

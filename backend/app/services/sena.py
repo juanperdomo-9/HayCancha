@@ -11,6 +11,8 @@ class ConfiguracionSena(Protocol):
 
 def calcular_sena(negocio: ConfiguracionSena, precio: Decimal) -> Decimal:
     """Seña de un turno. Siempre se calcula en el backend: nunca se confía en el frontend."""
+    if getattr(negocio, "sin_sena", False):
+        return Decimal("0.00")
     if negocio.sena_tipo == "fija":
         sena = min(negocio.sena_valor, precio)
     else:

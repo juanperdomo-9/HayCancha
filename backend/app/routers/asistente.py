@@ -23,7 +23,7 @@ from app.db import get_session, sesion_de_negocio
 from app.dependencias import PanelDeConfiguracion
 from app.models import ConsultaSinRespuesta
 from app.routers.reservas_online import _conexion
-from app.services import buscador, ia
+from app.services import avisos, buscador, ia
 
 logger = logging.getLogger(__name__)
 
@@ -163,6 +163,8 @@ def charlar_con_el_complejo(
             telefono=str(a.get("telefono") or ""),
         )
         creada = crear_reserva_online(negocio, nueva, conexion, origen="bot")
+        if negocio.sin_sena:
+            avisos.reserva_confirmada(negocio.id, creada.id)
         return asistente_complejo.Reservado(link=creada.link, url_pago=creada.url_pago)
 
     historial = [m.model_dump() for m in datos.mensajes[-10:]]
