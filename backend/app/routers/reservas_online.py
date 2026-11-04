@@ -52,6 +52,7 @@ from app.services.reservas import (
     normalizar_telefono,
     reservar,
 )
+from app.services.sena import cargo_de_servicio
 
 router = APIRouter(prefix="/publico/complejos/{slug}/reservas", tags=["reserva online"])
 
@@ -263,6 +264,7 @@ def crear_reserva_online(
         reserva.conexion = conexion
         reserva.llegada = datos.llegada
         reserva.codigo = nuevo_codigo(negocio, reserva)
+        reserva.cargo_servicio = cargo_de_servicio(negocio.cargo_servicio_pct, reserva.sena)
         cancha = s.get(Recurso, reserva.recurso_id).nombre
         try:
             reserva.url_pago = proveedor.crear_cobro(
@@ -344,6 +346,7 @@ def _publica(s: Session, negocio: Negocio, reserva: Reserva) -> esquemas.Reserva
         hora_fin=reserva.fin.astimezone(zona).strftime("%H:%M"),
         precio=reserva.precio,
         sena=reserva.sena,
+        cargo_servicio=reserva.cargo_servicio,
         saldo=saldo(reserva),
         adicionales=[
             esquemas.AdicionalPedido(nombre=p.nombre, cantidad=p.cantidad, precio=p.precio)
@@ -368,7 +371,7 @@ def _publica(s: Session, negocio: Negocio, reserva: Reserva) -> esquemas.Reserva
         puede_cambiar=activa and reserva.cumpleanos_id is None and puede_cambiar(negocio, reserva),
         ya_cambio_horario=reserva.cambios_de_horario > 0,
         devolucion=devuelto.devolucion if devuelto else None,
-        monto_devuelto=devuelto.monto if devuelto else None,
+        monto_devuelto=(devuelto.monto_devolucion or devuelto.monto) if devuelto else None,
         cumpleanos=_cumpleanos_publico(s, reserva),
         nota=reserva.nota,
         whatsapp=negocio.whatsapp,

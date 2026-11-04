@@ -45,19 +45,26 @@ def a_tiempo(negocio: Negocio, reserva: Reserva, momento: datetime | None = None
 
 
 def cancelar(
-    session: Session, negocio: Negocio, reserva: Reserva, *, devolver_sena: bool
+    session: Session,
+    negocio: Negocio,
+    reserva: Reserva,
+    *,
+    devolver_sena: bool,
+    con_cargo: bool = True,
 ) -> Pago | None:
     """Cancela la reserva (y sus espejos de canchas combinadas).
 
     Si tenía la seña pagada online y `devolver_sena`, marca el pago para devolver y lo
-    devuelve. La seña en efectivo no la toca: la maneja el dueño en persona."""
+    devuelve: todo, o sin el cargo de servicio si `con_cargo` es False (cuando cancela el
+    jugador). La seña en efectivo no la toca: la maneja el dueño en persona."""
     # Los espejos de canchas combinadas los cancela la base (trigger de la migración 0020).
     reserva.estado, reserva.vence_a, reserva.url_pago = "cancelada", None, None
     session.flush()
     pago = pago_aprobado_de(session, negocio, reserva)
     if pago is None or not devolver_sena:
         return None
-    pedir_devolucion(pago)
+    sin_cargo = not con_cargo and reserva.cargo_servicio > 0
+    pedir_devolucion(pago, pago.monto - reserva.cargo_servicio if sin_cargo else None)
     session.flush()
     return pago
 
@@ -68,7 +75,10 @@ def cancelar_como_jugador(session: Session, negocio: Negocio, reserva: Reserva) 
         raise CambioNoPermitido("Esta reserva ya no está activa.")
     if reserva.inicio <= ahora():
         raise CambioNoPermitido("El turno ya empezó: no se puede cancelar.")
-    return cancelar(session, negocio, reserva, devolver_sena=a_tiempo(negocio, reserva))
+    # El cargo de servicio no se le devuelve: ya se pagó la comisión de Mercado Pago.
+    return cancelar(
+        session, negocio, reserva, devolver_sena=a_tiempo(negocio, reserva), con_cargo=False
+    )
 
 
 def _deporte_de(session: Session, negocio: Negocio, reserva: Reserva) -> str:

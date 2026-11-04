@@ -274,7 +274,20 @@ class ProveedorMercadoPago:
                     "unit_price": float(reserva.sena),
                     "currency_id": MONEDA,
                 }
-            ],
+            ]
+            + (
+                [
+                    {
+                        "id": f"cargo-{reserva.id}",
+                        "title": "Cargo de servicio",
+                        "quantity": 1,
+                        "unit_price": float(reserva.cargo_servicio),
+                        "currency_id": MONEDA,
+                    }
+                ]
+                if reserva.cargo_servicio > 0
+                else []
+            ),
             "external_reference": str(reserva.id),
             "notification_url": f"{settings.app_base_url}/webhooks/mercadopago/{negocio.id}",
             "back_urls": {"success": vuelta, "failure": vuelta, "pending": vuelta},
@@ -300,14 +313,14 @@ class ProveedorMercadoPago:
             raise ErrorMercadoPago("Mercado Pago no devolvió el link de pago")
         return url
 
-    def reembolsar(self, negocio: Negocio, pago_id: str) -> None:
-        """Devolución total. La clave de idempotencia es fija por pago: si se reintenta,
-        Mercado Pago no devuelve dos veces."""
+    def reembolsar(self, negocio: Negocio, pago_id: str, monto: Decimal | None = None) -> None:
+        """Devolución total o, con `monto`, parcial. La clave de idempotencia es fija por
+        pago: si se reintenta, Mercado Pago no devuelve dos veces."""
         _llamar(
             negocio,
             "POST",
             f"/v1/payments/{pago_id}/refunds",
-            json={},
+            json={"amount": float(monto)} if monto is not None else {},
             headers={"X-Idempotency-Key": f"devolucion-{pago_id}"},
         )
 

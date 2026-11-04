@@ -66,8 +66,9 @@ class ProveedorDePagos(Protocol):
         (None si el pago se hace en la propia página, como en el simulado)."""
         ...
 
-    def reembolsar(self, negocio: Negocio, pago_id: str) -> None:
-        """Devuelve el pago completo. Si no puede, lanza ErrorDePago."""
+    def reembolsar(self, negocio: Negocio, pago_id: str, monto: Decimal | None = None) -> None:
+        """Devuelve el pago completo o, con `monto`, esa parte. Si no puede, lanza
+        ErrorDePago."""
         ...
 
 
@@ -79,7 +80,7 @@ class ProveedorSimulado:
     def crear_cobro(self, negocio: Negocio, reserva: Reserva, descripcion: str) -> str | None:
         return None
 
-    def reembolsar(self, negocio: Negocio, pago_id: str) -> None:
+    def reembolsar(self, negocio: Negocio, pago_id: str, monto: Decimal | None = None) -> None:
         return None
 
     @staticmethod
@@ -87,7 +88,7 @@ class ProveedorSimulado:
         return PagoInformado(
             id=f"SIM-{uuid.uuid4().hex[:16]}",
             estado="approved",
-            monto=reserva.sena,
+            monto=reserva.sena + reserva.cargo_servicio,
             moneda=MONEDA,
             reserva_id=reserva.id,
             detalle={"simulado": True},
@@ -171,7 +172,7 @@ def acreditar_pago(session: Session, negocio: Negocio, pago: PagoInformado) -> R
 
     if pago.estado != "approved":
         return Resultado.NO_APROBADO
-    if pago.moneda != MONEDA or pago.monto != reserva.sena:
+    if pago.moneda != MONEDA or pago.monto != reserva.sena + reserva.cargo_servicio:
         return a_devolver(Resultado.MONTO_INVALIDO)
 
     if reserva.estado == "pendiente_pago":
@@ -221,10 +222,12 @@ def devolucion_de(session: Session, negocio: Negocio, reserva: Reserva) -> Pago 
     )
 
 
-def pedir_devolucion(pago: Pago) -> None:
-    """Marca el pago para devolver (en la transacción de quien llama)."""
+def pedir_devolucion(pago: Pago, monto: Decimal | None = None) -> None:
+    """Marca el pago para devolver (en la transacción de quien llama): todo o, con
+    `monto`, esa parte."""
     if pago.devolucion is None:
         pago.devolucion = "pendiente"
+        pago.monto_devolucion = monto
 
 
 def devolver(
@@ -239,7 +242,7 @@ def devolver(
     try:
         if proveedor is None:
             raise ErrorDePago("El complejo no tiene con qué devolver (Mercado Pago sin vincular)")
-        proveedor.reembolsar(negocio, pago.mp_payment_id)
+        proveedor.reembolsar(negocio, pago.mp_payment_id, pago.monto_devolucion)
     except ErrorDePago as error:
         logger.warning("No se pudo devolver el pago %s: %s", pago.mp_payment_id, error)
         primera_vez = pago.devolucion_intentos == 1

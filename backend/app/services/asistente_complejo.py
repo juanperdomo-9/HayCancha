@@ -73,6 +73,11 @@ def _sistema(negocio: Negocio, hoy: date, deportes: str) -> str:
         if negocio.sena_tipo == "porcentaje"
         else f"${int(negocio.sena_valor)}"
     )
+    cargo = (
+        " (más un cargo de servicio que cubre la comisión de Mercado Pago y no se devuelve)"
+        if negocio.cargo_servicio_pct > 0
+        else ""
+    )
     return (
         f"Sos {nombre}, el asistente de {negocio.nombre} en HayCanchas. Español rioplatense, "
         f"con voseo, cálido y breve (1 a 3 oraciones, texto plano, sin asteriscos ni listas "
@@ -82,7 +87,7 @@ def _sistema(negocio: Negocio, hoy: date, deportes: str) -> str:
         f"{'. Referencia: ' + negocio.referencia if negocio.referencia else ''}. "
         f"Deportes: {deportes}. Servicios: {', '.join(negocio.servicios) or 'no informados'}. "
         f"Reglas del predio: {'; '.join(negocio.reglas) or 'no informadas'}. "
-        f"Seña para reservar: {sena}, se paga online con Mercado Pago. Se puede cancelar y "
+        f"Seña para reservar: {sena}, se paga online con Mercado Pago{cargo}. Se puede cancelar y "
         f"recuperar la seña hasta {negocio.horas_cancelacion} horas antes.\n"
         f"Lo que te contó el complejo:\n{sabe or '(nada todavía)'}\n"
         "Reglas:\n"

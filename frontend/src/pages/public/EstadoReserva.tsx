@@ -60,6 +60,7 @@ function Pagina({ reserva: r }: { reserva: ReservaPublica }) {
               ['Día', fechaLarga(r.fecha)],
               ['Horario', `${r.hora} a ${r.hora_fin}`],
               ...(r.cumpleanos ? [['Cumpleaños', r.cumpleanos.nombre]] : [['Seña', plata(r.sena)]]),
+              ...(Number(r.cargo_servicio ?? 0) > 0 ? [['Cargo de servicio', plata(r.cargo_servicio ?? 0)]] : []),
               ...(r.nota ? [['Quién cumple', r.nota]] : []),
               ...(r.adicionales?.length ? [['Adicionales', r.adicionales.map((a) => `${a.cantidad > 1 ? `${a.cantidad} × ` : ''}${a.nombre}`).join(', ')]] : []),
               ['En la cancha', r.saldo_efectivo ? `${plata(r.saldo)} (${plata(r.saldo_efectivo)} en efectivo)` : plata(r.saldo)],
@@ -183,7 +184,7 @@ function EsperandoPago({ r }: { r: ReservaPublica }) {
       <div className="mt-5 grid justify-center gap-2.5">
         {r.url_pago && (
           <a href={r.url_pago} className="rounded-xl bg-complejo px-6 py-3.5 font-bold text-complejo-sobre hover:brightness-105">
-            Pagar {plata(r.sena)} con Mercado Pago
+            Pagar {plata(Number(r.sena) + Number(r.cargo_servicio ?? 0))} con Mercado Pago
           </a>
         )}
         {r.pago_simulado && (
@@ -194,7 +195,7 @@ function EsperandoPago({ r }: { r: ReservaPublica }) {
               disabled={simular.isPending}
               className="rounded-xl bg-complejo px-6 py-3.5 font-bold text-complejo-sobre hover:brightness-105 disabled:opacity-60"
             >
-              {simular.isPending ? 'Pagando…' : `Simular pago de ${plata(r.sena)}`}
+              {simular.isPending ? 'Pagando…' : `Simular pago de ${plata(Number(r.sena) + Number(r.cargo_servicio ?? 0))}`}
             </button>
             <span className="text-xs text-tenue">Modo de prueba: no se cobra nada.</span>
           </>

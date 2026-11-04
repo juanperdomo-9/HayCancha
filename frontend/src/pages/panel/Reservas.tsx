@@ -34,6 +34,7 @@ function FormularioReservas({ slug, configuracion: c }: { slug: string; configur
   const [datos, setDatos] = useState({
     sena_tipo: c.sena_tipo,
     sena_valor: String(Number(c.sena_valor)),
+    cargo_servicio_pct: String(Number(c.cargo_servicio_pct ?? 0)),
     horas_cancelacion: String(c.horas_cancelacion),
     horas_anticipacion: String(c.horas_anticipacion ?? 0),
     minutos_para_pagar: String(c.minutos_para_pagar),
@@ -54,6 +55,7 @@ function FormularioReservas({ slug, configuracion: c }: { slug: string; configur
       {
         sena_tipo: datos.sena_tipo,
         sena_valor: datos.sena_valor || '0',
+        cargo_servicio_pct: datos.cargo_servicio_pct || '0',
         horas_cancelacion: Number(datos.horas_cancelacion),
         horas_anticipacion: Number(datos.horas_anticipacion || 0),
         minutos_para_pagar: Number(datos.minutos_para_pagar),
@@ -65,6 +67,9 @@ function FormularioReservas({ slug, configuracion: c }: { slug: string; configur
 
   const valor = Number(datos.sena_valor) || 0
   const senaEjemplo = datos.sena_tipo === 'porcentaje' ? (TURNO_DE_EJEMPLO * valor) / 100 : Math.min(valor, TURNO_DE_EJEMPLO)
+  // Igual que en el backend: la comisión se cobra sobre el total, redondeado a $10.
+  const pct = Number(datos.cargo_servicio_pct) || 0
+  const cargoEjemplo = pct > 0 && pct < 100 && senaEjemplo > 0 ? Math.ceil((senaEjemplo / (1 - pct / 100) - senaEjemplo) / 10) * 10 : 0
 
   return (
     <form onSubmit={enviar} className="grid gap-6">
@@ -107,6 +112,36 @@ function FormularioReservas({ slug, configuracion: c }: { slug: string; configur
               Con un turno de {plata(TURNO_DE_EJEMPLO)}, la seña es <b className="text-complejo-texto">{plata(senaEjemplo)}</b> y el resto se paga en la cancha.
             </p>
           </div>
+        </div>
+      </Tarjeta>
+      <Tarjeta
+        titulo="Cargo de servicio"
+        descripcion="El jugador paga la comisión de Mercado Pago encima de la seña, así te llega la seña entera. Si cancela, se le devuelve la seña pero no el cargo."
+      >
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid content-start gap-2">
+            <Campo
+              etiqueta="Comisión que te cobra Mercado Pago"
+              prefijo="%"
+              type="number"
+              min={0}
+              max={30}
+              step="0.01"
+              inputMode="decimal"
+              value={datos.cargo_servicio_pct}
+              onChange={(e) => setDatos({ ...datos, cargo_servicio_pct: e.target.value })}
+            />
+            <p className="text-sm text-gris">7,61% es cobrando al instante (6,29% + IVA). Si en Mercado Pago elegiste otro plazo, poné tu comisión con IVA. 0: sin cargo.</p>
+          </div>
+          <p className="self-start rounded-xl bg-complejo-suave px-3.5 py-2.5 text-sm">
+            {cargoEjemplo > 0 ? (
+              <>
+                Con una seña de {plata(senaEjemplo)}, el jugador paga <b className="text-complejo-texto">{plata(senaEjemplo + cargoEjemplo)}</b> ({plata(cargoEjemplo)} de cargo) y a vos te queda la seña entera.
+              </>
+            ) : (
+              'Sin cargo: la comisión de Mercado Pago se descuenta de tu seña.'
+            )}
+          </p>
         </div>
       </Tarjeta>
       <Tarjeta titulo="Cancelación y pago">

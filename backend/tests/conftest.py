@@ -2,6 +2,7 @@ import os
 import tempfile
 import uuid
 from collections.abc import Callable, Iterator
+from decimal import Decimal
 from typing import Any
 
 import pytest
@@ -91,6 +92,8 @@ def crear_negocio(admin: Session) -> Callable[..., uuid.UUID]:
             "slug": f"prueba-{uuid.uuid4().hex[:10]}",
             "nombre": "Complejo de prueba",
             "horas_cancelacion": 24,
+            # Sin cargo de servicio, salvo en los tests que lo prueban.
+            "cargo_servicio_pct": Decimal("0"),
         }
         negocio = Negocio(**(datos | campos))
         admin.add(negocio)

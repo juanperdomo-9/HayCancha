@@ -20,6 +20,7 @@ class Negocio(Base):
         ),
         CheckConstraint("minutos_para_pagar > 0", name="minutos_para_pagar_positivo"),
         CheckConstraint("horas_cancelacion >= 0", name="horas_cancelacion_valida"),
+        CheckConstraint("cargo_servicio_pct BETWEEN 0 AND 30", name="cargo_servicio_pct_valido"),
         CheckConstraint("horas_anticipacion BETWEEN 0 AND 72", name="horas_anticipacion_valida"),
         CheckConstraint(
             "estado_cuenta IN ('al_dia', 'atrasado', 'suspendido')", name="estado_cuenta_valido"
@@ -49,6 +50,10 @@ class Negocio(Base):
     sena_tipo: Mapped[str] = mapped_column(String, server_default="porcentaje")
     sena_valor: Mapped[Decimal] = mapped_column(Numeric(12, 2), server_default="20")
     minutos_para_pagar: Mapped[int] = mapped_column(server_default="10")
+    # Comisión de Mercado Pago (con IVA) que paga el jugador como cargo de servicio, para
+    # que al complejo le quede la seña entera. 7,61 = 6,29% + IVA, cobrando al instante.
+    # 0: sin cargo (migración 0025).
+    cargo_servicio_pct: Mapped[Decimal] = mapped_column(Numeric(5, 2), server_default="7.61")
     # Sin valor por defecto: se acuerda con cada complejo en el alta.
     horas_cancelacion: Mapped[int]
     # Reservas online solo con esta anticipación mínima (0 = sin mínimo, migración 0018).

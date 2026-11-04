@@ -44,6 +44,8 @@ export type Configuracion = {
   color_secundario: string | null
   sena_tipo: 'fija' | 'porcentaje'
   sena_valor: string
+  /** Comisión de Mercado Pago que paga el jugador como cargo de servicio (0: sin cargo). */
+  cargo_servicio_pct: string
   horas_cancelacion: number
   horas_anticipacion: number
   minutos_para_pagar: number
@@ -102,6 +104,7 @@ export type AltaDeComplejo = {
   dueno_email: string
   sena_tipo: 'fija' | 'porcentaje'
   sena_valor: string
+  cargo_servicio_pct?: string
   horas_cancelacion: number
   minutos_para_pagar: number
   color_primario: string

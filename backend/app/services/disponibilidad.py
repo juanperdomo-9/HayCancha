@@ -11,7 +11,7 @@ from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import Session
 
 from app.models import ESTADOS_QUE_OCUPAN, Deporte, Horario, Negocio, Recurso, Reserva
-from app.services.sena import calcular_sena
+from app.services.sena import calcular_sena, cargo_de_servicio
 from app.services.turnos import Turno, se_superponen, turnos_del_dia
 
 
@@ -21,6 +21,7 @@ class CanchaLibre:
     precio: Decimal
     sena: Decimal
     precio_efectivo: Decimal | None = None
+    cargo_servicio: Decimal = Decimal("0.00")
 
 
 @dataclass
@@ -155,8 +156,9 @@ def disponibilidad(
                 CanchaLibre(
                     por_id[turno.recurso_id],
                     turno.precio,
-                    calcular_sena(negocio, turno.precio),
+                    sena := calcular_sena(negocio, turno.precio),
                     turno.precio_efectivo,
+                    cargo_de_servicio(negocio.cargo_servicio_pct, sena),
                 )
             )
 

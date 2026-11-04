@@ -51,6 +51,7 @@ export function ReservaEnCurso({ slug, turno, fecha, deporte, cancha, canchaEleg
   const tomaReservas = reservasOnline || Boolean(cumpleanos)
   const totalAdicionales = ofrecidos.reduce((total, a) => total + Number(a.precio) * (pedidos[a.id] ?? 0), 0)
   const saldo = Number(cancha.precio) - Number(cancha.sena) + totalAdicionales
+  const cargo = cumpleanos ? 0 : Number(cancha.cargo_servicio ?? 0)
   const cambiarPedido = (id: string, paso: number) => setPedidos((actuales) => ({ ...actuales, [id]: Math.min(20, Math.max(0, (actuales[id] ?? 0) + paso)) }))
   const canchaTexto = canchaElegida ? `${cancha.nombre}${cancha.caracteristicas ? ` (${cancha.caracteristicas.toLowerCase()})` : ''}` : 'te asignamos la primera libre'
 
@@ -143,6 +144,15 @@ export function ReservaEnCurso({ slug, turno, fecha, deporte, cancha, canchaEleg
           <dt>Seña para reservar</dt>
           <dd className="text-complejo-texto">{plata(cancha.sena)}</dd>
         </div>
+        {cargo > 0 && (
+          <div className="flex justify-between gap-3">
+            <dt className="text-tenue">
+              Cargo de servicio
+              <span className="block text-[12.5px]">No se devuelve si cancelás.</span>
+            </dt>
+            <dd className="text-right">{plata(cargo)}</dd>
+          </div>
+        )}
         <div className="flex justify-between gap-3">
           <dt className="text-tenue">En la cancha pagás</dt>
           <dd className="text-right">
@@ -222,7 +232,7 @@ export function ReservaEnCurso({ slug, turno, fecha, deporte, cancha, canchaEleg
             disabled={crear.isPending}
             className="mt-1 rounded-xl bg-complejo px-4 py-[15px] font-bold text-complejo-sobre transition hover:brightness-105 active:scale-[.98] disabled:opacity-60"
           >
-            {crear.isPending ? 'Reservando…' : cumpleanos ? 'Reservar el cumpleaños' : `Pagar seña de ${plata(cancha.sena)}`}
+            {crear.isPending ? 'Reservando…' : cumpleanos ? 'Reservar el cumpleaños' : cargo > 0 ? `Pagar ${plata(Number(cancha.sena) + cargo)}` : `Pagar seña de ${plata(cancha.sena)}`}
           </button>
           <p className="text-center text-[12.5px] text-tenue">
             {cumpleanos

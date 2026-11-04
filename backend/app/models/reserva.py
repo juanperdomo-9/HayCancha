@@ -76,6 +76,7 @@ class Reserva(Base):
         ),
         CheckConstraint("precio IS NULL OR precio >= 0", name="precio_no_negativo"),
         CheckConstraint("sena >= 0", name="sena_no_negativa"),
+        CheckConstraint("cargo_servicio >= 0", name="cargo_servicio_no_negativo"),
         Index("ix_reservas_negocio_inicio", "negocio_id", "inicio"),
     )
 
@@ -91,6 +92,9 @@ class Reserva(Base):
     precio: Mapped[Decimal | None] = mapped_column(Numeric(12, 2))
     sena: Mapped[Decimal] = mapped_column(Numeric(12, 2), server_default="0")
     sena_en_efectivo: Mapped[bool] = mapped_column(server_default=text("false"))
+    # Lo que paga el jugador encima de la seña online (la comisión de Mercado Pago). No es
+    # parte del turno ni del saldo, y no se devuelve si cancela el jugador.
+    cargo_servicio: Mapped[Decimal] = mapped_column(Numeric(12, 2), server_default="0")
     saldo_cobrado: Mapped[bool] = mapped_column(server_default=text("false"))
     # Precio si el saldo se paga en efectivo (copia de la franja) y si así se cobró.
     precio_efectivo: Mapped[Decimal | None] = mapped_column(Numeric(12, 2))

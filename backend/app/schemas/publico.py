@@ -121,6 +121,8 @@ class ComplejoDetalle(BaseModel):
 class CanchaLibre(Cancha):
     precio: Decimal
     sena: Decimal
+    # Lo que se paga encima de la seña online (la comisión de Mercado Pago).
+    cargo_servicio: Decimal = Decimal("0.00")
     precio_efectivo: Decimal | None = None
 
 

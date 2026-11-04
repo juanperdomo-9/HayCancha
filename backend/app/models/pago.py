@@ -55,6 +55,8 @@ class Pago(Base):
     estado: Mapped[str] = mapped_column(String)
     detalle: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
     devolucion: Mapped[str | None] = mapped_column(String)
+    # Cuánto se devuelve: None, todo; si cancela el jugador, sin el cargo de servicio.
+    monto_devolucion: Mapped[Decimal | None] = mapped_column(Numeric(12, 2))
     devolucion_intentos: Mapped[int] = mapped_column(server_default="0")
     devuelto_a: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     creado_a: Mapped[CreadoA]

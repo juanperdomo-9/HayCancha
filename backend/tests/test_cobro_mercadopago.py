@@ -404,3 +404,69 @@ def test_el_dueno_cancela_con_o_sin_devolver_la_sena(complejo, api_mp) -> None:
     assert len(api_mp.devoluciones()) == 1
     with sesion_de_negocio(complejo["id"]) as s:
         assert s.scalar(select(func.count()).select_from(Pago)) == 2
+
+
+# --- Cargo de servicio ---
+
+
+def test_calculo_del_cargo_de_servicio() -> None:
+    from app.services.sena import cargo_de_servicio
+
+    # Con 7,61% (al instante), sobre $10.000 se cobran $10.830 y al complejo le quedan
+    # $10.005,84 después de la comisión.
+    assert cargo_de_servicio(Decimal("7.61"), Decimal("10000")) == Decimal("830.00")
+    assert cargo_de_servicio(Decimal("4.3"), Decimal("10000")) == Decimal("450.00")
+    assert cargo_de_servicio(Decimal("0"), Decimal("10000")) == Decimal("0.00")
+    assert cargo_de_servicio(Decimal("7.61"), Decimal("0")) == Decimal("0.00")
+
+
+@pytest.fixture
+def con_cargo(complejo, admin: Session) -> dict:
+    negocio = admin.get(Negocio, complejo["id"])
+    negocio.cargo_servicio_pct = Decimal("7.61")
+    admin.commit()
+    return complejo
+
+
+def test_el_jugador_paga_el_cargo_y_no_se_le_devuelve(con_cargo, api_mp) -> None:
+    complejo = con_cargo
+    libres = TestClient(app).get(
+        f"/publico/complejos/{complejo['slug']}/disponibilidad",
+        params={"deporte": "futbol5", "fecha": complejo["a_las"](20).date().isoformat()},
+    )
+    cancha = next(t for t in libres.json()["turnos"] if t["hora"] == "20:00")["libres"][0]
+    assert (cancha["sena"], cancha["cargo_servicio"]) == ("11000.00", "910.00")
+
+    reserva_id = reservar(complejo).json()["id"]
+    _, _, preferencia = api_mp.pedidos[0]
+    assert [i["unit_price"] for i in preferencia["items"]] == [11000.0, 910.0]
+    assert preferencia["items"][1]["title"] == "Cargo de servicio"
+    # Si paga solo la seña, el monto no coincide: no se confirma.
+    assert avisar(complejo, api_mp.pagar(reserva_id, monto="11000.00")).status_code == 200
+    assert en_db(complejo, reserva_id).estado == "pendiente_pago"
+    assert avisar(complejo, api_mp.pagar(reserva_id, monto="11910.00")).status_code == 200
+    assert en_db(complejo, reserva_id).estado == "confirmada"
+    publica = TestClient(app).get(base(complejo, reserva_id)).json()
+    assert (publica["sena"], publica["cargo_servicio"], publica["saldo"]) == (
+        "11000.00",
+        "910.00",
+        "44000.00",
+    )
+
+    # Cancela a tiempo: se le devuelve la seña, sin el cargo.
+    cancelada = cancelar(complejo, reserva_id)
+    assert cancelada.status_code == 200, cancelada.text
+    assert cancelada.json()["monto_devuelto"] == "11000.00"
+    devolucion = [c for _, r, c in api_mp.pedidos if r.endswith("/refunds")][-1]
+    assert devolucion == {"amount": 11000.0}
+
+
+def test_si_cancela_el_complejo_se_devuelve_todo(con_cargo, api_mp) -> None:
+    complejo = con_cargo
+    reserva_id = reservar(complejo).json()["id"]
+    assert avisar(complejo, api_mp.pagar(reserva_id, monto="11910.00")).status_code == 200
+    cliente = entrar(complejo["dueno"])
+    detalle = cliente.post(f"/panel/{complejo['slug']}/reservas/{reserva_id}/cancelar").json()
+    assert (detalle["estado"], detalle["devolucion"]) == ("cancelada", "hecha")
+    devolucion = [c for _, r, c in api_mp.pedidos if r.endswith("/refunds")][-1]
+    assert devolucion == {}

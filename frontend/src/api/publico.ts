@@ -107,7 +107,13 @@ export type ComplejoDetalle = {
   deportes: DeporteDelComplejo[]
 }
 
-export type CanchaLibre = Cancha & { precio: string; sena: string; precio_efectivo: string | null }
+export type CanchaLibre = Cancha & {
+  precio: string
+  sena: string
+  precio_efectivo: string | null
+  /** Se paga encima de la seña online (la comisión de Mercado Pago); no se devuelve. */
+  cargo_servicio?: string
+}
 
 export type Turno = {
   inicio: string
@@ -187,6 +193,7 @@ export type ReservaPublica = {
   hora_fin: string
   precio: string
   sena: string
+  cargo_servicio?: string
   saldo: string
   adicionales: { nombre: string; cantidad: number; precio: string }[]
   total_adicionales: string
